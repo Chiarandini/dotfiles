@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# airdrop — open the macOS AirDrop picker pre-loaded with the given files.
+#
+# Usage: airdrop FILE [FILE ...]
+#
+# The recipient picker still appears — AirDrop has no headless send API.
+# Delegates to a Swift host that holds the NSSharingService open (with a
+# proper delegate) until the transfer finishes, fails, or a 10-minute
+# safety timeout trips. The host is detached so the picker survives this
+# shell returning.
+
+set -euo pipefail
+
+if [[ $# -eq 0 ]]; then
+    cat >&2 <<'USAGE'
+Usage: airdrop FILE [FILE ...]
+
+Opens the AirDrop picker with the given files loaded.
+USAGE
+    exit 1
+fi
+
+abs_paths=()
+for f in "$@"; do
+    if [[ ! -e "$f" ]]; then
+        echo "airdrop: no such file: $f" >&2
+        exit 1
+    fi
+    dir="$(cd "$(dirname "$f")" && pwd)"
+    abs_paths+=("$dir/$(basename "$f")")
+done
+
+SWIFT_SRC="$HOME/.config/scripts/airdrop.swift"
+LOG=/tmp/airdrop.log
+
+nohup swift "$SWIFT_SRC" "${abs_paths[@]}" >>"$LOG" 2>&1 &
+disown

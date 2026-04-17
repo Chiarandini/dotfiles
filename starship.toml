@@ -1,0 +1,111 @@
+# Starship prompt config
+# See: https://starship.rs/config/
+#
+# Design goal: calm, informative. Shows only what matters at a glance:
+# - where you are
+# - which git branch and status
+# - which runtime is active (per-project mise/direnv pulls the right one)
+# - exit code + duration only when interesting
+# - no Powerline eye-candy
+
+# No blank line between prompts (preserved from prior setup)
+add_newline = false
+
+# Give async modules up to 10s before giving up (preserved)
+command_timeout = 10000
+
+# ─── Format: which modules render, and in what order ────────────────────
+format = """
+$directory\
+$git_branch\
+$git_status\
+$python\
+$nodejs\
+$golang\
+$rust\
+$ruby\
+$docker_context\
+$cmd_duration\
+$line_break\
+$character"""
+
+# ─── Directory ──────────────────────────────────────────────────────────
+[directory]
+truncation_length     = 3
+truncate_to_repo      = true
+style                 = "bold cyan"
+read_only             = " 󰌾"
+home_symbol           = "~"
+format                = "[$path]($style)[$read_only]($read_only_style) "
+
+# ─── Git ────────────────────────────────────────────────────────────────
+[git_branch]
+symbol                = " "
+style                 = "bold purple"
+format                = "on [$symbol$branch]($style) "
+
+[git_status]
+style                 = "yellow"
+format                = "([$all_status$ahead_behind]($style) )"
+conflicted            = "="
+ahead                 = "⇡${count}"
+behind                = "⇣${count}"
+diverged              = "⇕⇡${ahead_count}⇣${behind_count}"
+up_to_date            = ""
+untracked             = "?${count}"
+stashed               = "\\$${count}"
+modified              = "!${count}"
+staged                = "+${count}"
+renamed               = "»${count}"
+deleted               = "✘${count}"
+
+# ─── Language modules: only show when relevant ──────────────────────────
+# Each of these auto-detects the project type via file markers
+# (pyproject.toml / package.json / go.mod etc.) and shows the active version.
+
+[python]
+symbol                = " "
+style                 = "yellow"
+format                = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+detect_extensions     = ["py"]
+detect_files          = ["pyproject.toml", "requirements.txt", ".python-version", "Pipfile", "setup.py"]
+detect_folders        = [".venv", "__pycache__"]
+
+[nodejs]
+symbol                = " "
+style                 = "green"
+format                = "via [$symbol($version )]($style)"
+
+[golang]
+symbol                = " "
+style                 = "cyan"
+format                = "via [$symbol($version )]($style)"
+
+[rust]
+symbol                = " "
+style                 = "red"
+format                = "via [$symbol($version )]($style)"
+
+[ruby]
+symbol                = " "
+style                 = "red"
+format                = "via [$symbol($version )]($style)"
+
+# ─── Docker context (only shows when DOCKER_HOST/context is set) ────────
+[docker_context]
+symbol                = " "
+style                 = "blue dimmed"
+format                = "via [$symbol$context]($style) "
+only_with_files       = true
+
+# ─── Command duration (only shows for commands > 2s) ────────────────────
+[cmd_duration]
+min_time              = 2000
+style                 = "yellow"
+format                = "took [$duration]($style) "
+
+# ─── Prompt character (green on success, red on error) ──────────────────
+[character]
+success_symbol        = "[❯](bold green)"
+error_symbol          = "[❯](bold red)"
+vimcmd_symbol         = "[❮](bold green)"

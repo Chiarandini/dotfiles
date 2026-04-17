@@ -1,0 +1,27 @@
+# ~/.config/atuin/config.toml
+# See https://docs.atuin.sh/configuration/config/ for full reference.
+
+# Fuzzy matching by default (matches non-adjacent characters, like fzf).
+search_mode = "fuzzy"
+
+# Start with global scope; press Ctrl-R again in the UI to cycle
+# host → session → directory → workspace.
+filter_mode = "global"
+
+# When pressing Up arrow (not Ctrl-R): limit to current session only.
+# Makes Up/Down feel like normal shell history, while Ctrl-R searches globally.
+filter_mode_shell_up_key_binding = "session"
+
+# Compact rendering, ~20 lines high, inline with prompt rather than fullscreen.
+style = "compact"
+inline_height = 20
+
+# Show command metadata (cwd, exit, duration) in the preview pane.
+show_preview = true
+
+# Don't record commands that start with a space. Useful for ad-hoc secrets
+# (e.g. ` export API_KEY=...` with a leading space won't be recorded).
+# This mirrors zsh's HIST_IGNORE_SPACE semantics.
+history_filter = [
+    "^ ",
+]

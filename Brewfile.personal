@@ -1,0 +1,52 @@
+# Brewfile.personal
+#
+# Full personal-machine app set — GUI apps that are NOT part of the lean core
+# dev Brewfile. Install with:
+#
+#     brew bundle --file Brewfile.personal
+#
+# Or, from a fresh machine, after running the core Brewfile:
+#
+#     cd ~/.config && brew bundle --file Brewfile && brew bundle --file Brewfile.personal
+
+# GUI Applications (Casks)
+cask "alt-tab"
+cask "neovide-app"
+cask "sioyek"
+cask "spaceman"
+
+# Browsers / Communication / Media
+cask "brave-browser"
+cask "discord"
+cask "spotify"
+cask "raycast"
+cask "zoom"
+cask "vlc"
+cask "audacity"
+
+# Knowledge / Notes / Reference
+cask "obsidian"
+cask "zotero"
+cask "anki"
+
+# Office
+cask "microsoft-word"
+cask "microsoft-excel"
+cask "adobe-acrobat-reader"
+
+# Terminals / Utilities
+cask "iterm2"
+cask "keyclu"
+cask "android-file-transfer"
+cask "syncthing"
+cask "skim"
+
+# Mac App Store (requires 'mas' CLI — already in core Brewfile)
+mas "Accelerate", id: 1459809092
+mas "Calendar for Google Calendar", id: 1596768976
+mas "Dropover", id: 1355679052
+mas "Fantastical", id: 975937182
+mas "GrandPerspective", id: 1111570163
+mas "Scenecuts", id: 1540491573
+mas "Snap", id: 418073146
+mas "WhatsApp", id: 310633997

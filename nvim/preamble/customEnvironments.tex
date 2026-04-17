@@ -1,0 +1,13 @@
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                          matrix                          ║
+%  ╚══════════════════════════════════════════════════════════╝
+% matrices with lines seperating, see https://tex.stackexchange.com/questions/253739/vertical-and-horizontal-line-in-a-matrix
+
+\makeatletter
+\renewcommand*\env@matrix[1][*\c@MaxMatrixCols c]{%
+  \hskip -\arraycolsep
+  \let\@ifnextchar\new@ifnextchar
+  \array{#1}}
+\makeatother

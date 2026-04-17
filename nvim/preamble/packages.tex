@@ -1,0 +1,68 @@
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                         packages                         ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\usepackage{inputenc}         % Used to compile any UTF-8 Character (and supports Unicode)
+\usepackage{extarrows}         % Used to compile any UTF-8 Character (and supports Unicode)
+\usepackage{stackengine}
+\usepackage{scalerel}
+\usepackage{amsmath, amssymb} % Used to write better mathematical expressions (ex. \mathbb{R})
+\usepackage{stackrel}         % for left-right arrows, staking symbol above and bellow
+\usepackage{mathrsfs}
+\usepackage{euscript}
+\usepackage[font=itshape]{quoting}
+\usepackage{mathtools}
+	\usepackage{enumitem}
+\usepackage{amsthm}           % Used to create theorem enviroments.
+\usepackage{graphicx}         % Let's you use images in LaTeX; ex the \includegraphics command.
+\usepackage{hhline}
+%\usepackage{luatexja}
+%\usepackage{fontspec}
+\usepackage{dsfont}
+\usepackage{wasysym}          % emoji's!
+\usepackage{float}            % package with ``H'' for figures and tables, ex. Images, tables, etc
+%\usepackage{subcaption}      % More options with sub-captions.
+\usepackage{setspace}         % More flexibility on spacing in document.
+\usepackage{hyperref}         % let's me put hyperlinks
+%\usepackage{tikz}             % for commutative diagrams https://tex.stackexchange.com/questions/419221/how-to-do-the-pushout-with-universal-property
+\usepackage{tikz-cd}          % for commutative diagrams https://tex.stackexchange.com/questions/419221/how-to-do-the-pushout-with-universal-property
+%\usepackage{quiver}           % for better commutative diagrams
+\usepackage{longtable}        % create tables that extend past one page
+%\usepackage{siunitx}         % required for alignment
+%\usepackage{multirow}        % for multiple rows
+\usepackage{microtype}        % makes nice text. Fixes some under-/over- filled box problems.
+%\usepackage{fancyvrb}        % Let's you write code (different style than listings).
+\usepackage{tcolorbox} 	      % Makes nice boxes for thms, cor, prop, or anything else.
+%\usepackage{enumitem}        % More flexibility on enumeration (don't know much).
+\usepackage{xcolor}           % Colour text.
+\usepackage{wrapfig}          % To wrap text around figure
+\usepackage{listings}         % Create nice colour code blocks (customized in preamble)
+\usepackage{thmtools}         % Customize theorem environment (in preamble).
+%\usepackage{marvosym}        % Provide ``basic'' symbols (hazard, religious, smiley face etc.)
+\usepackage{array}            % \begin{table}{>{\em}c c} -> 1st column italic (bfseries for bold)
+%\usepackage[english]{babel}  % If I want to blindtext in english.
+\usepackage{blindtext}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+%\usepackage[symbol]{footmisc} % For daggers and asterisk for footnotes. 1: *, 2: dagger, etc.
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+%\usepackage{pst-plot}          %To make nice plots: https://tex.stackexchange.com/questions/47594/how-can-i-make-a-graph-of-a-function#47596
+\usepackage[answerdelayed]{exercise}
+\usepackage{etoolbox}          % for Dynkin diagrams
+\usepackage{dynkin-diagrams}   % for Dynkin diagrams
+
+% \usepackage{CJKutf8} % for some chinese
+
+% to import figures via: https://github.com/gillescastel/inkscape-figures
+\usepackage{import}
+\usepackage{pdfpages}
+\usepackage{transparent}
+
+% This command is the ONLY command imported via the packages snippet, think of it as a tiny package written out
+\newcommand{\incfig}[2][1]{%
+    \def\svgwidth{#1\columnwidth}
+    \import{./figures/}{#2.pdf_tex}
+}
+
+\pdfsuppresswarningpagegroup=1

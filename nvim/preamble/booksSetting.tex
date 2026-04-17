@@ -1,0 +1,368 @@
+% Author parameterization: override with \renewcommand{\documentauthor}{Your Name} in your document
+\providecommand{\documentauthor}{Author Name}
+
+%header information
+\pagestyle{fancy}
+\setlength\headheight{20pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyfoot[C,CO]{\textcolor{gray}{\documentauthor}}
+\fancyfoot[R,RO]{\thepage}{}
+
+%chapter header format
+\titleformat
+{\chapter} % command
+[display] % shape
+{\bfseries\Huge\itshape} % format
+{\thechapter} % label
+{0.5ex} % sep
+{
+    \rule{\textwidth}{1pt}
+    \vspace{1ex}
+    \centering
+} % before-code
+[
+\vspace{-0.5ex}%
+\rule{\textwidth}{0.3pt}
+] % after-code
+
+
+
+%\ExerciseLevelInToc
+\counterwithin{Exercise}{section}
+\counterwithin{Answer}{section}
+%\renewcommand{\ExerciseHeader}{\noindent\def\stackalignment{c}% code from https://tex.stackexchange.com/a/195118/101651
+    %\stackunder{{\textbf{\large\ExerciseName}}}{\textcolor{black}{\rule{40pt}{4pt}}}\medskip}
+
+
+
+%theorem code
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightyellow}{rgb}{1,1,0.6}
+\definecolor{reddish}{HTML}{A01A3A}
+%Theorems, propositions, Corollaries, Definitions
+
+
+%Wanna implement this, but not working: https://tex.stackexchange.com/questions/547979/problem-numbering-environment
+\tcbuselibrary{theorems}
+\newtcbtheorem[number within=section]{thm}{Theorem}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+\newtcbtheorem[number within=section]{lem}{Lemma}%
+{colback=blue!5,colframe=black!35!black,fonttitle=\bfseries}{lm}
+\newtcbtheorem[number within=section]{prop}{Proposition}%
+{colback=white!5,colframe=white!35!black,fonttitle=\bfseries}{pr}
+\newtcbtheorem[number within=section]{cor}{Corollary}%
+{colback=blue!5,colframe=blue!35!black,fonttitle=\bfseries}{co}
+\newtcbtheorem[number within=section]{axiom}{Axiom}%
+{colback=black!5,colframe=yellow!35!black,fonttitle=\bfseries}{ax}
+\newtcbtheorem[number within=section]{defn}{Definition}%
+{colback=red!5,colframe=red!35!black,fonttitle=\bfseries}{df}
+
+
+
+\declaretheoremstyle[
+spaceabove=6pt, spacebelow=6pt,
+headfont=\normalfont\bfseries,
+notefont=\mdseries, notebraces={(}{)},
+bodyfont=\normalfont,
+postheadspace=1em,
+numberwithin=section
+]{exstyle}
+
+\declaretheoremstyle[
+spaceabove=6pt, spacebelow=6pt,
+headfont=\normalfont\bfseries,
+notefont=\mdseries, notebraces={(}{)},
+bodyfont=\normalfont,
+postheadspace=1em,
+headpunct={},
+qed=$\blacktriangledown$,
+numbered=no
+]{solstyle}
+
+\declaretheoremstyle[
+spaceabove=6pt, spacebelow=6pt,
+headfont=\normalfont\bfseries,
+notefont=\mdseries, notebraces={(}{)},
+bodyfont=\normalfont,
+postheadspace=1em,
+headpunct={},
+numbered=no
+]{questyle}
+
+\declaretheorem[style=solstyle]{solution}
+\declaretheorem[style=questyle]{question}
+%\declaretheorem[style=solstyle]{remark} (got a ``Note'' environment at the bottom``)
+%\declaretheorem[style=solstyle]{intuition}
+
+
+%shortcuts for this file (newcommand and renewcommand)
+
+
+% Custom Commands
+\newcommand{\A}{\mathbb{A}}
+\newcommand{\F}{\mathbb{F}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\V}{\mathbb{V}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\C}{\mathbb{C}}
+\renewcommand{\H}{\mathbb{H}}
+
+\newcommand{\CA}{\mathcal{A}}
+\newcommand{\CB}{\mathcal{B}}
+\newcommand{\CC}{\mathcal{C}}
+\newcommand{\CD}{\mathcal{D}}
+\newcommand{\CF}{\mathcal{F}}
+\newcommand{\CG}{\mathcal{G}}
+\newcommand{\CH}{\mathcal{H}}
+\newcommand{\CI}{\mathcal{I}}
+\newcommand{\CL}{\mathcal{L}}
+\newcommand{\CN}{\mathcal{N}}
+\newcommand{\CO}{\mathcal{O}}
+\newcommand{\CP}{\mathbb{C}\mathrm{P}}
+\newcommand{\CQ}{\mathcal{Q}}
+\newcommand{\CR}{\mathcal{R}}
+\newcommand{\CK}{\mathcal{K}}
+\newcommand{\CS}{\mathcal{S}}
+\newcommand{\CT}{\mathcal{T}}
+\newcommand{\CV}{\mathcal{V}}
+\newcommand{\CZ}{\mathcal{Z}}
+\newcommand{\ff}{\mathscr{F}}
+\newcommand{\EF}{\EuScript{F}}
+\newcommand{\EL}{\EuScript{L}}
+\newcommand{\EO}{\EuScript{O}}
+\newcommand{\EC}{\EuScript{C}}
+\newcommand{\co}{\mathfrak{o}} %mathcal{o} looks like wreath product, so I changed it to mathfrak
+\newcommand{\fa}{\mathfrak{a}}
+\newcommand{\fb}{\mathfrak{b}}
+\newcommand{\fc}{\mathfrak{c}}
+\newcommand{\fd}{\mathfrak{d}}
+\newcommand{\fm}{\mathfrak{m}}
+\newcommand{\fn}{\mathfrak{n}}
+\newcommand{\fo}{\mathfrak{o}}
+\newcommand{\fp}{\mathfrak{p}}
+\newcommand{\fq}{\mathfrak{q}}
+\newcommand{\FA}{\mathfrak{A}}
+\newcommand{\FB}{\mathfrak{B}}
+\newcommand{\FP}{\mathfrak{P}}
+\newcommand{\FC}{\mathfrak{C}}
+\newcommand{\FD}{\mathfrak{D}}
+\newcommand{\FM}{\mathfrak{M}}
+\newcommand{\FN}{\mathfrak{N}}
+\newcommand{\FO}{\mathfrak{O}}
+
+\newcommand{\sse}{\subseteq}
+\newcommand{\nsse}{\not\subseteq}
+\newcommand{\ssne}{\subsetneq}
+\newcommand{\qn}{\quad\newline}
+\newcommand{\placeholder}{\_\_\_\_\_}
+\newcommand{\subg}{\leqslant}
+%\newcommand{\subgne}{\lneqslant}
+\newcommand{\supg}{\geqslant}
+\newcommand{\nsubg}{\trianglelefteq}
+\newcommand{\csubg}{\blacktriangleleft}
+\newcommand{\nsupg}{\trianglerighteq}
+\newcommand{\isosubg}{\lesssim}
+\renewcommand{\mid}{\big|}
+\renewcommand{\phi}{\varphi}
+
+\newcommand{\oln}{\overline}
+\renewcommand{\bf}[1]{\textbf{#1}}
+
+\newcommand{\ev}{\operatorname{ev}}
+\newcommand{\tr}{\operatorname{tr}}
+\newcommand{\nm}{\operatorname{Nm}}
+\newcommand{\op}{\operatorname{op}}
+\newcommand{\ad}{\operatorname{ad}}
+\newcommand{\im}{\operatorname{im}}
+\newcommand{\id}{\operatorname{id}}
+\newcommand{\ch}{\operatorname{ch}}
+\newcommand{\ab}{\operatorname{ab}}
+\newcommand{\SL}{\operatorname{SL}}
+\newcommand{\GL}{\operatorname{GL}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\vol}{\operatorname{vol}}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\Rep}{\operatorname{Rep}}
+\newcommand{\Aut}{\operatorname{Aut}}
+\newcommand{\Sym}{\operatorname{Sym}}
+\newcommand{\Mod}{\operatorname{Mod}}
+\newcommand{\Grp}{\operatorname{Grp}}
+\newcommand{\Hom}{\operatorname{Hom}}
+\newcommand{\Emb}{\operatorname{Emb}}
+\newcommand{\Ext}{\operatorname{Ext}}
+\newcommand{\End}{\operatorname{End}}
+\newcommand{\Inn}{\operatorname{Inn}}
+\newcommand{\Ind}{\operatorname{Ind}}
+\newcommand{\Out}{\operatorname{Out}}
+\newcommand{\Jac}{\operatorname{Jac}}
+\newcommand{\Nil}{\operatorname{Nil}}
+\newcommand{\Tor}{\operatorname{Tor}}
+\newcommand{\Ann}{\operatorname{Ann}}
+\newcommand{\Syl}{\operatorname{Syl}}
+\newcommand{\Res}{\operatorname{Res}}
+\newcommand{\lcm}{\operatorname{lcm}}
+\newcommand{\conj}{\operatorname{conj}}
+\newcommand{\disc}{\operatorname{disc}}
+\newcommand{\stab}{\operatorname{stab}}
+\newcommand{\kdim}{\operatorname{kdim}}
+\newcommand{\coker}{\operatorname{coker}}
+\newcommand{\Obj}{\operatorname{Obj}}
+\newcommand{\Mor}[1]{\operatorname{Mor}(\textbf{#1})}
+\newcommand{\Frac}{\operatorname{Frac}}
+\newcommand{\Frob}{\operatorname{Frob}}
+\newcommand{\Spec}{\operatorname{Spec}}
+\newcommand{\mSpec}{\operatorname{mSpec}}
+\newcommand{\Tens}[1]{#1\otimes \_\_}
+\newcommand{\Char}{\operatorname{char}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\Lim}{\varprojlim}
+\newcommand{\colim}{\varinjlim}
+\newcommand{\coLim}{\varinjlim}
+\newcommand{\Dlim}{\lim\limits_{\longrightarrow}}
+\newcommand{\coDlim}{\lim\limits_{\longleftarrow}}
+\newcommand{\fHom}[1]{\operatorname{Hom}(#1, \_\_)}
+\newcommand{\cofHom}[1]{\operatorname{Hom}(\_\_, #1)}
+\newcommand{\trdeg}{\operatorname{trdeg}}
+\newcommand{\acton}{\curvearrowright}
+\newcommand{\actson}{\curvearrowright}
+
+\renewcommand{\Re}{\operatorname{Re}}
+\renewcommand{\Im}{\operatorname{Im}}
+
+%for saturated ideals in the localization section
+\newcommand{\LIm}{{}^{\iota} }
+\newcommand{\LPre}{{}^{\pi} }
+
+% Arrows
+\newcommand{\rw}{\rightarrow}
+\newcommand{\rrw}{\rightrightarrows}
+\newcommand{\Rw}{\Rightarrow}
+\newcommand{\lw}{\leftarrow}
+\newcommand{\Lw}{\Leftarrow}
+\newcommand{\lrw}{\leftrightarrow}
+\newcommand{\LRw}{\Leftrightarrow}
+
+\newcommand{\dcup}{\sqcup}
+\newcommand{\Dcup}{\bigsqcup}
+\newcommand{\set}[2]{\left\{#1 \ \middle|\ #2\right\}}
+
+\newcommand\mapsfrom{\mathrel{\reflectbox{\ensuremath{\mapsto}}}}
+
+\newcommand{\tikzcircle}[2][red,fill=black]{\tikz[baseline=-0.5ex]\draw[#1,radius=#2] (0,0) circle ;}%
+
+\def\rddots{\mathstrut^{.^{.^{.}}}}
+
+\makeatletter
+\newcommand*\bigcdot{\mathpalette\bigcdot@{.5}}
+\newcommand*\bigcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
+\makeatother
+
+%% new delimiter
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+
+\setlength{\parindent}{0pt} % don't like indentation infront of paragraphs
+\setlength{\parskip}{1ex}   %so that there is still space between paragarphs
+%\declaretheorem[style=exstyle]{example}
+
+\tcbuselibrary{most}
+
+%Custom enviroments
+ \newenvironment{note}
+ {\begin{tcolorbox}[enhanced, sharp corners, colback=white , borderline={0.2pt}{0pt}{black}]
+   \begin{quote}\textbf{Note}:
+   }{
+   \end{quote}\end{tcolorbox}}
+
+ \newenvironment{intuition}
+ {\begin{quote}\textbf{Intuition}:
+   }{
+   \end{quote}}
+
+\newenvironment{titledBox}[1]
+ {\begin{tcolorbox}[enhanced, sharp corners, colback=white , borderline={0.2pt}{0pt}{black}]
+   \begin{quote}\textbf{#1}
+   }{
+   \end{quote}\end{tcolorbox}}
+
+\def\exampletext{Example} % If English
+\colorlet{colexam}{red!55!black} % Global example color
+
+
+\newtcbtheorem[auto counter, number within=chapter]{example}{Example}{% \newtcolorbox[use counter=testexample]{testexamplebox}{%
+% Example Frame Start
+empty,% Empty previously set parameters
+title={\exampletext \thetcbcounter #1},% use \thetcbcounter to access the testexample counter text
+% Attaching a box requires an overlay
+attach boxed title to top left,
+   % Ensures proper line breaking in longer titles
+   minipage boxed title,
+% (boxed title style requires an overlay)
+boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+coltitle=colexam,fonttitle=\bfseries,
+before=\par\medskip\noindent,parbox=false,boxsep=0pt,left=3mm,right=0mm,top=2pt,breakable,pad at break=0mm,
+   before upper=\csname @totalleftmargin\endcsname0pt, % Use instead of parbox=true. This ensures parskip is inherited by box.
+% Handles box when it exists on one page only
+overlay unbroken={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: first page
+overlay first={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: middle page
+overlay middle={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: last page
+overlay last={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); }%
+}{ex}
+
+
+
+\def\prooftext{Proof} % If English
+\NewDocumentEnvironment{Proof}{ O{} }
+{
+	\colorlet{colexam}{black!55!black} % Global example color
+	\newtcolorbox[number within=section]{testproofbox}{% \newtcolorbox[use counter=testexample]{testexamplebox}{%
+		% Example Frame Start
+		empty,% Empty previously set parameters
+		title={\emph{\prooftext} \thetcbcounter: #1},% use \thetcbcounter to access the testexample counter text
+		% Attaching a box requires an overlay
+		attach boxed title to top left,
+		   % Ensures proper line breaking in longer titles
+		   minipage boxed title,
+		% (boxed title style requires an overlay)
+		boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+		coltitle=colexam,fonttitle=\bfseries,
+		before=\par\medskip\noindent,parbox=false,boxsep=0pt,left=3mm,right=0mm,top=2pt,breakable,pad at break=0mm,
+		   before upper=\csname @totalleftmargin\endcsname0pt, % Use instead of parbox=true. This ensures parskip is inherited by box.
+		% Handles box when it exists on one page only
+		overlay unbroken={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: first page
+		overlay first={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: middle page
+		overlay middle={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: last page
+		overlay last={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },%
+		}
+	\begin{testproofbox}
+}
+{\end{testproofbox}\endlist}
+
+
+%for Dynkin diagrams
+\def\row#1/#2!{#1_{\IfStrEq{#2}{}{n}{#2}} & \dynkin{#1}{#2}\\}
+\newcommand{\tble}[1]{
+   \renewcommand*\do[1]{\row##1!}
+   \[
+      \begin{array}{ll}\docsvlist{#1}\end{array}
+   \]
+}
+
+
+
+\stackMath %to be able to stack text in math mode
+
+% For devnagari font for that one example
+\newcommand\dn{\catcode`\~=12
+           \fontspec[Script=Devanagari,Mapping=velthuis-sanskrit]{Nakula}}

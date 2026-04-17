@@ -1,0 +1,616 @@
+% Author parameterization: override with \renewcommand{\documentauthor}{Your Name} in your document
+\providecommand{\documentauthor}{Author Name}
+
+\documentclass{book}
+%\documentclass{book}
+%If you're going to print this, perhaps get ride of oneside so that \parts{} will have their own page!
+\title{
+	\begin{huge}
+		\bf{NOTE TITLE PLACEHOLDER}
+	\end{huge}
+	}
+\author{\documentauthor}
+
+%\date{} % If you want to specify a date
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                         packages                         ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage[answerdelayed]{exercise}
+\usepackage[font=itshape]{quoting}
+\usepackage[most]{tcolorbox}         % Makes nice boxes for thms, cor, prop, or anything else.
+\usepackage{amsmath, amssymb, amsthm} % Used to write better mathematical expressions (ex. \mathbb{R})
+\usepackage{array}                   % \begin{table}{>{\em}c c} -> 1st column italic (bfseries for bold)
+\usepackage{bbm}                     % for mathbbm{1}
+\usepackage{blindtext}
+\usepackage{commutative-diagrams}
+\usepackage{dsfont}
+\usepackage{dynkin-diagrams}         % for Dynkin diagrams
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{euscript}
+\usepackage{extarrows}               % Used to compile any UTF-8 Character (and supports Unicode)
+\usepackage{fancyhdr}
+\usepackage{float}                   % package with ``H'' for figures and tables, ex. Images, tables, etc
+\usepackage{graphicx}                % Let's you use images in LaTeX; ex the \includegraphics command.
+\usepackage{hhline}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{inputenc}                % Used to compile any UTF-8 Character (and supports Unicode)
+\usepackage{listings}                % Create nice colour code blocks (customized in preamble)
+\usepackage{longtable}               % create tables that extend past one page
+\usepackage{makeidx}
+\usepackage{mathrsfs}
+\usepackage{mathtools}
+% \usepackage{microtype}               % makes nice text. Fixes some under-/over- filled box problems.
+\usepackage{multicol}                % For multiple columns
+\usepackage{pgfplots}
+\usepackage{scalerel}
+\usepackage{setspace}                % More flexibility on spacing in document.
+\usepackage{stackengine}
+\usepackage{stackrel}                % for left-right arrows, staking symbol above and bellow
+\usepackage{thmtools}                % Customize theorem environment (in preamble).
+\usepackage{tikz-cd}                 % for commutative diagrams https://tex.stackexchange.com/questions/419221/how-to-do-the-pushout-with-universal-property
+\usepackage{tikz}                    % for commutative diagrams https://tex.stackexchange.com/questions/419221/how-to-do-the-pushout-with-universal-property
+\usepackage{titlesec}
+\usepackage{wasysym}                 % emoji's!
+\usepackage{wrapfig}                 % To wrap text around figure
+\usepackage{xcolor}                  % Colour text.
+
+% \usepackage{comment}
+
+% \usepackage{CJKutf8} % for some chinese
+
+% \usepackage{dutchcal} % for lower case mathcal
+% \pdfsuppresswarningpagegroup=1
+
+% ╔═════════════════════════════════════════════════════╗
+% ║           for figures via inkspace                  ║
+% ╚═════════════════════════════════════════════════════╝
+
+% to import figures via: https://github.com/gillescastel/inkscape-figures
+\usepackage{import}
+\usepackage{pdfpages}
+\usepackage{transparent}
+
+
+% This command is the ONLY command imported via the packages snippet, think of it as a tiny package written out
+\newcommand{\incfig}[2][1]{%
+    \def\svgwidth{#1\columnwidth}
+    \import{./figures/}{#2.pdf_tex}
+}
+
+% ╔═══════════════════════════════════════════════════════════╗
+% ║                 bibliography and citing                   ║
+% ╚═══════════════════════════════════════════════════════════╝
+
+\usepackage{csquotes}
+% \usepackage[backend=biber,citestyle=alphabetic,bibstyle=authortitle]{biblatex}
+\usepackage[backend=biber]{biblatex}
+
+\addbibresource{bibliography.bib}
+
+% ╔═══════════════════════════════════════════════════════════╗
+% ║                    colours (colors)                       ║
+% ╚═══════════════════════════════════════════════════════════╝
+
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightyellow}{rgb}{1,1,0.6}
+\definecolor{reddish}{HTML}{A01A3A}
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║               title/heading/footer format                ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\pagestyle{fancy}
+\setlength\headheight{20pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyfoot[C,CO]{\textcolor{gray}{\documentauthor}}
+\fancyfoot[R,RO]{\thepage}{}
+
+\titleformat
+{\chapter} % command
+[display] % shape
+{\bfseries\Huge\itshape} % format
+{\thechapter} % label
+{0.5ex} % sep
+{
+    \rule{\textwidth}{1pt}
+    \vspace{1ex}
+    \centering
+}
+[
+\vspace{-0.5ex}
+\rule{\textwidth}{0.3pt}
+]
+
+\setlength{\parindent}{0pt} % don't like indentation infront of paragraphs
+\setlength{\parskip}{1ex}   %so that there is still space between paragarphs
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                       Shortcuts                          ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+%\ExerciseLevelInToc
+
+% I like original mathcal better, but need lowercase.
+\DeclareFontFamily{OT1}{pzc}{}
+\DeclareFontShape{OT1}{pzc}{m}{it}{<-> s * [1.10] pzcmi7t}{}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+
+% mathbb
+\newcommand{\A}{{\mathbb{A}}}
+\newcommand{\C}{{\mathbb{C}}}
+\newcommand{\F}{{\mathbb{F}}}
+\newcommand{\N}{{\mathbb{N}}}
+\newcommand{\Q}{{\mathbb{Q}}}
+\newcommand{\R}{{\mathbb{R}}}
+\newcommand{\V}{{\mathbb{V}}}
+\newcommand{\Z}{{\mathbb{Z}}}
+\newcommand{\BI}{{\mathbb{I}}}
+\renewcommand{\H}{{\mathbb{H}}}
+\renewcommand{\P}{{\mathbb{P}}}
+
+
+% mathcal
+% \newcommand{\co}{{\mathfrak{o}}} %mathcal{o} looks like wreath product, so I changed it to mathfrak
+\newcommand{\co}{{\mathpzc{o}}}
+\newcommand{\CA}{{\mathcal{A}}}
+\newcommand{\CB}{{\mathcal{B}}}
+\newcommand{\CC}{{\mathcal{C}}}
+\newcommand{\CD}{{\mathcal{D}}}
+\newcommand{\CF}{{\mathcal{F}}}
+\newcommand{\CG}{{\mathcal{G}}}
+\newcommand{\CH}{{\mathcal{H}}}
+\newcommand{\CI}{{\mathcal{I}}}
+\newcommand{\CK}{{\mathcal{K}}}
+\newcommand{\CL}{{\mathcal{L}}}
+\newcommand{\CM}{{\mathcal{M}}}
+\newcommand{\CN}{{\mathcal{N}}}
+\newcommand{\CO}{{\mathcal{O}}}
+\newcommand{\CQ}{{\mathcal{Q}}}
+\newcommand{\CR}{{\mathcal{R}}}
+\newcommand{\CS}{{\mathcal{S}}}
+\newcommand{\CT}{{\mathcal{T}}}
+\newcommand{\CV}{{\mathcal{V}}}
+\newcommand{\CZ}{{\mathcal{Z}}}
+% EXCPETION:
+\newcommand{\CP}{{\mathcal{P}}}
+% \newcommand{\CP}{\mathbb{C}\mathrm{P}}
+\newcommand{\RP}{\mathbb{R}\mathrm{P}}
+
+
+%Euscript
+\newcommand{\EB}{\EuScript{B}}
+\newcommand{\EC}{{\EuScript{C}}}
+\newcommand{\EF}{{\EuScript{F}}}
+\newcommand{\EL}{{\EuScript{L}}}
+\newcommand{\EO}{{\EuScript{O}}}
+
+
+%mathfrak (lowercase)
+\newcommand{\fa}{{\mathfrak{a}}}
+\newcommand{\fb}{{\mathfrak{b}}}
+\newcommand{\fc}{{\mathfrak{c}}}
+\newcommand{\fd}{{\mathfrak{d}}}
+\newcommand{\fm}{{\mathfrak{m}}}
+\newcommand{\fn}{{\mathfrak{n}}}
+\newcommand{\fo}{{\mathfrak{o}}}
+\newcommand{\fp}{{\mathfrak{p}}}
+\newcommand{\fq}{{\mathfrak{q}}}
+
+
+%mathfrak (upper case)
+\newcommand{\FA}{{\mathfrak{A}}}
+\newcommand{\FB}{{\mathfrak{B}}}
+\newcommand{\FC}{{\mathfrak{C}}}
+\newcommand{\FD}{{\mathfrak{D}}}
+\newcommand{\FK}{{\mathfrak{K}}}
+\newcommand{\FM}{{\mathfrak{M}}}
+\newcommand{\FN}{{\mathfrak{N}}}
+\newcommand{\FO}{{\mathfrak{O}}}
+\newcommand{\FP}{{\mathfrak{P}}}
+
+
+%mathscr
+\newcommand{\ff}{{\mathscr{F}}}
+\newcommand{\SA}{\mathscr{A}}
+\newcommand{\SC}{\mathscr{C}}
+\newcommand{\SF}{\mathscr{F}}
+\newcommand{\SG}{\mathscr{G}}
+\newcommand{\SH}{\mathscr{H}}
+\newcommand{\SI}{\mathscr{I}}
+\newcommand{\SK}{\mathscr{K}}
+\newcommand{\SN}{\mathscr{N}}
+\newcommand{\SQ}{\mathscr{Q}}
+\newcommand{\SR}{\mathscr{R}}
+\newcommand{\SV}{\mathscr{V}}
+\newcommand{\SZ}{\mathscr{Z}}
+
+
+% operatorname -- 2 letters (lowercase and upper case)
+\newcommand{\ab}{{\operatorname{ab}}}
+\newcommand{\ad}{{\operatorname{ad}}}
+\newcommand{\ch}{{\operatorname{ch}}}
+\newcommand{\ev}{{\operatorname{ev}}}
+\newcommand{\id}{{\operatorname{id}}}
+\newcommand{\im}{{\operatorname{im}}}
+\newcommand{\nm}{{\operatorname{Nm}}}
+\newcommand{\op}{{\operatorname{op}}}
+\newcommand{\rk}{{\operatorname{rk}}}
+\newcommand{\sh}{{\operatorname{sh}}}
+\newcommand{\tr}{{\operatorname{tr}}}
+
+\newcommand{\Ab}{{\operatorname{Ab}}}
+\newcommand{\Br}{{\operatorname{Br}}}
+\newcommand{\Ch}{{\operatorname{Ch}}}
+\newcommand{\Cl}{{\operatorname{Cl}}}
+\newcommand{\GL}{{\operatorname{GL}}}
+\newcommand{\Nm}{{\operatorname{Nm}}}
+\newcommand{\SL}{{\operatorname{SL}}}
+
+\renewcommand{\Re}{{\operatorname{Re}}}
+\renewcommand{\Im}{{\operatorname{Im}}}
+
+
+%categories
+\newcommand{\Grp}{{\textbf{Grp}}}
+\newcommand{\Fld}{{\textbf{Fld}}}
+\newcommand{\Sh}{{\textbf{Sh}}}
+\newcommand{\Set}{{\textbf{Set}}}
+\newcommand{\Mod}{{\textbf{Mod}}}
+\newcommand{\PSh}{{\textbf{PSh}}}
+\newcommand{\Sch}{{\textbf{Sch}}}
+\newcommand{\Top}{{\textbf{Top}}}
+\newcommand{\RgSp}{{\textbf{RgSp}}}
+\newcommand{\Ring}{{\textbf{Ring}}}
+
+
+%operatorname -- 3+ letters (lowercase and upper case)
+\newcommand{\rad}{{\operatorname{rad}}}
+\newcommand{\sep}{{\operatorname{sep}}}
+\newcommand{\res}{{\operatorname{res}}}
+\newcommand{\sgn}{{\operatorname{sgn}}}
+\newcommand{\pre}{{\operatorname{pre}}}
+\newcommand{\ord}{{\operatorname{ord}}}
+\newcommand{\vol}{{\operatorname{vol}}}
+\newcommand{\lcm}{{\operatorname{lcm}}}
+
+\newcommand{\conj}{{\operatorname{conj}}}
+\newcommand{\disc}{{\operatorname{disc}}}
+\newcommand{\stab}{{\operatorname{stab}}}
+\newcommand{\kdim}{{\operatorname{kdim}}}
+\newcommand{\diag}{{\operatorname{diag}}}
+
+\newcommand{\trdeg}{\operatorname{trdeg}}
+\newcommand{\coker}{{\operatorname{coker}}}
+\newcommand{\codim}{{\operatorname{codim}}}
+
+\newcommand{\Ann}{{\operatorname{Ann}}}
+\newcommand{\Aut}{{\operatorname{Aut}}}
+\newcommand{\Der}{{\operatorname{Der}}}
+\newcommand{\Div}{{\operatorname{Div}}}
+\newcommand{\Emb}{{\operatorname{Emb}}}
+\newcommand{\End}{{\operatorname{End}}}
+\newcommand{\Ext}{{\operatorname{Ext}}}
+\newcommand{\Gal}{{\operatorname{Gal}}}
+\newcommand{\Hom}{{\operatorname{Hom}}}
+\newcommand{\Ind}{{\operatorname{Ind}}}
+\newcommand{\Inn}{{\operatorname{Inn}}}
+\newcommand{\Int}{{\operatorname{int}}}
+\newcommand{\Irr}{{\operatorname{Irr}}}
+\newcommand{\Jac}{{\operatorname{Jac}}}
+\newcommand{\Mor}[1]{\operatorname{Mor}(\textbf{#1})}
+\newcommand{\Nil}{{\operatorname{Nil}}}
+\newcommand{\Obj}{{\operatorname{Obj}}}
+\newcommand{\Out}{{\operatorname{Out}}}
+\newcommand{\Pic}{{\operatorname{Pic}\,}}
+\newcommand{\Rep}{{\operatorname{Rep}}}
+\newcommand{\Res}{{\operatorname{Res}}}
+\newcommand{\Spl}{{\operatorname{Spl}}}
+\newcommand{\Syl}{{\operatorname{Syl}}}
+\newcommand{\Sym}{{\operatorname{Sym}}}
+\newcommand{\Tor}{{\operatorname{Tor}}}
+
+\newcommand{\Char}{{\operatorname{char}}}
+\newcommand{\Frac}{{\operatorname{Frac}}}
+\newcommand{\Frob}{{\operatorname{Frob}}}
+\newcommand{\Proj}{{\operatorname{Proj}\,}}
+\newcommand{\RMod}{{}_R\operatorname{Mod}}
+\newcommand{\SExt}{{\mathcal{E}\emph{xt}}}
+\newcommand{\SHom}{{\emph{Hom}}}
+\newcommand{\Span}{{\operatorname{span}}}
+\newcommand{\Spec}{{\operatorname{Spec}\,}}
+\newcommand{\Supp}{{\operatorname{Supp}}}
+\newcommand{\Tens}[1]{#1\otimes --}
+\newcommand{\fHom}[1]{\operatorname{Hom}(#1, --)}
+
+\newcommand{\mSpec}{{\operatorname{mSpec}}}
+
+
+% connectors
+% \renewcommand{\mid}{\big|}
+\newcommand{\sse}{\subseteq}
+\newcommand{\subg}{\leqslant}
+\newcommand{\supg}{\geqslant}
+\newcommand{\ssne}{\subsetneq}
+\newcommand{\isosubg}{\lesssim}
+\newcommand{\nsse}{\not\subseteq}
+\newcommand{\nsubg}{\trianglelefteq}
+\newcommand{\nsupg}{\trianglerighteq}
+\newcommand{\csubg}{\blacktriangleleft}
+\renewcommand{\mid}{\big|}
+
+
+% Arrows
+\newcommand{\rw}{\rightarrow}
+\newcommand{\Rw}{\Rightarrow}
+\newcommand{\lw}{\leftarrow}
+\newcommand{\Lw}{\Leftarrow}
+\newcommand{\lrw}{\leftrightarrow}
+\newcommand{\LRw}{\Leftrightarrow}
+\newcommand{\acton}{\curvearrowright}
+\newcommand{\actson}{\curvearrowright}
+\newcommand\mapsfrom{\mathrel{\reflectbox{\ensuremath{\mapsto}}}}
+
+% arrows for commutative diagram: create four new angled double-struck arrows
+\newcommand\myrot[1]{\mathrel{\rotatebox[origin=c]{#1}{$\Rightarrow$}}}
+\newcommand\NEarrow{\myrot{45}}
+\newcommand\NWarrow{\myrot{135}}
+\newcommand\SWarrow{\myrot{-135}}
+\newcommand\SEarrow{\myrot{-45}}
+
+
+%shorthands
+\newcommand{\oln}[1]{{\overline{#1}}}
+\renewcommand{\bf}[1]{\textbf{#1}}
+\newcommand{\qn}{\quad\newline}
+
+
+% limits
+\newcommand{\Lim}{{\varprojlim}}
+\newcommand{\coLim}{{\varinjlim}}
+\newcommand{\Dlim}{\lim\limits_{\longrightarrow}}
+\newcommand{\coDlim}{\lim\limits_{\longleftarrow}}
+\newcommand{\cofHom}[1]{\operatorname{Hom}(--, #1)}
+
+
+%for saturated ideals in the localization section (I don't like these, I think I'll delete)
+\newcommand{\LIm}{{}^e }
+\newcommand{\LPre}{{}^c }
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                    Custom Commands                       ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+% swap varphi and phi
+\let\temp\phi
+\let\phi\varphi
+\let\varphi\temp
+
+\newcommand{\placeholder}{\_\_\_\_\_}
+
+\newcommand{\set}[2]{\left\{#1 \ \middle|\ #2\right\}}
+
+%mod should not have the crazy amount of space to its right!
+\renewcommand{\mod}{\,\operatorname{mod}\,}
+
+% dcups
+\newcommand{\dcup}{\sqcup}
+\newcommand{\Dcup}{\coprod}
+% \newcommand{\Dcup}{\bigsqcup}
+
+\newcommand{\nbot}{\mathrel{\rlap{$\bot$}\mkern2mu/}}
+
+%a nice large circle
+\newcommand{\tikzcircle}[2][red,fill=black]{\tikz[baseline=-0.5ex]\draw[#1,radius=#2] (0,0) circle ;}%
+
+\makeatletter
+\newcommand*\bigcdot{\mathpalette\bigcdot@{.5}}
+\newcommand*\bigcdot@[2]{\mathbin{\vcenter{\hbox{\scalebox{#2}{$\m@th#1\bullet$}}}}}
+\makeatother
+
+%somehow not a default command
+\def\rddots{\mathstrut^{.^{.^{.}}}}
+
+%% new delimiter
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                     environments                         ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+
+%remember the option: breakable
+
+% create tcolor boxes
+\newtcbtheorem[number within=section]{thm}{Theorem}%
+{
+colback=green!5,
+colframe=green!35!black,
+fonttitle=\bfseries,
+label type=theorem
+}{th}
+
+\newtcbtheorem[number within=section, use counter from=thm]{lem}{Lemma}%
+{
+colback=blue!5,
+colframe=black!35!black,
+fonttitle=\bfseries,
+label type=lemma
+}{lm}
+\newtcbtheorem[number within=section, use counter from=thm]{prop}{Proposition}%
+{
+colback=white!5,
+colframe=white!35!black,
+fonttitle=\bfseries,
+label type=proposition
+}{pr}
+\newtcbtheorem[number within=section, use counter from=thm]{cor}{Corollary}%
+{colback=blue!5,
+colframe=blue!35!black,
+fonttitle=\bfseries,
+label type=corollary
+}{co}
+\newtcbtheorem[number within=section, use counter from=thm]{axiom}{Axiom}%
+{colback=black!5,
+colframe=yellow!35!black,
+fonttitle=\bfseries,
+label type=axiom
+}{ax}
+\newtcbtheorem[number within=section, use counter from=thm]{defn}{Definition}%
+{colback=red!5,
+colframe=red!35!black,
+fonttitle=\bfseries,
+label type=definition
+}{df}
+
+
+% for <s-cr> to create \item[$\LRw$] instead of \item
+\newenvironment{equivEnumerate}
+ {\begin{enumerate}
+	}{
+\end{enumerate}}
+
+%insure the exercises are properly numbered
+\counterwithin{Exercise}{section}
+\counterwithin{Answer}{section}
+
+
+%Custom enviroments
+ \newenvironment{note}
+ {\begin{tcolorbox}[enhanced, sharp corners, colback=white , borderline={0.2pt}{0pt}{black}]
+   \begin{quote}\textbf{Note}:
+   }{
+   \end{quote}\end{tcolorbox}}
+
+ \newenvironment{intuition}
+ {\begin{quote}\textbf{Intuition}:
+   }{
+   \end{quote}}
+
+\newtcbtheorem[number within=section, use counter from=thm]{titledBox}{}{%
+  enhanced,
+  sharp corners,
+  colback=white,
+  colframe=black,
+  borderline={0.2pt}{0pt}{black},
+  left=2mm,
+  right=2mm,
+  top=2mm,
+  bottom=2mm,
+  title style={opacity=1},
+  attach title to upper,
+  before upper={\textbf{\tcbtitletext}\quad},
+  coltitle=black,
+  fonttitle=\bfseries,
+  separator sign={\quad}
+}{box}
+
+
+%better example and proof environments
+\def\exampletext{Example} % If English
+\colorlet{colexam}{red!55!black} % Global example color
+
+
+\newtcbtheorem[number within=section, use counter from=thm]{example}{Example}{% \newtcolorbox[use counter=testexample]{testexamplebox}{%
+% Example Frame Start
+empty,% Empty previously set parameters
+title={\exampletext \thetcbcounter #1},% use \thetcbcounter to access the testexample counter text
+% Attaching a box requires an overlay
+attach boxed title to top left,
+   % Ensures proper line breaking in longer titles
+   minipage boxed title,
+% (boxed title style requires an overlay)
+boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+coltitle=colexam,fonttitle=\bfseries,
+before=\par\medskip\noindent,parbox=false,boxsep=0pt,left=3mm,right=0mm,top=2pt,breakable,pad at break=0mm,
+   before upper=\csname @totalleftmargin\endcsname0pt, % Use instead of parbox=true. This ensures parskip is inherited by box.
+% Handles box when it exists on one page only
+overlay unbroken={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: first page
+overlay first={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: middle page
+overlay middle={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: last page
+overlay last={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); }%
+}{ex}
+
+
+
+\newtcolorbox{ProofTcb}[1][]{%
+    empty,
+    title={\emph{Proof}: #1},
+    attach boxed title to top left,
+    minipage boxed title,
+    boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+    coltitle=black!55!black,
+    fonttitle=\bfseries,
+    before=\par\medskip\noindent,
+    parbox=false,
+    boxsep=0pt,
+    left=3mm,
+    right=0mm,
+    top=2pt,
+    breakable,
+    pad at break=0mm,
+    before upper=\csname @totalleftmargin\endcsname0pt,
+    width=\dimexpr\textwidth-3mm\relax,
+    overlay unbroken={\draw[black!55!black,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+    overlay first={\draw[black!55!black,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+    overlay middle={\draw[black!55!black,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+    overlay last={\draw[black!55!black,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+    #1
+}
+
+\newenvironment{Proof}[1][]
+  {\begin{ProofTcb}[#1]}
+  {\end{ProofTcb}}
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                    for Dynkin diagrams                   ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\def\row#1/#2!{#1_{\IfStrEq{#2}{}{n}{#2}} & \dynkin{#1}{#2}\\}
+\newcommand{\tble}[1]{
+   \renewcommand*\do[1]{\row##1!}
+   \[
+      \begin{array}{ll}\docsvlist{#1}\end{array}
+   \]
+}
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                         links                            ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\definecolor{LinkColour}{HTML}{A64A3B} % favourite
+% \definecolor{LinkColour}{HTML}{8C3D32} % 2nd place
+\hypersetup{
+  colorlinks,
+  citecolor=black,
+  filecolor=magenta,
+  linkcolor=LinkColour,
+  urlcolor=blue,
+}
+
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                          misc                            ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\stackMath %to be able to stack text in math mode
+\pgfplotsset{compat=1.18}
+\makeindex
+
+%import options: all, bibliography, book-formatting, booksSetting, customEnvironments, dynkin, hw-formatting, language-setup, newcommands, packages, preamble, proofs, settings, tcolorbox, test.svg,
+\begin{document}

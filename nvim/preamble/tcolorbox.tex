@@ -1,0 +1,114 @@
+
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                        tcolorbox                         ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\tcbuselibrary{most}
+
+%colors
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+\definecolor{lightyellow}{rgb}{1,1,0.6}
+\definecolor{reddish}{HTML}{A01A3A}
+
+%Wanna implement this, but not working: https://tex.stackexchange.com/questions/547979/problem-numbering-environment
+
+% create tcolor boxes
+\tcbuselibrary{theorems}
+\newtcbtheorem[number within=section]{thm}{Theorem}%
+{colback=green!5,colframe=green!35!black,fonttitle=\bfseries}{th}
+\newtcbtheorem[number within=section]{lem}{Lemma}%
+{colback=blue!5,colframe=black!35!black,fonttitle=\bfseries}{lm}
+\newtcbtheorem[number within=section]{prop}{Proposition}%
+{colback=white!5,colframe=white!35!black,fonttitle=\bfseries}{pr}
+\newtcbtheorem[number within=section]{cor}{Corollary}%
+{colback=blue!5,colframe=blue!35!black,fonttitle=\bfseries}{co}
+\newtcbtheorem[number within=section]{axiom}{Axiom}%
+{colback=black!5,colframe=yellow!35!black,fonttitle=\bfseries}{ax}
+\newtcbtheorem[number within=section]{defn}{Definition}%
+{colback=red!5,colframe=red!35!black,fonttitle=\bfseries}{df}
+
+
+%insure the exercises are properly numbered
+\counterwithin{Exercise}{section}
+\counterwithin{Answer}{section}
+
+
+%Custom enviroments
+ \newenvironment{note}
+ {\begin{tcolorbox}[enhanced, sharp corners, colback=white , borderline={0.2pt}{0pt}{black}]
+   \begin{quote}\textbf{Note}:
+   }{
+   \end{quote}\end{tcolorbox}}
+
+ \newenvironment{intuition}
+ {\begin{quote}\textbf{Intuition}:
+   }{
+   \end{quote}}
+
+\newenvironment{titledBox}[1]
+ {\begin{tcolorbox}[enhanced, sharp corners, colback=white , borderline={0.2pt}{0pt}{black}]
+   \begin{quote}\textbf{#1}
+   }{
+   \end{quote}\end{tcolorbox}}
+
+\def\exampletext{Example} % If English
+\colorlet{colexam}{red!55!black} % Global example color
+
+
+\newtcbtheorem[auto counter, number within=chapter]{example}{Example}{% \newtcolorbox[use counter=testexample]{testexamplebox}{%
+% Example Frame Start
+empty,% Empty previously set parameters
+title={\exampletext \thetcbcounter #1},% use \thetcbcounter to access the testexample counter text
+% Attaching a box requires an overlay
+attach boxed title to top left,
+   % Ensures proper line breaking in longer titles
+   minipage boxed title,
+% (boxed title style requires an overlay)
+boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+coltitle=colexam,fonttitle=\bfseries,
+before=\par\medskip\noindent,parbox=false,boxsep=0pt,left=3mm,right=0mm,top=2pt,breakable,pad at break=0mm,
+   before upper=\csname @totalleftmargin\endcsname0pt, % Use instead of parbox=true. This ensures parskip is inherited by box.
+% Handles box when it exists on one page only
+overlay unbroken={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: first page
+overlay first={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: middle page
+overlay middle={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+% Handles multipage box: last page
+overlay last={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); }%
+}{ex}
+
+
+
+\def\prooftext{Proof} % If English
+\NewDocumentEnvironment{Proof}{ O{} }
+{
+	\colorlet{colexam}{black!55!black} % Global example color
+	\newtcolorbox[number within=section]{testproofbox}{% \newtcolorbox[use counter=testexample]{testexamplebox}{%
+		% Example Frame Start
+		empty,% Empty previously set parameters
+		title={\emph{\prooftext} \thetcbcounter: #1},% use \thetcbcounter to access the testexample counter text
+		% Attaching a box requires an overlay
+		attach boxed title to top left,
+		   % Ensures proper line breaking in longer titles
+		   minipage boxed title,
+		% (boxed title style requires an overlay)
+		boxed title style={empty,size=minimal,toprule=0pt,top=4pt,left=3mm,overlay={}},
+		coltitle=colexam,fonttitle=\bfseries,
+		before=\par\medskip\noindent,parbox=false,boxsep=0pt,left=3mm,right=0mm,top=2pt,breakable,pad at break=0mm,
+		   before upper=\csname @totalleftmargin\endcsname0pt, % Use instead of parbox=true. This ensures parskip is inherited by box.
+		% Handles box when it exists on one page only
+		overlay unbroken={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: first page
+		overlay first={\draw[colexam,line width=.5pt] ([xshift=-0pt]title.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: middle page
+		overlay middle={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },
+		% Handles multipage box: last page
+		overlay last={\draw[colexam,line width=.5pt] ([xshift=-0pt]frame.north west) -- ([xshift=-0pt]frame.south west); },%
+		}
+	\begin{testproofbox}
+}
+{\end{testproofbox}\endlist}

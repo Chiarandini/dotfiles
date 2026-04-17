@@ -1,0 +1,26 @@
+
+% Author parameterization: override with \renewcommand{\documentauthor}{Your Name} in your document
+\providecommand{\documentauthor}{Author Name}
+
+%  ╔══════════════════════════════════════════════════════════╗
+%  ║                       book format                        ║
+%  ╚══════════════════════════════════════════════════════════╝
+
+\pagestyle{fancy}
+\setlength\headheight{20pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyfoot[C,CO]{\textcolor{gray}{\documentauthor}}
+\fancyfoot[R,RO]{\thepage}{}
+
+%chapter header format
+\titleformat{\chapter}[display]{\bfseries\Huge\itshape}{\thechapter}{0.5ex}
+{
+    \rule{\textwidth}{1pt}
+    \vspace{1ex}
+    \centering
+}
+[
+\vspace{-0.5ex}
+\rule{\textwidth}{0.3pt}
+]

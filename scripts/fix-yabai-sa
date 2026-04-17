@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# fix-yabai-sa — Fix yabai scripting addition after updates
+#
+# The yabai scripting addition requires a sudoers entry with the SHA-256 hash
+# of the yabai binary. When yabai is updated (e.g. brew upgrade), the hash
+# changes and the SA fails to load. This script updates the sudoers entry
+# and reloads the SA.
+
+YABAI_BIN="$(which yabai 2>/dev/null || echo "/opt/homebrew/bin/yabai")"
+SUDOERS_FILE="/private/etc/sudoers.d/yabai"
+USER="$(whoami)"
+
+if [[ ! -x "$YABAI_BIN" ]]; then
+    echo "ERROR: yabai not found at $YABAI_BIN"
+    exit 1
+fi
+
+echo "==> yabai binary: $YABAI_BIN"
+echo "==> yabai version: $("$YABAI_BIN" --version)"
+
+# Step 1: Compute the current hash
+CURRENT_HASH="$(shasum -a 256 "$YABAI_BIN" | awk '{print $1}')"
+echo "==> Current binary hash: $CURRENT_HASH"
+
+# Step 2: Check existing sudoers entry
+if sudo test -f "$SUDOERS_FILE"; then
+    EXISTING="$(sudo cat "$SUDOERS_FILE")"
+    echo "==> Existing sudoers entry:"
+    echo "    $EXISTING"
+
+    if echo "$EXISTING" | grep -q "$CURRENT_HASH"; then
+        echo "==> Sudoers hash already matches. Skipping sudoers update."
+    else
+        echo "==> Hash mismatch — updating sudoers entry..."
+        NEW_ENTRY="$USER ALL=(root) NOPASSWD: sha256:$CURRENT_HASH $YABAI_BIN --load-sa"
+        echo "$NEW_ENTRY" | sudo tee "$SUDOERS_FILE" > /dev/null
+        echo "==> Updated: $NEW_ENTRY"
+    fi
+else
+    echo "==> No sudoers file found — creating one..."
+    NEW_ENTRY="$USER ALL=(root) NOPASSWD: sha256:$CURRENT_HASH $YABAI_BIN --load-sa"
+    echo "$NEW_ENTRY" | sudo tee "$SUDOERS_FILE" > /dev/null
+    echo "==> Created: $NEW_ENTRY"
+fi
+
+# Step 3: Validate sudoers syntax
+if ! sudo visudo -cf "$SUDOERS_FILE" 2>/dev/null; then
+    echo "ERROR: sudoers file has syntax errors! Removing to prevent lockout."
+    sudo rm "$SUDOERS_FILE"
+    exit 1
+fi
+echo "==> Sudoers syntax OK"
+
+# Step 4: Load the scripting addition
+echo "==> Loading scripting addition..."
+if sudo "$YABAI_BIN" --load-sa 2>&1; then
+    echo "==> Scripting addition loaded successfully!"
+else
+    echo "==> WARNING: --load-sa returned an error (this can happen if SA is already loaded)"
+    echo "    Attempting to verify by restarting yabai..."
+fi
+
+# Step 5: Restart yabai to pick up the SA
+echo "==> Restarting yabai..."
+yabai --restart-service 2>/dev/null || brew services restart yabai 2>/dev/null || true
+
+echo ""
+echo "Done! yabai scripting addition should now be working."
+echo "If you still have issues, try: yabai --stop-service && yabai --start-service"

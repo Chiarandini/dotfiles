@@ -1,0 +1,48 @@
+[user]
+	email = zak.katz123@gmail.com
+	name = Chiarandini
+[init]
+	defaultBranch = main
+[core]
+	excludesfile = ~/.gitignore_global
+[difftool "sourcetree"]
+	cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+	path =
+[mergetool "sourcetree"]
+	cmd = /Applications/Sourcetree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+	trustExitCode = true
+[alias]
+	# undo-style (pre-existing)
+	unadd    = reset HEAD --
+	uncommit = reset --soft HEAD~1
+	unstash  = stash pop
+
+	# status & navigation
+	st = status -sb
+	co = checkout
+	sw = switch
+	br = branch
+
+	# inspection
+	d  = diff
+	dc = diff --cached
+	lg = log --oneline --graph --decorate --all
+	ll = log --oneline -20
+
+	# commit
+	cm = commit -m
+	ca = commit --amend --no-edit
+	cae = commit --amend
+
+	# sync
+	p  = push
+	pf = push --force-with-lease
+	pl = pull
+	rb = rebase
+	rbc = rebase --continue
+	rba = rebase --abort
+
+	# stash
+	ss = stash save
+	sp = stash pop
+	sl = stash list

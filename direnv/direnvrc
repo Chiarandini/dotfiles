@@ -1,0 +1,9 @@
+# ~/.config/direnv/direnvrc
+# Extra stdlib functions for direnv. Loaded before every .envrc.
+# See: https://direnv.net/man/direnv.toml.1.html#direnvrc
+
+# use_mise: pulls in runtime versions defined in the project's .mise.toml.
+# Called from .envrc files via `use mise`.
+use_mise() {
+    eval "$(mise env -s bash)"
+}

@@ -1,0 +1,2 @@
+allow_remote_control yes
+map ctrl+shift+g none

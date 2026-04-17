@@ -1,0 +1,8 @@
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Qkeymap description mode\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q\\| create tmp vsplit n\n+ tab edit n\n_ horizontal split n\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q\\| create tmp vsplit n\n+ tab edit n\n_ horizontal split n\nJ keep cursor same position j n\nK keep cursor same position k n\n; remaps to : n\nU remaps to  n\n remaps to U n\\E$"}
+{"rule":"CONSECUTIVE_SPACES","sentence":"^\\Q\\| create tmp vsplit n\n+ tab edit n\n_ horizontal split n\nJ keep cursor same position j n\nK keep cursor same position k n\n; remaps to : n\nU remaps to  n\n remaps to U n\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\Q\\| create tmp vsplit n\n+ tab edit n\n_ horizontal split n\nJ keep cursor same position j n\nK keep cursor same position k n\n; remaps to : n\nU remaps to \\E(?:Dummy|Ina|Jimmy-)[0-9]+\\Q n\n remaps to U n\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QKeymap description mode\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QThis is reserved for extra actions in certain filetypes (ex. tex or norg)\\E$"}
+{"rule":"MORFOLOGIK_RULE_EN_US","sentence":"^\\QDotfiles\\E$"}

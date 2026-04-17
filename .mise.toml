@@ -1,0 +1,18 @@
+[tools]
+# The format is "plugin = version"
+# "latest" will grab the newest stable release.
+# You can also lock these to specific versions, e.g., "node = 20"
+
+node = "latest"
+python = ["3.11", "3.10"] # Installs both, 3.11 will be the primary global default
+ruby = "latest"
+go = "latest"
+java = "latest"
+rust = "latest"
+julia = "latest"
+kotlin = "latest"
+php = "latest"
+
+[settings]
+# Recommended: Tells mise to strictly use its own plugins or asdf plugins
+experimental = false

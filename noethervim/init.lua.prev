@@ -1,0 +1,135 @@
+-- NoetherVim user config template.
+-- Copy this file to ~/.config/nvim/init.lua and edit to taste.
+--
+-- Quick start (see README for full instructions):
+--
+--   mkdir -p ~/.config/nvim
+--   cp /path/to/nvim/init.lua.example ~/.config/nvim/init.lua
+--
+-- To update the distro later:
+--   :Lazy update   (or :Lazy sync)
+-- Your config at ~/.config/nvim is never touched by updates.
+
+-- ── 1. Leaders — must come before lazy.nvim loads ──────────────────────────
+-- Plugins register keymaps at spec-load time using these globals.
+
+vim.g.mapleader = "\\"         -- <Leader>         — global actions
+vim.g.maplocalleader = ","     -- <LocalLeader>    — filetype actions
+vim.g.searchleader = "<Space>" -- "<searchLeader>" - navigation actions.
+vim.g.noethervim_dev = "~/programming/NoetherVim"
+
+-- ── 2. Bootstrap lazy.nvim and NoetherVim ─────────────────────────────────
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.uv.fs_stat(lazypath) then
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"https://github.com/folke/lazy.nvim.git",
+		"--branch=stable",
+		lazypath,
+	})
+end
+vim.opt.rtp:prepend(lazypath)
+
+-- Dev: use local working copy directly instead of cloning from GitHub.
+-- Switch the rtp line + spec entry to "Chiarandini/tmpRepository" once you want
+-- to test the full end-user install flow.
+vim.opt.rtp:prepend(vim.fn.expand("~/programming/NoetherVim"))
+
+-- ── 3. Start NoetherVim ────────────────────────────────────────────────────
+
+require("lazy").setup({
+
+	spec = {
+
+		-- ── Distro core ──────────────────────────────────────────────────
+		-- Managed by lazy (for :Lazy update). The rtp:prepend above ensures
+		-- noethervim.plugins resolves correctly on first launch.
+		{
+			dir = vim.fn.expand("~/programming/NoetherVim"),
+			name = "NoetherVim",
+			import = "noethervim.plugins",
+			opts = {
+				colorscheme = "gruvbox",       -- default colorscheme
+				-- statusline  = {                -- statusline overrides
+				--   colors     = {},
+				--   extra_right = {},
+				-- },
+			},
+			config = function(_, opts)
+				require("noethervim").setup(opts)
+			end,
+		},
+
+		-- ── Bundles (opt-in) ─────────────────────────────────────────────
+		-- Uncomment the bundles you want. Full list: lua/noethervim/bundles/
+		-- { import = "noethervim.bundles.rust" },        -- rustaceanvim
+		-- { import = "noethervim.bundles.go" },          -- go.nvim
+		-- { import = "noethervim.bundles.java" },        -- nvim-jdtls
+		{ import = "noethervim.bundles.typst" },
+		-- { import = "noethervim.bundles.python" },      -- venv-selector
+		-- { import = "noethervim.bundles.database" },    -- vim-dadbod + UI + SQL completion
+		-- { import = "noethervim.bundles.http" },        -- kulala.nvim HTTP client
+		{ import = "noethervim.bundles.latex" }, -- VimTeX + snippets/textobjects
+		{ import = "noethervim.bundles.latex-zotero" }, -- zotero plugin
+		{ import = "noethervim.bundles.debug" },       -- nvim-dap + UI (Python, Lua, JS/TS, Go)
+		{ import = "noethervim.bundles.test" },        -- neotest test runner
+		-- { import = "noethervim.bundles.repl" },        -- iron.nvim REPL
+		{ import = "noethervim.bundles.projects" },    -- project switcher (snacks.picker)
+		{ import = "noethervim.bundles.task-runner" }, -- overseer + compiler.nvim
+		{ import = "noethervim.bundles.git" },         -- Fugit2, diffview, git-conflict
+		-- { import = "noethervim.bundles.ai" },          -- CodeCompanion (needs ANTHROPIC_API_KEY)
+		-- { import = "noethervim.bundles.harpoon" },     -- fast per-project file marks
+		-- { import = "noethervim.bundles.neoclip" },     -- clipboard history via Telescope
+		{ import = "noethervim.bundles.better-term" }, -- named terminal windows
+		-- { import = "noethervim.bundles.translation" }, -- in-editor translation
+		-- { import = "noethervim.bundles.neorg" },       -- .norg wiki / note-taking
+		{ import = "noethervim.bundles.obsidian" },    -- Obsidian vault integration
+		-- { import = "noethervim.bundles.flash" },       -- enhanced f/t and / motions
+		-- { import = "noethervim.bundles.seek" },        -- enhanced search/replace (testing)
+		-- { import = "noethervim.bundles.hardtime" },    -- motion habit trainer
+		-- { import = "noethervim.bundles.minimap" },     -- sidebar minimap
+		-- { import = "noethervim.bundles.refactoring" }, -- extract function/variable/block
+		-- { import = "noethervim.bundles.web-dev" },     -- JS/TS template string conversion
+		-- { import = "noethervim.bundles.colorscheme" },
+		-- { import = "noethervim.bundles.tmux" },        -- tmux window naming
+		{ import = "noethervim.bundles.dev-tools" },   -- StartupTime, Luapad
+		{ import = "noethervim.bundles.training" },    -- vim-be-good, speedtyper, typr
+		{ import = "noethervim.bundles.presentation" },-- showkeys for screensharing
+		{ import = "noethervim.bundles.helpview" },    -- rendered :help pages
+		{ import = "noethervim.bundles.editing-extras" }, -- argmark + comment boxes
+		-- { import = "noethervim.bundles.thanks" },      -- (moved to user plugins)
+		-- { import = "noethervim.bundles.remote-dev" },  -- distant.nvim SSH editing
+
+		-- ── Your personal plugins ────────────────────────────────────────
+		-- Drop .lua files in ~/.config/noethervim/lua/user/plugins/.
+		-- They are auto-imported here.
+		{ import = "user.plugins" },
+	},
+	dev = {
+		path = "~/programming/custom_plugins/",
+	},
+
+	install = { colorscheme = { "gruvbox", "habamax" } },
+	checker = { enabled = true },
+
+	performance = {
+		rtp = {
+			-- Keep the user config dir on the rtp after lazy's reset,
+			-- so that user.plugins and user.configs are importable.
+			paths = { vim.fn.stdpath("config") },
+			disabled_plugins = {
+				"gzip",
+				"matchit",
+				"matchparen",
+				"netrwPlugin",
+				"tarPlugin",
+				"tohtml",
+				"tutor",
+				"zipPlugin",
+			},
+		},
+	},
+})

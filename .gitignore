@@ -1,0 +1,54 @@
+# ── Local-only / per-machine state ────────────────────────────────────────────
+**/.claude/
+zsh/work.zsh
+**/spell/*.add
+**/spell/*.add.spl
+nvim/preamble/personal-info.tex
+
+# ── Secrets & auth state ──────────────────────────────────────────────────────
+**/secrets.lua
+**/secrets.zsh
+gh/hosts.yml
+gh/config.yml
+github-copilot/
+raycast/config.json
+raycast/ai/
+spotify-tui/
+**/configs/calendar.lua
+
+# ── Raycast extensions (user-managed, not dotfiles) ───────────────────────────
+raycast/extensions/
+
+# ── Backup repos (independent git repos; pushed separately) ───────────────────
+nvim.bak/
+nvim.bak-old/
+
+# ── tmux plugins (managed by TPM, auto-cloned on first tmux start) ────────────
+tmux/plugins/
+
+# ── Backup files ──────────────────────────────────────────────────────────────
+*.bak
+*~
+
+# ── Caches ────────────────────────────────────────────────────────────────────
+*.cache
+cache/
+.cache/
+**/.mypy_cache/
+**/__pycache__/
+*.pyc
+
+# ── ctags (generated, can be huge) ────────────────────────────────────────────
+tags
+
+# ── Editor swap ───────────────────────────────────────────────────────────────
+*.swp
+*.swo
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+
+# ── Google Drive temp ─────────────────────────────────────────────────────────
+.tmp.drivedownload/
+.tmp.driveupload/
