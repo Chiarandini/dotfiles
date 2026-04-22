@@ -46,3 +46,9 @@ alias mt='mise tasks'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
+
+
+# ╔════════════════════════════╗
+# ║   Claude with no session   ║
+# ╚════════════════════════════╝
+alias claudex='claude --no-session-persistence'

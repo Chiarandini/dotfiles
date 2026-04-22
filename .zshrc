@@ -149,10 +149,13 @@ eval "$(mise activate zsh)"
 # ╚═══════════════════════════════════════════════════════════════════╝
 eval "$(direnv hook zsh)"
 
-# ╔══════════════════════════════════════════════════════════╗
-# ║ Personal aliases (sourced from ~/.config/zsh/aliases.zsh) ║
-# ╚══════════════════════════════════════════════════════════╝
-[[ -f ~/.config/zsh/aliases.zsh ]] && source ~/.config/zsh/aliases.zsh
+# ╔═══════════════════════════════════════════════════════════════╗
+# ║ Personal aliases and functions                                ║
+# ║   ~/.config/zsh/aliases.zsh   — one-line aliases              ║
+# ║   ~/.config/zsh/functions.zsh — multi-line shell functions    ║
+# ╚═══════════════════════════════════════════════════════════════╝
+[[ -f ~/.config/zsh/aliases.zsh ]]   && source ~/.config/zsh/aliases.zsh
+[[ -f ~/.config/zsh/functions.zsh ]] && source ~/.config/zsh/functions.zsh
 
 # ╔═════════════════════════════════════════════════════════╗
 # ║ Work/machine-specific overrides (not in portable core)  ║
