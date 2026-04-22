@@ -1,8 +1,22 @@
-# focus window
-alt - h : yabai -m window --focus west
-alt - k : yabai -m window --focus north
-alt - l : yabai -m window --focus east
-alt - j : yabai -m window --focus south
+# focus window — passthrough to Kitty (so zellij gets these for pane focus)
+# The `~` operator means "when focused app matches, don't intercept;
+# let the keystroke flow to the app normally."
+alt - h [
+    "kitty" ~
+    *       : yabai -m window --focus west
+]
+alt - j [
+    "kitty" ~
+    *       : yabai -m window --focus south
+]
+alt - k [
+    "kitty" ~
+    *       : yabai -m window --focus north
+]
+alt - l [
+    "kitty" ~
+    *       : yabai -m window --focus east
+]
 
 # rotate layout clockwise
 alt - r : yabai -m space --rotate 270
@@ -99,3 +113,15 @@ rshift - q : yabai -m space --gap rel:-5:-5:-5:-5
 
 # reset e = equilibrilize
 rshift - e : yabai -m space --balance; yabai -m space --gap abs:5:5:5:5; yabai -m space --padding abs:5:5:5:5
+
+# ----- HomeKit bindings (cmd+ctrl + letter, direct binds) -----
+#   h = toggle ceiling   b = toggle bed    d = toggle desk
+#   a = all on           o = all off
+#   s = scene beatsaber  r = scene reading
+cmd + ctrl - h : shortcuts run "Toggle Ceiling Lights"
+cmd + ctrl - b : shortcuts run "Toggle Bed Lamp"
+cmd + ctrl - d : shortcuts run "Toggle Desk Lamp"
+cmd + ctrl - a : shortcuts run "Scene All On"
+cmd + ctrl - o : shortcuts run "Scene All Off"
+cmd + ctrl - s : shortcuts run "Scene Beatsaber"
+cmd + ctrl - r : shortcuts run "Scene Reading"

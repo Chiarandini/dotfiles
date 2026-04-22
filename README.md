@@ -212,4 +212,56 @@ If your window management ever freezes or stops responding, you can manually res
 yabai --restart-service
 skhd --restart-service
 ```
+
+## HomeKit Keyboard Control
+
+Physical lights (HomeKit bulbs registered in Home.app) are controllable from the keyboard via three stacked layers:
+
+```
+skhd chord  →  Apple Shortcut  →  Home accessory / Home scene
+```
+
+Each layer owns one concern:
+- **Home.app scenes** — source of truth for any *multi-device* state (e.g., "all off", "reading"). Edit visually in Home.
+- **Shortcuts.app** — thin named wrappers. For single-light toggles, one action. For scenes, one action that runs the Home scene.
+- **skhd** — binds a keyboard chord to `shortcuts run "<Shortcut name>"`.
+
+### Keymap (bound globally in `skhd/skhdrc`)
+
+| Chord     | Action                          |
+|-----------|---------------------------------|
+| `⌘⌃H`     | Toggle ceiling lights           |
+| `⌘⌃B`     | Toggle bed lamp                 |
+| `⌘⌃D`     | Toggle desk lamp                |
+| `⌘⌃A`     | All on                          |
+| `⌘⌃O`     | All off                         |
+| `⌘⌃S`     | Scene: Beatsaber (max bright white, for VR) |
+| `⌘⌃R`     | Scene: Reading (bed lamp only, warm low) |
+
+### Component inventory
+
+**Home.app scenes** — `All On`, `All Off`, `Beatsaber`, `Reading`.
+
+**Shortcuts.app** — `Toggle Ceiling Lights`, `Toggle Bed Lamp`, `Toggle Desk Lamp`, `Scene All On`, `Scene All Off`, `Scene Beatsaber`, `Scene Reading`. Names must match the strings in `skhdrc` exactly (spaces and capitalization).
+
+### Adding a new light or scene
+
+1. **New single-light toggle:**
+   - Shortcuts.app → new shortcut with one "Control Home" action set to **Toggle** that light → name it `Toggle <Thing>`.
+   - Add to `skhd/skhdrc`: `cmd + ctrl - <letter> : shortcuts run "Toggle <Thing>"`
+   - Reload skhd: `pkill -USR1 skhd`
+
+2. **New compound scene** (multiple lights at specific states):
+   - Home.app → `+` → Add Scene → configure per-accessory state → name it e.g. `<Mood>`.
+   - Shortcuts.app → new shortcut with one "Control Home" action set to **Run Scene: `<Mood>`** → name it `Scene <Mood>`.
+   - Add to `skhd/skhdrc`: `cmd + ctrl - <letter> : shortcuts run "Scene <Mood>"`
+   - Reload skhd: `pkill -USR1 skhd`
+
+### Why direct binds, not an skhd mode
+
+An earlier attempt used a `homekit` mode (prefix chord + single letter). **Don't go back to this.** skhd v0.3.9 (what Homebrew ships here) doesn't reliably execute the `; default` mode transition after a shell command, so the mode stays sticky and every bound letter silently hijacks typing (e.g., "not working" became "n wking" because `o`, `t`, `r` were swallowed). The `⌘⌃ + letter` namespace is mostly free in this skhdrc, so direct binds are both simpler and safe.
+
+### First-run permissions
+
+The first time each Shortcut runs, macOS prompts for Automation access to Home. Approve once; silent after that.
 ```
