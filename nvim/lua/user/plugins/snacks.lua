@@ -11,6 +11,7 @@ return {
 				end,
 				desc = "[g]rep [o]bsidian",
 			},
+			{ "<space>cg", function() require("snacks").picker.grep({ cwd = vim.fn.expand("~/.config/nvim"),              title = "nvim" })       end, desc = "[C]onfig grep" },
 			{ "<space>cC", function() require("snacks").picker.files({ cwd = vim.fn.expand("~/.config/"),              title = "Dotfiles" })       end, desc = "[C]onfig dotfiles" },
 			{ "<space>cf", function() require("snacks").picker.files({ cwd = vim.fn.stdpath("config") .. "/ftplugin",  title = "User Ftplugins" }) end, desc = "[f]tplugins (user)" },
 			{ "<space>cs", function() require("snacks").picker.files({ cwd = vim.fn.stdpath("config") .. "/LuaSnip/",  title = "User Snippets" })  end, desc = "[s]nippets (user)" },

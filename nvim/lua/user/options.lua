@@ -7,6 +7,8 @@ vim.o.sidescrolloff = 36     -- default: 8
 vim.o.scroll        = 16     -- default: removed (vim default: half window height)
 vim.o.smarttab      = false  -- default: removed (vim default: true)
 
+vim.o.autowriteall=false
+vim.o.confirm=false
 
 vim.bo.tabstop    = 2  -- default: 4
 vim.o.formatoptions  = "tcoq1jn"

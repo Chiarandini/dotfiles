@@ -18,4 +18,11 @@ vim.keymap.set("n", "<c-s-f>", function()
 end, opts("edit inkscape figure"))
 
 -- Abolish substitutions (personal shorthand)
-vim.cmd("Abolish -buffer bc because")
+-- Deferred so vim-abolish has finished loading on the session's first tex buffer.
+local bufnr = vim.api.nvim_get_current_buf()
+vim.schedule(function()
+  if vim.fn.exists(":Abolish") ~= 2 then return end
+  vim.api.nvim_buf_call(bufnr, function()
+    vim.cmd("Abolish -buffer bc because")
+  end)
+end)
