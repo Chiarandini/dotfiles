@@ -6,8 +6,41 @@ vim.keymap.set("n", "<space>fz", "<cmd>Telescope zotero<cr>", { desc = "Zotero c
 -- can be annoying). Remove this if you use gc{motion} regularly.
 vim.keymap.set("n", "gc", "", { desc = "disabled (use gcc)" })
 
--- Select all
--- vim.keymap.set("n", "<c-a>", "ggVG", { desc = "select all" })
+-- ── <C-a>: dial.nvim increment, with "select all" as a fallback ──────────
+-- NoetherVim maps <C-a> to dial.nvim (numbers, dates, booleans, …).
+-- When the cursor line has nothing to increment, fall back to the classic
+-- GUI "select all" so the key isn't wasted.
+local function increment_or_select_all()
+	-- Force-load dial in case we arrive here before its lazy `keys =` trigger.
+	require("lazy").load({ plugins = { "dial.nvim" }, show = false })
+	local tick = vim.b.changedtick
+	require("dial.map").manipulate("increment", "normal")
+	if vim.b.changedtick == tick then
+		vim.cmd("normal! ggVG")
+	end
+end
+
+local function bind_increment_fallback()
+	vim.keymap.set("n", "<C-a>", increment_or_select_all,
+		{ desc = "increment (fallback: select all)" })
+end
+
+bind_increment_fallback()
+
+-- Dial's lazy `keys =` spec rebinds <C-a> on load, overriding ours. Reinstall
+-- after LazyLoad fires -- same pattern as the overseer rebind block below.
+vim.api.nvim_create_autocmd("User", {
+	pattern = "LazyLoad",
+	callback = function(args)
+		if args.data == "dial.nvim" then
+			vim.schedule(bind_increment_fallback)
+		end
+	end,
+})
+
+if package.loaded["dial.map"] then
+	vim.schedule(bind_increment_fallback)
+end
 
 
 -- Quick run via overseer (replaces code_runner.nvim <leader>RR)
@@ -58,6 +91,10 @@ vim.api.nvim_create_user_command("U", function()
 end, { desc = "go to university directory" })
 
 
+
+-- ── Dashboard tableaux ────────────────────────────────────────────────────
+-- Plugin: noethervim-tableaux (dev mode, see lua/user/plugins/tableaux.lua).
+-- The plugin registers <space>ud / <space>uD itself.
 
 -- ── Overseer (run file + side-panel layout + archived history) ────────────
 -- Implementation: lua/user/configs/overseer-{layout,history}.lua
