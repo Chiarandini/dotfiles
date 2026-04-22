@@ -1,0 +1,29 @@
+// ~/.config/zellij/layouts/openclaw.kdl
+//
+// Three-pane layout for the openclaw project:
+//   left (60%)  — editor (nvim on the project root)
+//   top-right   — free shell for docker compose / git / ad-hoc commands
+//   bot-right   — tailing gateway logs (direnv has pinned COMPOSE_FILE)
+//
+// Services must be `mise run up` or `docker compose up -d` before the logs
+// pane has anything to show. Logs will retry silently until services exist.
+
+layout {
+    pane split_direction="vertical" {
+        pane size="60%" {
+            name "editor"
+            command "nvim"
+            args "."
+        }
+        pane split_direction="horizontal" {
+            pane {
+                name "shell"
+            }
+            pane {
+                name "logs"
+                command "docker"
+                args "compose" "logs" "-f" "--tail=200" "openclaw-gateway"
+            }
+        }
+    }
+}

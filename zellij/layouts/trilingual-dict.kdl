@@ -1,0 +1,34 @@
+// ~/.config/zellij/layouts/trilingual-dict.kdl
+//
+// Four-pane layout for the trilingual-dict monorepo:
+//   left (60%)  — editor on the project root
+//   top-right   — shell in core/ (Go CLI + WASM work)
+//   mid-right   — shell in web/  (Angular dev server etc.)
+//   bot-right   — shell in data/ (Python sample-db generation)
+//
+// mise per-pane activation runs per shell, so `which go` in the core pane
+// and `which npm` in the web pane each resolve to the pinned runtime.
+
+layout {
+    pane split_direction="vertical" {
+        pane size="60%" {
+            name "editor"
+            command "nvim"
+            args "."
+        }
+        pane split_direction="horizontal" {
+            pane {
+                name "core (go)"
+                cwd "core"
+            }
+            pane {
+                name "web (node)"
+                cwd "web"
+            }
+            pane {
+                name "data (python)"
+                cwd "data"
+            }
+        }
+    }
+}
