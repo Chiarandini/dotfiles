@@ -1,0 +1,45 @@
+# claude-session-finder configuration
+# Every value below is commented out; uncomment to override defaults.
+# Precedence: CLI flags > env vars (CSF_*) > this file > defaults.
+
+[paths]
+# Root of Claude Code's data directory. Sessions live under `<claude_home>/projects`.
+# claude_home = "~/.claude"
+
+# Where csf stores its SQLite index and log file.
+# data_dir = "~/.claude/csf"
+
+
+[search]
+# Include `tool_use` and `tool_result` blocks (Bash output, file reads, etc.)
+# in the search index. Off by default — tool output dwarfs conversation bytes
+# and hurts recall quality. Flip on if you often search for command output.
+# index_tool_results = false
+
+# Include `thinking` blocks in the search index. Off by default — these are
+# internal reasoning traces, rarely what you remember when searching.
+# index_thinking = false
+
+# How many surrounding lines FTS snippet() considers when highlighting matches.
+# snippet_context_lines = 3
+
+
+[tui]
+# Textual theme name.
+# theme = "default"
+
+# How many messages of context to show around a matched message in the
+# preview pane.
+# preview_context_messages = 4
+
+# On Enter, replace the current process with `claude --resume <id>` in the
+# session's project_cwd. Set to false to always print the command instead
+# (useful if you prefer to launch Claude Code manually).
+# If CLAUDECODE=1 is set (csf invoked from inside an active Claude Code
+# session), print mode is forced regardless of this setting.
+# resume_in_place = true
+
+
+[logging]
+# Log level: DEBUG, INFO, WARNING, ERROR.
+# level = "INFO"
