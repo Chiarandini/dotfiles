@@ -81,52 +81,54 @@ require("lazy").setup({
 		-- Uncomment the bundles you want. Full list: lua/noethervim/bundles/
 
 		-- Languages
-		-- { import = "noethervim.bundles.rust" },        -- rustaceanvim (beyond plain rust-analyzer)
-		-- { import = "noethervim.bundles.go" },          -- go.nvim (test gen, struct tags, fill struct)
-		-- { import = "noethervim.bundles.java" },        -- nvim-jdtls (proper Java LSP support)
-		{ import = "noethervim.bundles.python" },      -- venv-selector (virtual environment switching)
-		{ import = "noethervim.bundles.latex" },       -- VimTeX + snippets/textobjects
-		{ import = "noethervim.bundles.latex-zotero" }, -- Zotero citation picker (needs Zotero + Better BibTeX)
-		{ import = "noethervim.bundles.web-dev" },     -- JS/TS template string + color preview
+		-- { import = "noethervim.bundles.languages.rust" },        -- rustaceanvim (beyond plain rust-analyzer)
+		-- { import = "noethervim.bundles.languages.go" },          -- go.nvim (test gen, struct tags, fill struct)
+		-- { import = "noethervim.bundles.languages.java" },        -- nvim-jdtls (proper Java LSP support)
+		{ import = "noethervim.bundles.languages.python" },      -- venv-selector (virtual environment switching)
+		{ import = "noethervim.bundles.languages.latex" },       -- VimTeX + snippets/textobjects
+		{ import = "noethervim.bundles.languages.latex-zotero" }, -- Zotero citation picker (needs Zotero + Better BibTeX)
+		{ import = "noethervim.bundles.languages.web-dev" },     -- JS/TS template string + color preview
 
 		-- Tools
-		{ import = "noethervim.bundles.debug" },       -- nvim-dap + UI (Python, Lua, JS/TS, Go)
-		{ import = "noethervim.bundles.test" },        -- neotest test runner
-		{ import = "noethervim.bundles.repl" },        -- iron.nvim REPL
-		{ import = "noethervim.bundles.task-runner" }, -- overseer + compiler.nvim
-		-- { import = "noethervim.bundles.database" },    -- vim-dadbod + UI + SQL completion
-		-- { import = "noethervim.bundles.http" },        -- kulala.nvim HTTP/REST client
-		{ import = "noethervim.bundles.git" },         -- Fugit2, diffview, git-conflict
-		-- { import = "noethervim.bundles.ai" },          -- CodeCompanion (needs ANTHROPIC_API_KEY)
-		-- { import = "noethervim.bundles.refactoring" }, -- extract function/variable/block
+		{ import = "noethervim.bundles.tools.debug" },       -- nvim-dap + UI (Python, Lua, JS/TS, Go)
+		{ import = "noethervim.bundles.tools.test" },        -- neotest test runner
+		{ import = "noethervim.bundles.tools.repl" },        -- iron.nvim REPL
+		{ import = "noethervim.bundles.tools.task-runner" }, -- overseer + compiler.nvim
+		-- { import = "noethervim.bundles.tools.database" },    -- vim-dadbod + UI + SQL completion
+		-- { import = "noethervim.bundles.tools.http" },        -- kulala.nvim HTTP/REST client
+		{ import = "noethervim.bundles.tools.git" },         -- Fugit2, diffview, git-conflict
+		-- { import = "noethervim.bundles.tools.ai" },          -- CodeCompanion (needs ANTHROPIC_API_KEY)
+		-- { import = "noethervim.bundles.tools.refactoring" }, -- extract function/variable/block
 
 		-- Navigation & editing
-		-- { import = "noethervim.bundles.harpoon" },     -- fast per-project file marks
-		-- { import = "noethervim.bundles.flash" },       -- enhanced f/t and / motions
-		{ import = "noethervim.bundles.projects" },    -- project switcher (snacks.picker)
-		{ import = "noethervim.bundles.editing-extras" }, -- argmark + comment boxes
-		-- { import = "noethervim.bundles.neoclip" },     -- clipboard history via Telescope
+		-- { import = "noethervim.bundles.navigation.harpoon" },     -- fast per-project file marks
+		-- { import = "noethervim.bundles.navigation.flash" },       -- enhanced f/t and / motions
+		{ import = "noethervim.bundles.navigation.projects" },    -- project switcher (snacks.picker)
+		{ import = "noethervim.bundles.navigation.editing-extras" }, -- argmark + comment boxes
+		-- { import = "noethervim.bundles.navigation.neoclip" },     -- clipboard history via Telescope
 
 		-- Writing & notes
-		{ import = "noethervim.bundles.markdown" },    -- render, preview, tables, math, image paste
-		{ import = "noethervim.bundles.obsidian" },    -- Obsidian vault (also enable markdown bundle)
-		-- { import = "noethervim.bundles.neorg" },       -- .norg wiki / note-taking
-		{ import = "noethervim.bundles.translation" }, -- in-editor translation
+		{ import = "noethervim.bundles.writing.markdown" },    -- render, preview, tables, math, image paste
+		{ import = "noethervim.bundles.writing.obsidian" },    -- Obsidian vault (also enable markdown bundle)
+		-- { import = "noethervim.bundles.writing.neorg" },       -- .norg wiki / note-taking
+		{ import = "noethervim.bundles.writing.translation" }, -- in-editor translation
 
 		-- Terminal & environment
-		{ import = "noethervim.bundles.better-term" }, -- named terminal windows
-		-- { import = "noethervim.bundles.tmux" },        -- tmux window naming
-		-- { import = "noethervim.bundles.remote-dev" },  -- distant.nvim SSH editing
+		{ import = "noethervim.bundles.terminal.better-term" }, -- named terminal windows
+		-- { import = "noethervim.bundles.terminal.tmux" },        -- tmux window naming
+		-- { import = "noethervim.bundles.terminal.remote-dev" },  -- distant.nvim SSH editing
 
 		-- UI & appearance
-		-- { import = "noethervim.bundles.colorscheme" }, -- 10 popular themes + persistence
-		{ import = "noethervim.bundles.eye-candy" },   -- animations, scrollbar, block display
-		-- { import = "noethervim.bundles.minimap" },     -- sidebar minimap
-		{ import = "noethervim.bundles.helpview" },    -- rendered :help pages
+		-- { import = "noethervim.bundles.ui.colorscheme" }, -- 10 popular themes + persistence
+		{ import = "noethervim.bundles.ui.eye-candy" },   -- animations, scrollbar, block display
+		-- { import = "noethervim.bundles.ui.minimap" },     -- sidebar minimap
+		{ import = "noethervim.bundles.ui.helpview" },    -- rendered :help pages
+		{ import = "noethervim.bundles.ui.tableaux" },    -- 31 mathematical dashboard scenes for snacks.nvim
 
 		-- Practice & utilities
-		{ import = "noethervim.bundles.dev-tools" },   -- StartupTime, Luapad
-		-- { import = "noethervim.bundles.hardtime" },    -- motion habit trainer
+		{ import = "noethervim.bundles.practice.dev-tools" },   -- StartupTime, Luapad
+		{ import = "noethervim.bundles.practice.presentation" }, -- presenting.nvim + showkeys
+		-- { import = "noethervim.bundles.practice.hardtime" },    -- motion habit trainer
 
 		-- ── Dev-only bundles (loaded only under `nvdn` / vim.g.noethervim_dev) ──
 		-- These ride along when you're testing against the local NoetherVim
@@ -137,8 +139,8 @@ require("lazy").setup({
 		(function()
 			if not noethervim_dev then return {} end
 			local bundles = {
-				{ import = "noethervim.bundles.training" },     -- vim-be-good, speedtyper, typr
-				{ import = "noethervim.bundles.presentation" }, -- presenting.nvim + showkeys
+				{ import = "noethervim.bundles.practice.training" },     -- vim-be-good, speedtyper, typr
+				{ import = "noethervim.bundles.tools.smart-actions" }
 			}
 			if vim.uv.fs_stat(noethervim_dev .. "/lua/noethervim/bundles/typst.lua") then
 				table.insert(bundles, { import = "noethervim.bundles.typst" })
@@ -158,6 +160,7 @@ require("lazy").setup({
 
 	},
 
+	---@diagnostic disable-next-line: assign-type-mismatch
 	dev = {
 		path = "~/programming/custom_plugins/",
 	},
