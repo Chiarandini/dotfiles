@@ -100,6 +100,27 @@ local function bind_q_close(bufnr)
 		{ buffer = bufnr, nowait = true, silent = true, desc = "Close overseer layout" })
 end
 
+-- When follow_cursor is active, overseer's TaskView swaps the output window's
+-- buffer on every panel cursor move. A one-shot bind_q_close on the initial
+-- buffer therefore stops working after the first hover. This autocmd re-binds
+-- `q` on whatever buffer enters the tagged output window.
+local q_autocmd_id
+local function ensure_q_autocmd()
+	if q_autocmd_id then return end
+	q_autocmd_id = vim.api.nvim_create_autocmd("BufWinEnter", {
+		desc = "Rebind q=close_layout on swapped overseer output buffers",
+		callback = function(args)
+			for _, w in ipairs(vim.fn.win_findbuf(args.buf)) do
+				local ok, val = pcall(vim.api.nvim_win_get_var, w, "overseer_layout_output")
+				if ok and val then
+					bind_q_close(args.buf)
+					return
+				end
+			end
+		end,
+	})
+end
+
 -- Set overseer's global default direction once, lazily. We do this on first
 -- use rather than at module load because requiring overseer.config eagerly
 -- would force the plugin to load before lazy.nvim is ready.
@@ -114,8 +135,12 @@ end
 
 -- Ensures the panel is open on the right (column width = 50% of screen).
 -- If `output_bufnr` is given, shows it in a split above the panel sized to
--- 85% of the column height.
-local function open_layout_with_buffer(output_bufnr)
+-- 85% of the column height. When `opts.follow_cursor` is true, the output
+-- slot tracks the task under the cursor in the panel (same mechanism as
+-- overseer's built-in bottom layout). Archived-log views pass false so the
+-- static buffer isn't swapped out from under the user.
+local function open_layout_with_buffer(output_bufnr, opts)
+	opts = opts or {}
 	ensure_overseer_default_direction()
 
 	local origin_win = vim.api.nvim_get_current_win()
@@ -133,6 +158,16 @@ local function open_layout_with_buffer(output_bufnr)
 		local output_win = vim.api.nvim_get_current_win()
 		vim.api.nvim_win_set_var(output_win, "overseer_layout_output", true)
 		vim.api.nvim_win_set_buf(output_win, output_bufnr)
+
+		if opts.follow_cursor then
+			require("overseer.task_view").new(output_win, {
+				close_on_list_close = true,
+				select = function(_, tasks, task_under_cursor)
+					return task_under_cursor or tasks[1]
+				end,
+			})
+			ensure_q_autocmd()
+		end
 
 		local total = vim.api.nvim_win_get_height(output_win) + vim.api.nvim_win_get_height(panel_win)
 		vim.api.nvim_win_set_height(panel_win, math.max(3, math.floor(total * 0.15)))
@@ -155,7 +190,7 @@ local function open_layout(task)
 	local overseer = require("overseer")
 	task = task or (overseer.list_tasks({ recent_first = true }) or {})[1]
 	local bufnr = task and task:get_bufnr() or nil
-	open_layout_with_buffer(bufnr)
+	open_layout_with_buffer(bufnr, { follow_cursor = true })
 end
 
 ---Public: place an arbitrary buffer in the layout's Output slot. Opens the
