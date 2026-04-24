@@ -1,6 +1,53 @@
 
 vim.keymap.set("n", "<space>fz", "<cmd>SnacksZotero<cr>", { desc = "Zotero citation picker" })
 
+-- Scroll-step J/K: move by visual line and scroll the window in lockstep.
+-- (Moved out of core — too idiosyncratic. Shadows default J=join / K=hover.)
+vim.keymap.set("n", "J", "gj<c-e>", { desc = "scroll down visual line" })
+vim.keymap.set("n", "K", "gk<c-y>", { desc = "scroll up visual line" })
+
+-- ── Visual-mode search/replace overrides (personal) ───────────────────────
+-- Shadow default c / gv / D in visual mode with search-and-replace flows.
+-- Pulled out of NoetherVim core during the alpha audit because they override
+-- fundamental Vim operations; kept here as a personal preference.
+vim.keymap.set("v", "c",  "y:let @0=escape(@0, '\\/.*$^~[]')<cr>:%s/<c-r>0/",
+	{ desc = "replace selection globally" })
+vim.keymap.set("v", "gv", ":s/\\%V",                      { desc = "replace in visual area" })
+vim.keymap.set("v", "D",  ":s/\\%V//g<left><left><left>", { desc = "delete in visual area" })
+
+-- ── L: fold-peek with LSP hover fallback (personal) ───────────────────────
+-- Core NoetherVim falls through to default L (last-visible-line) when the
+-- cursor is not on a closed fold.  I prefer a styled LSP hover there.
+local function peek_or_hover()
+  local ok, ufo = pcall(require, "ufo")
+  if ok then
+    local winid = ufo.peekFoldedLinesUnderCursor()
+    if winid then
+      local bufnr = vim.api.nvim_win_get_buf(winid)
+      for _, k in ipairs({ "a", "i", "o", "A", "I", "O", "gd", "gR" }) do
+        vim.keymap.set("n", k, "<CR>" .. k, { noremap = false, buffer = bufnr })
+      end
+      return
+    end
+  end
+  vim.lsp.buf.hover({ border = "rounded", max_width = 80 })
+end
+
+local function bind_L()
+  vim.keymap.set("n", "L", peek_or_hover, { desc = "fold-peek / hover" })
+end
+
+-- Ufo's lazy keys= spec rebinds L on load.  Rebind after LazyLoad so ours wins.
+vim.api.nvim_create_autocmd("User", {
+  pattern = "LazyLoad",
+  callback = function(args)
+    if args.data == "nvim-ufo" then
+      vim.schedule(bind_L)
+    end
+  end,
+})
+if package.loaded["ufo"] then vim.schedule(bind_L) end
+
 -- Prevent gc from eating gcc (personal preference — gc is the builtin
 -- comment operator in Neovim 0.10+, but the timeout before gcc fires
 -- can be annoying). Remove this if you use gc{motion} regularly.
