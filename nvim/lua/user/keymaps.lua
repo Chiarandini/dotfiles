@@ -1,5 +1,5 @@
 
-vim.keymap.set("n", "<space>fz", "<cmd>Telescope zotero<cr>", { desc = "Zotero citation picker" })
+vim.keymap.set("n", "<space>fz", "<cmd>SnacksZotero<cr>", { desc = "Zotero citation picker" })
 
 -- Prevent gc from eating gcc (personal preference — gc is the builtin
 -- comment operator in Neovim 0.10+, but the timeout before gcc fires

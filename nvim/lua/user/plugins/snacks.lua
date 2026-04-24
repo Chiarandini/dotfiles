@@ -47,6 +47,22 @@ return {
 				end,
 				desc = "[d]oc [e]YNTKA",
 			},
+			-- homework finder: fd with multi-pattern regex (migrated from telescope)
+			{
+				"<space>fdh",
+				function()
+					Snacks.picker.files({
+						cwd   = vim.fn.expand("~/Documents/"),
+						cmd   = "fd",
+						args  = {
+							"--type", "f", "--ignore-case",
+							"hw|homework|prob.*set|pset|ps|assign|asn|lab|proj|quiz|exam|midterm|final|tut|sheet",
+						},
+						title = "Find Homework",
+					})
+				end,
+				desc = "[d]oc [h]omework",
+			},
 		},
 	},
 }

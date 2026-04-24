@@ -105,7 +105,6 @@ require("lazy").setup({
 		-- { import = "noethervim.bundles.navigation.flash" },       -- enhanced f/t and / motions
 		{ import = "noethervim.bundles.navigation.projects" },    -- project switcher (snacks.picker)
 		{ import = "noethervim.bundles.navigation.editing-extras" }, -- argmark + comment boxes
-		-- { import = "noethervim.bundles.navigation.neoclip" },     -- clipboard history via Telescope
 
 		-- Writing & notes
 		{ import = "noethervim.bundles.writing.markdown" },    -- render, preview, tables, math, image paste

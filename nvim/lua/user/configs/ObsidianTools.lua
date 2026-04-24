@@ -1,6 +1,7 @@
 ---@module "ObsidianTools"
 local obsidianTools = require("ObsidianTools")
 
+
 obsidianTools.setup(
 {
 	workspacePath = "~/Documents/NateObsidianVault/",
@@ -268,9 +269,9 @@ vim.keymap.set("n", "<leader>oT", function() obsidianTools.addTagsFromList(obsid
 vim.keymap.set("n", "<leader>oN", add_new_tag_group, { desc = "add New tag group" })
 vim.keymap.set('n', "<space>og",
 function()
-	require("telescope.builtin").live_grep({
-		search_dirs = { "~/Documents/NateObsidianVault/" },
-		prompt_title = "[o]bsidian [g]rep",
+	require("snacks").picker.grep({
+		cwd   = vim.fn.expand("~/Documents/NateObsidianVault/"),
+		title = "[o]bsidian [g]rep",
 	})
 end,
 {desc = "[o]bsidian [g]rep"})

@@ -37,7 +37,7 @@ return {
 	{
 		"ObsidianTools.nvim",
 		-- ft = "markdown",
-		lazy = true, -- because I want to randomly add new markdown filse anywhere
+		event = "VeryLazy", -- load after UI ready so keymaps work in any buffer
 		dev = true,
 		dependencies = { "obsidian-nvim/obsidian.nvim" },
 		config = function()
@@ -55,16 +55,11 @@ return {
 		end,
 	},
 
-	-- Telescope PDF browser
-	{
-		"telescope-pdf-browser.nvim",
-		dev = true,
-		lazy = true,
-		dependencies = { "nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim" },
-		config = function()
-			require("telescope").load_extension("pdf_browser")
-		end,
-	},
+	-- Telescope PDF browser: dropped 2026-04-23.
+	-- Already routed around via Snacks.picker.files in user/plugins/snacks.lua
+	-- (<space>fB). See NoetherVim dev-docs/telescope-removal-plan.md §3.1 for
+	-- the decision. Reinstate as snacks-pdf-browser.nvim if the PDF preview
+	-- (pdfinfo + pdftoppm) turns out to be missed.
 
 	-- Japanese keyboard mode switching
 	{

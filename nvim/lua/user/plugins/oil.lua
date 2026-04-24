@@ -1,47 +1,59 @@
 -- User Zero personal Oil extensions
--- macOS Finder clipboard, dual-pane browser, and Move command.
+-- AirDrop, dual-pane browser, and Move command. Multi-file Finder
+-- clipboard (visual Y) is upstream in the distro.
 
 -- ── Dual-pane oil browser ─────────────────────────────────────────────────
--- Opens a Telescope directory picker twice, then opens the two chosen dirs
+-- Opens a snacks directory picker twice, then opens the two chosen dirs
 -- as side-by-side Oil buffers rooted at ~/Documents.
+--
+-- Implementation note: Snacks.picker.files injects `--type f --type l` into
+-- fd's args, and extra --type flags combine as OR rather than AND, so we
+-- can't just pass `--type d`. We shell out to fd ourselves and feed the
+-- results as plain items to the generic Snacks.picker().
 local function open_dual_oil()
   local target_cwd = vim.fn.expand("~/Documents")
-  local builtin     = require("telescope.builtin")
-  local actions     = require("telescope.actions")
-  local action_state = require("telescope.actions.state")
-  local oil         = require("oil")
-  local dir_cmd     = { "fd", "--type", "d", "--hidden", "--exclude", ".git" }
+  local Snacks     = require("snacks")
+  local oil        = require("oil")
 
-  builtin.find_files({
-    prompt_title = "Select Left Directory",
-    cwd          = target_cwd,
-    find_command = dir_cmd,
-    attach_mappings = function(prompt_bufnr)
-      actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
-        local sel1 = action_state.get_selected_entry()
-        local dir1 = sel1.path or (target_cwd .. "/" .. sel1.value)
+  local function list_dirs()
+    local out = vim.fn.systemlist({
+      "fd", "--type", "d", "--hidden", "--exclude", ".git",
+      ".", target_cwd,
+    })
+    local items = {}
+    for _, path in ipairs(out) do
+      if path:sub(-1) == "/" then path = path:sub(1, -2) end
+      local rel = path:sub(#target_cwd + 2)  -- strip "target_cwd/" prefix
+      table.insert(items, { text = rel ~= "" and rel or path, file = path })
+    end
+    return items
+  end
 
-        builtin.find_files({
-          prompt_title = "Select Right Directory",
-          cwd          = target_cwd,
-          find_command = dir_cmd,
-          attach_mappings = function(prompt_bufnr2)
-            actions.select_default:replace(function()
-              actions.close(prompt_bufnr2)
-              local sel2 = action_state.get_selected_entry()
-              local dir2 = sel2.path or (target_cwd .. "/" .. sel2.value)
-              oil.open(dir1)
-              vim.cmd("vsplit")
-              oil.open(dir2)
-            end)
-            return true
-          end,
-        })
-      end)
-      return true
-    end,
-  })
+  local function pick_dir(title, on_selected)
+    local items = list_dirs()
+    if #items == 0 then
+      vim.notify("[dual-oil] no directories found under " .. target_cwd, vim.log.levels.WARN)
+      return
+    end
+    Snacks.picker({
+      title   = title,
+      items   = items,
+      format  = function(item) return { { item.text } } end,
+      confirm = function(picker, item)
+        picker:close()
+        if not item then return end
+        on_selected(item.file)
+      end,
+    })
+  end
+
+  pick_dir("Select Left Directory", function(dir1)
+    pick_dir("Select Right Directory", function(dir2)
+      oil.open(dir1)
+      vim.cmd("vsplit")
+      oil.open(dir2)
+    end)
+  end)
 end
 
 vim.api.nvim_create_user_command("Move", open_dual_oil, { desc = "Dual Oil browser" })
