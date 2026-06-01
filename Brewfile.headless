@@ -1,0 +1,60 @@
+# Brewfile.headless — CLI-only subset of the main Brewfile.
+#
+# Intended for an SSH-only / "server" Mac (e.g. the M1 Air running headless
+# with the lid closed). Excludes:
+#   - yabai / skhd (no window server to attach to)
+#   - All casks (GUI apps, fonts that need a display)
+#   - Media tooling (mpv, ffmpeg, imagemagick) — heavy install, no playback
+#   - Database servers (mysql, httpd) — opt-in per use case
+#   - Mail clients (mutt) — secretary uses Gmail MCP instead
+#
+# Keeps the CLI tools that .zshrc / .zshenv / aliases.zsh actually depend on,
+# plus general-purpose shell tooling that's useful over SSH.
+
+tap "jesseduffield/lazygit"
+
+# CLI essentials referenced by .zshrc
+brew "coreutils"      # greadlink, gdate, etc.
+brew "starship"       # prompt
+brew "atuin"          # shell history
+brew "zoxide"         # smart cd
+brew "direnv"         # per-dir env vars
+brew "thefuck"        # autocorrect previous command
+brew "zsh-autocomplete"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+brew "fzf"
+brew "highlight"      # fzf preview syntax highlighting
+
+# Core CLI utilities used by aliases + general workflow
+brew "bat"
+brew "btop"
+brew "eza"
+brew "fd"
+brew "htop"
+brew "ripgrep"
+brew "tokei"
+brew "jq"
+
+# Editor / multiplexer / dev tooling
+brew "neovim"
+brew "bob"            # Neovim version manager
+brew "tmux"
+brew "git"
+brew "gh"
+brew "node"
+brew "mise"
+brew "pipx"
+brew "lazygit"
+
+# TUI file managers (genuinely useful over SSH)
+brew "midnight-commander"
+brew "ranger"
+
+# Security / encryption
+brew "gnupg"
+brew "gitleaks"
+
+# Networking / filesystem watching
+brew "wget"
+brew "fswatch"
