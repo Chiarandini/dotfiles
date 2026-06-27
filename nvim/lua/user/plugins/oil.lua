@@ -99,12 +99,83 @@ local function airdrop_under_cursor()
   airdrop_range(bufnr, lnum, lnum)
 end
 
+-- ── Fuzzy "/" over the current Oil listing (non-recursive) ────────────────
+-- Override `/` in Oil buffers so it fuzzy-matches only the entries currently
+-- shown in the buffer — files *and* folders, respecting the hidden toggle —
+-- rather than doing a normal in-buffer search. Confirming an entry behaves
+-- exactly like pressing <CR> on it (oil.select): folders are entered, files
+-- are opened. Deliberately non-recursive, unlike the distro's `gf` (recursive
+-- Snacks.picker.files).
+local function fuzzy_pick_in_oil()
+  local oil    = require("oil")
+  local Snacks = require("snacks")
+  local bufnr  = vim.api.nvim_get_current_buf()
+  local win    = vim.api.nvim_get_current_win()
+
+  -- Read entries straight off the buffer lines so the picker mirrors exactly
+  -- what Oil is showing (no recursion, honours the show_hidden toggle).
+  local items = {}
+  for lnum = 1, vim.api.nvim_buf_line_count(bufnr) do
+    local entry = oil.get_entry_on_line(bufnr, lnum)
+    if entry and entry.name ~= ".." then
+      table.insert(items, {
+        text = entry.name,
+        lnum = lnum,
+        dir  = entry.type == "directory",
+      })
+    end
+  end
+  if #items == 0 then
+    vim.notify("[oil] no entries to search", vim.log.levels.WARN)
+    return
+  end
+
+  local dir = oil.get_current_dir(bufnr)
+  Snacks.picker({
+    title  = dir and vim.fn.fnamemodify(dir, ":~") or "Oil",
+    layout = "select", -- compact centered box (no preview); see snacks layout presets
+    -- Return focus to the Oil window (not some other editor window) when the
+    -- picker closes. Snacks' default "main" excludes floating windows, so for a
+    -- floating Oil it would restore focus to whatever sat behind the float; that
+    -- non-float WinEnter trips Oil's float-only auto-close (oil.nvim init.lua's
+    -- "Close floating oil window" WinLeave handler), wiping the float out from
+    -- under us before the deferred oil.select() below can run. current = true
+    -- pins main to the Oil window so the float survives and select() lands.
+    main   = { current = true },
+    items  = items,
+    format = function(item)
+      local icon, hl = Snacks.util.icon(item.text, item.dir and "directory" or "file")
+      return {
+        { icon .. " ", hl },
+        { item.text, item.dir and "SnacksPickerDirectory" or "SnacksPickerFile" },
+      }
+    end,
+    confirm = function(picker, item)
+      picker:close()
+      if not item then return end
+      -- oil.select() acts on the *current* window's cursor, so refocus the Oil
+      -- window and land on the chosen line before selecting (deferred so it
+      -- runs after the picker has fully torn down).
+      vim.schedule(function()
+        if not vim.api.nvim_win_is_valid(win) then return end
+        vim.api.nvim_set_current_win(win)
+        vim.api.nvim_win_set_cursor(win, { item.lnum, 0 })
+        oil.select()
+      end)
+    end,
+  })
+end
+
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "oil",
   callback = function(args)
     vim.keymap.set("n", "ga", airdrop_under_cursor, {
       buffer = args.buf,
       desc = "AirDrop file under cursor",
+    })
+    vim.keymap.set("n", "/", fuzzy_pick_in_oil, {
+      buffer = args.buf,
+      desc = "Fuzzy-find entries in this dir",
     })
     -- Visual-mode keymap goes through a buffer-local :range command so that
     -- `:` in visual mode auto-prefixes `'<,'>` and gives us line1/line2.
