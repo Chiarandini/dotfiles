@@ -137,7 +137,7 @@ end)
 return {
 	{
 		"Chiarandini/smart-actions.nvim",
-		dir = vim.fn.expand("~/programming/custom_plugins/smart-actions.nvim"),
+		dir = vim.fn.expand("~/programming/nvim-plugins/smart-actions.nvim"),
 		opts = {
 			-- Opt-in speculative run: quickfix starts in background when an
 			-- explain stream finishes, so `a`/<CR> in the float opens the

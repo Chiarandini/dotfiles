@@ -44,3 +44,47 @@ zj() {
         zellij --session "$name"
     fi
 }
+
+# ─── _rem: tab-completion for the `rem` reminders CLI ─────────────────────
+# Completes verbs (ls/add/done/lists) and your actual Reminders list names for
+# `rem ls`, `rem add`, and `rem done --list`. List names come from `rem lists`
+# (names-only, fast). Cached to a FILE with a 30s TTL — not a shell var, because
+# completion calls _rem_lists inside $(...) subshells where var-caching wouldn't
+# survive, so zsh-autocomplete's per-keystroke completion would otherwise spawn
+# an EventKit process on every key. Calls the wrapper by full path so it doesn't
+# depend on the `rem` alias being expanded here.
+_rem_bin="$HOME/programming/constellation/mcp-servers/apple-reminders/rem"
+_rem_lists() {
+    local cache="${TMPDIR:-/tmp}/rem-lists.${UID}.cache" now=0 mtime=0
+    zmodload zsh/datetime 2>/dev/null; now=${EPOCHSECONDS:-0}
+    zmodload zsh/stat 2>/dev/null
+    [[ -f $cache ]] && mtime=$(zstat +mtime "$cache" 2>/dev/null)
+    if [[ ! -s $cache || $now -eq 0 || $(( now - mtime )) -ge 30 ]]; then
+        "$_rem_bin" lists 2>/dev/null > "$cache"
+    fi
+    cat "$cache" 2>/dev/null
+}
+_rem() {
+    local state
+    _arguments -C '1: :->verb' '*:: :->args' && return
+    case $state in
+        verb)
+            local -a verbs
+            verbs=('ls:items in a list' 'add:create a reminder'
+                   'done:complete (or fzf picker)' 'lists:print list names')
+            _describe 'rem command' verbs ;;
+        args)
+            local -a lists
+            case $words[1] in
+                ls)  lists=("${(@f)$(_rem_lists)}"); compadd -a lists ;;
+                add) [[ $CURRENT -eq 2 ]] && { lists=("${(@f)$(_rem_lists)}"); compadd -a lists } ;;
+                done)
+                    if [[ $words[CURRENT-1] == --list ]]; then
+                        lists=("${(@f)$(_rem_lists)}"); compadd -a lists
+                    else
+                        compadd -- --list
+                    fi ;;
+            esac ;;
+    esac
+}
+(( $+functions[compdef] )) && compdef _rem rem

@@ -1,4 +1,4 @@
--- noethervim-template-version: 1
+-- noethervim-template-version: 2
 -- NoetherVim user config template.
 -- Copy this file to ~/.config/nvim/init.lua
 --
@@ -12,6 +12,7 @@
 -- To debug without your overrides:  NOETHERVIM_NO_USER=1 nvim
 
 
+-- vim.g.noethervim_dashboard = false
 
 -- ── 1. Leaders — must come before lazy.nvim loads ──────────────────────────
 -- Plugins register keymaps at spec-load time using these globals.
@@ -48,6 +49,13 @@ if not noethervim_dev and not vim.uv.fs_stat(noethervimpath) then
 end
 vim.opt.rtp:prepend(noethervimpath)
 
+-- Route lazy.nvim's startup notifications through `vim.notify` after
+-- VimEnter so a stale bundle import in the spec below -- or any other
+-- error lazy emits while resolving the spec -- surfaces as a snacks
+-- toast instead of an ErrorMsg on the cmdline (which fires the
+-- hit-enter prompt on top of the dashboard).
+require("noethervim.util").buffer_notify()
+
 -- ── 3. Start NoetherVim ────────────────────────────────────────────────────
 
 require("lazy").setup({
@@ -64,16 +72,8 @@ require("lazy").setup({
 				or  { "Chiarandini/NoetherVim" },
 			{
 				import = "noethervim.plugins",
-				opts = {
-					colorscheme = "gruvbox",   -- default colorscheme
-					-- statusline  = {            -- statusline overrides
-					--   colors     = {},
-					--   extra_right = {},
-					-- },
-				},
-				config = function(_, opts)
-					require("noethervim").setup(opts)
-				end,
+				-- All user-facing options live in lua/user/config.lua.
+				config = function() require("noethervim").setup() end,
 			}
 		),
 
@@ -97,12 +97,14 @@ require("lazy").setup({
 		-- { import = "noethervim.bundles.tools.database" },    -- vim-dadbod + UI + SQL completion
 		-- { import = "noethervim.bundles.tools.http" },        -- kulala.nvim HTTP/REST client
 		{ import = "noethervim.bundles.tools.git" },         -- Fugit2, diffview, git-conflict
+		{ import = "noethervim.bundles.tools.nvim-dev" },
 		-- { import = "noethervim.bundles.tools.ai" },          -- CodeCompanion (needs ANTHROPIC_API_KEY)
 		-- { import = "noethervim.bundles.tools.refactoring" }, -- extract function/variable/block
 
 		-- Navigation & editing
 		-- { import = "noethervim.bundles.navigation.harpoon" },     -- fast per-project file marks
 		-- { import = "noethervim.bundles.navigation.flash" },       -- enhanced f/t and / motions
+		{ import = "noethervim.bundles.navigation.yanky" },
 		{ import = "noethervim.bundles.navigation.projects" },    -- project switcher (snacks.picker)
 		{ import = "noethervim.bundles.navigation.editing-extras" }, -- argmark + comment boxes
 
@@ -110,7 +112,6 @@ require("lazy").setup({
 		{ import = "noethervim.bundles.writing.markdown" },    -- render, preview, tables, math, image paste
 		{ import = "noethervim.bundles.writing.obsidian" },    -- Obsidian vault (also enable markdown bundle)
 		-- { import = "noethervim.bundles.writing.neorg" },       -- .norg wiki / note-taking
-		{ import = "noethervim.bundles.writing.translation" }, -- in-editor translation
 
 		-- Terminal & environment
 		{ import = "noethervim.bundles.terminal.better-term" }, -- named terminal windows
@@ -125,26 +126,23 @@ require("lazy").setup({
 		{ import = "noethervim.bundles.ui.tableaux" },    -- 31 mathematical dashboard scenes for snacks.nvim
 
 		-- Practice & utilities
-		{ import = "noethervim.bundles.practice.dev-tools" },   -- StartupTime, Luapad
 		{ import = "noethervim.bundles.practice.presentation" }, -- presenting.nvim + showkeys
+		{ import = "noethervim.bundles.tools.octo" },
 		-- { import = "noethervim.bundles.practice.hardtime" },    -- motion habit trainer
 
 		-- ── Dev-only bundles (loaded only under `nvdn` / vim.g.noethervim_dev) ──
 		-- These ride along when you're testing against the local NoetherVim
-		-- checkout, but stay off in the production `nvim` config. Built as a
-		-- nested spec list so a missing optional bundle (e.g. typst, which
-		-- only lives on feat/typst-bundle) doesn't leave a nil hole that
-		-- truncates iteration of the outer spec.
+		-- checkout, but stay off in the production `nvim` config. A missing
+		-- bundle (e.g. typst, only present on feat/typst-bundle) surfaces as
+		-- a post-VimEnter snacks toast thanks to `buffer_notify()` above --
+		-- no hit-enter prompt on the dashboard.
 		(function()
 			if not noethervim_dev then return {} end
-			local bundles = {
-				{ import = "noethervim.bundles.practice.training" },     -- vim-be-good, speedtyper, typr
-				{ import = "noethervim.bundles.tools.smart-actions" }
+			return {
+				-- { import = "noethervim.bundles.practice.training" },  -- vim-be-good, speedtyper, typr
+				{ import = "noethervim.bundles.tools.smart-actions" },
+				-- { import = "noethervim.bundles.typst" },              -- only on feat/typst-bundle branch
 			}
-			if vim.uv.fs_stat(noethervim_dev .. "/lua/noethervim/bundles/typst.lua") then
-				table.insert(bundles, { import = "noethervim.bundles.typst" })
-			end
-			return bundles
 		end)(),
 
 		-- ── Your personal plugins & plugin overrides ─────────────────────
@@ -161,7 +159,7 @@ require("lazy").setup({
 
 	---@diagnostic disable-next-line: assign-type-mismatch
 	dev = {
-		path = "~/programming/custom_plugins/",
+		path = "~/programming/nvim-plugins/",
 	},
 	-- lazy-lock.json lives in your config dir (the default).
 	-- :Lazy update pins versions there; :Lazy restore reverts to them.

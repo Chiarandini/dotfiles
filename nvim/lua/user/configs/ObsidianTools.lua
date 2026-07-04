@@ -4,7 +4,7 @@ local obsidianTools = require("ObsidianTools")
 
 obsidianTools.setup(
 {
-	workspacePath = "~/Documents/NateObsidianVault/",
+	workspacePath = "~/Documents/vault/",
 	tagListsFile = vim.fn.stdpath("config") .. "/lua/user/configs/obsidian_tag_lists.lua",
 }
 )
@@ -270,10 +270,10 @@ vim.keymap.set("n", "<leader>oN", add_new_tag_group, { desc = "add New tag group
 vim.keymap.set('n', "<space>og",
 function()
 	require("snacks").picker.grep({
-		cwd   = vim.fn.expand("~/Documents/NateObsidianVault/"),
+		cwd   = vim.fn.expand("~/Documents/vault/"),
 		title = "[o]bsidian [g]rep",
 	})
 end,
 {desc = "[o]bsidian [g]rep"})
-vim.keymap.set('n', '<leader>oh', '<cmd> e ~/Documents/NateObsidianVault/index.md<cr>', {desc = "Obsidian index page"})
+vim.keymap.set('n', '<leader>oh', '<cmd> e ~/Documents/vault/index.md<cr>', {desc = "Obsidian index page"})
 vim.api.nvim_create_user_command('ConvertHashtags', obsidianTools.convert_hashtags, {})

@@ -7,7 +7,7 @@ return {
 			{
 				"<space>go",
 				function()
-					Snacks.picker.grep({ cwd = vim.fn.expand("~/Documents/NateObsidianVault/") })
+					Snacks.picker.grep({ cwd = vim.fn.expand("~/Documents/vault/") })
 				end,
 				desc = "[g]rep [o]bsidian",
 			},
@@ -47,6 +47,15 @@ return {
 				end,
 				desc = "[d]oc [e]YNTKA",
 			},
+			-- textbooks
+			{
+				"<space>fdt",
+				function()
+					Snacks.picker.files({ cwd = vim.fn.expand("~/Documents/academic/writing/textbooks/")})
+				end,
+				desc = "[d]oc [e]YNTKA",
+			},
+			-- homework finder: fd with multi-pattern regex (migrated from telescope)
 			-- homework finder: fd with multi-pattern regex (migrated from telescope)
 			{
 				"<space>fdh",

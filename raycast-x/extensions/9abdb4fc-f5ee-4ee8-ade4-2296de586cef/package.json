@@ -1,0 +1,631 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "mail",
+  "title": "Apple Mail",
+  "description": "Extension for Apple Mail.",
+  "icon": "mail.png",
+  "author": "yug2005",
+  "contributors": [
+    "ikupenov",
+    "pernielsentikaer",
+    "fengtianze",
+    "tleo19",
+    "lukah",
+    "stelo",
+    "StevenRCE0",
+    "ridemountainpig",
+    "ViGeng",
+    "dante",
+    "5z99tsb75z",
+    "xilopaint",
+    "chrahe",
+    "clins1994"
+  ],
+  "categories": [
+    "Applications",
+    "Productivity",
+    "System"
+  ],
+  "license": "MIT",
+  "preferences": [
+    {
+      "name": "primaryAction",
+      "title": "Primary Action",
+      "description": "The primary action to be performed on the selected message.",
+      "type": "dropdown",
+      "default": "seeMessage",
+      "required": false,
+      "data": [
+        {
+          "title": "See Message",
+          "value": "seeMessage"
+        },
+        {
+          "title": "Open in Mail",
+          "value": "openMessage"
+        }
+      ]
+    },
+    {
+      "name": "saveDirectory",
+      "title": "Save Attachments To",
+      "description": "Directory to save mail attachments.",
+      "type": "directory",
+      "default": "~/Downloads",
+      "required": false
+    },
+    {
+      "name": "messageLimit",
+      "title": "Message Limit",
+      "description": "The amount of messages to retrieve.",
+      "type": "dropdown",
+      "default": "10",
+      "required": false,
+      "data": [
+        {
+          "title": "5",
+          "value": "5"
+        },
+        {
+          "title": "10",
+          "value": "10"
+        },
+        {
+          "title": "20",
+          "value": "20"
+        }
+      ]
+    },
+    {
+      "name": "autoFillReplySubject",
+      "label": "Auto-fill subject when replying",
+      "title": "Auto-fill Reply Subject",
+      "description": "Automatically fill the subject field with 'Re: ' followed by the original email's subject when using Reply or Reply All.",
+      "type": "checkbox",
+      "default": false,
+      "required": false
+    }
+  ],
+  "commands": [
+    {
+      "name": "check-for-mail",
+      "title": "Check for New Mail",
+      "description": "Check for new mail for all accounts.",
+      "mode": "no-view"
+    },
+    {
+      "name": "paste-latest-otp-code",
+      "title": "Paste Latest OTP Code",
+      "description": "Paste the latest OTP code from your emails.",
+      "mode": "no-view",
+      "keywords": [
+        "2fa"
+      ]
+    },
+    {
+      "name": "compose-new-message",
+      "title": "Compose New Message",
+      "description": "Compose a new message.",
+      "mode": "view"
+    },
+    {
+      "name": "see-recent-mail",
+      "title": "See Recent Mail",
+      "description": "See recent unread messages.",
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "unreadonly",
+          "label": "Only show unread messages",
+          "title": "Unread-Only",
+          "description": "Only show unread messages.",
+          "type": "checkbox",
+          "default": false,
+          "required": false
+        }
+      ]
+    },
+    {
+      "name": "see-important-mail",
+      "title": "See Important Mail",
+      "description": "See messages in the important mailboxes.",
+      "mode": "view"
+    },
+    {
+      "name": "see-mail-accounts",
+      "title": "See Mail Accounts",
+      "description": "See mail accounts.",
+      "mode": "view"
+    },
+    {
+      "name": "share-with-mail",
+      "title": "Share with Mail",
+      "description": "Share selected Finder items with Mail.",
+      "mode": "view"
+    },
+    {
+      "name": "refresh-mail",
+      "title": "Refresh Mail",
+      "description": "Refresh all mailboxes.",
+      "mode": "no-view",
+      "interval": "30m"
+    },
+    {
+      "name": "clear-cache",
+      "title": "Clear Cache",
+      "description": "Clears the cache for all accounts.",
+      "mode": "no-view"
+    },
+    {
+      "name": "mark-all-as-read",
+      "title": "Mark All as Read",
+      "description": "Mark all your emails as read.",
+      "mode": "no-view"
+    },
+    {
+      "name": "copy-foreground-mail-deeplink",
+      "title": "Copy Mail Deeplink",
+      "description": "Copy the deeplink of the selected email in Apple Mail.",
+      "mode": "no-view"
+    }
+  ],
+  "tools": [
+    {
+      "name": "search-emails",
+      "title": "Search Emails",
+      "description": "Search for emails in Apple Mail.",
+      "instructions": "Try multiple queries with different keywords if your first attempt doesn't succeed. For example,\nwhen looking for a meeting with John Smith, search separately for \"meeting\", \"john smith\", and \"john\".\n\nIMPORTANT: Always try at least 2-3 different search terms before concluding the\nemail can't be found. If specific searches fail, try broader terms related to the\ncontent you're seeking.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "search": {
+            "type": "string",
+            "description": "The search query compared against the email subject and content.\n\nSupports regular expressions."
+          },
+          "before": {
+            "type": "string",
+            "description": "Filter emails sent before the given date.\n\nDate must be in the format \"YYYY-MM-DD HH:mm\"."
+          },
+          "after": {
+            "type": "string",
+            "description": "Filter emails sent after the given date.\n\nDate must be in the format \"YYYY-MM-DD HH:mm\"."
+          },
+          "from": {
+            "type": "string",
+            "description": "Filter emails sent from the given email address.\n\nYou can use the `list-addresses` tool to get a list of email addresses."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Limit the number of results returned.\n\nMaximum is 50.\n\n@default 25"
+          },
+          "order": {
+            "type": "string",
+            "description": "Sort the results in ascending or descending order by date received.\n\n@default \"desc\"",
+            "enum": [
+              "asc",
+              "desc"
+            ]
+          },
+          "includeTrash": {
+            "type": "boolean",
+            "description": "Include emails from Trash in the search results.\n\nBy default, emails in Trash are excluded.\n\n@default false"
+          }
+        },
+        "required": []
+      },
+      "confirmation": false
+    },
+    {
+      "name": "read-email",
+      "title": "Read Email",
+      "description": "Read the full content of an email.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "filePath": {
+            "type": "string",
+            "description": "File path of the email to read.\n\nYou can get the file path using the `search-messages` tool."
+          }
+        },
+        "required": [
+          "filePath"
+        ]
+      },
+      "confirmation": false
+    },
+    {
+      "name": "list-addresses",
+      "title": "List Addresses",
+      "description": "List addresses in Apple Mail.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Filter addresses by the given query."
+          }
+        },
+        "required": [
+          "query"
+        ]
+      },
+      "confirmation": false
+    },
+    {
+      "name": "list-account-emails",
+      "title": "List Account Emails",
+      "description": "List all available email addresses from the user's mail accounts.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Optional filter query to search for specific email addresses."
+          }
+        },
+        "required": []
+      },
+      "confirmation": false
+    },
+    {
+      "name": "send-email",
+      "title": "Send Email",
+      "description": "Send an email with Apple Mail.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The recipient email addresses.\n\nThis must be a valid email address from the account's address book\nwhich you must get using the `list-addresses` tool."
+          },
+          "cc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The recipient email addresses to CC.\n\nThis must be a valid email address from the account's address book\nwhich you must get using the `list-addresses` tool."
+          },
+          "bcc": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The recipient email addresses to BCC.\n\nThis must be a valid email address from the account's address book\nwhich you must get using the `list-addresses` tool."
+          },
+          "from": {
+            "type": "string",
+            "description": "The email address to send from.\n\nThis must be one of the user's email addresses from their accounts.\nYou can get available email addresses using the `list-account-emails` tool.\nIf not provided, the default account's first email address will be used."
+          },
+          "subject": {
+            "type": "string",
+            "description": "The subject of the email.\n\nAlways include a relevant subject, but don't include any prefixes such as \"Re:\"."
+          },
+          "content": {
+            "type": "string",
+            "description": "The content of the message.\nDon't include any introduction or salutation. Just the main content."
+          },
+          "attachments": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "A list of absolute file paths to attach to the email."
+          }
+        },
+        "required": [
+          "to",
+          "cc",
+          "bcc",
+          "subject",
+          "content"
+        ]
+      },
+      "confirmation": true
+    },
+    {
+      "name": "move-to-trash",
+      "title": "Move to Trash",
+      "description": "Move an email to Trash in Apple Mail.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "messageIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "The numeric message ids of the emails to move to Trash.\n\nUse the `search-emails` tool first to find emails and get their ids."
+          },
+          "messageId": {
+            "type": "string",
+            "description": "The numeric message id of a single email to move to Trash.\n\nUse `messageIds` when moving multiple emails."
+          },
+          "accountName": {
+            "type": "string",
+            "description": "Optional Apple Mail account name to narrow the lookup.\n\nUse this only when you already know which account contains the message."
+          },
+          "mailboxName": {
+            "type": "string",
+            "description": "Optional Apple Mail mailbox name to narrow the lookup.\n\nUse this only when you already know which mailbox contains the message."
+          }
+        },
+        "required": []
+      },
+      "confirmation": false
+    },
+    {
+      "name": "copy-email-link",
+      "title": "Copy Email Link",
+      "description": "Copy the local link (URI) of the selected Apple Mail email so you can jump directly to that message. This makes it convenient to locate a specific email for context.",
+      "instructions": "Tool for getting email deeplinks from the active Mail application\n\n@returns Promise with email deeplinks or error message",
+      "confirmation": false
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.94.0",
+    "@raycast/utils": "^1.19.1",
+    "execa": "^9.5.2",
+    "got": "^14.4.6",
+    "javascript-time-ago": "^2.5.10",
+    "json2md": "^1.13.0",
+    "juice": "^9.1.0",
+    "mailparser": "^3.9.4",
+    "mime-types": "^2.1.35",
+    "plist": "^3.1.0",
+    "string-strip-html": "^13.4.12",
+    "turndown": "^7.2.0",
+    "utf8": "^3.0.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.8",
+    "@types/got": "^9.6.12",
+    "@types/json2md": "^1.5.4",
+    "@types/mailparser": "^3.4.6",
+    "@types/mime-types": "^2.1.4",
+    "@types/plist": "^3.0.5",
+    "@types/turndown": "^5.0.5",
+    "@types/utf8": "^3.0.3",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "ray publish"
+  },
+  "platforms": [
+    "macOS"
+  ],
+  "ai": {
+    "instructions": "If you can't access the Apple Mail database, tell the user they need to give Raycast the full disk access permission in the system settings. Be detailed about the steps.\n",
+    "evals": [
+      {
+        "input": "@mail when is the raycast hackathon?",
+        "mocks": {
+          "search-emails": [
+            {
+              "id": "1",
+              "from": "raycast@example.com",
+              "subject": "Raycast Hackathon",
+              "text": "Raycast Hackathon London is starting tomorrow Friday 7 March 15:00 - 21:00 GMT"
+            }
+          ]
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "search-emails",
+              "arguments": {
+                "search": "raycast hackathon",
+                "includeTrash": false
+              }
+            }
+          }
+        ]
+      },
+      {
+        "input": "@mail when is my meeting with john smith?",
+        "mocks": {
+          "search-emails": null
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "search-emails"
+            }
+          },
+          {
+            "callsTool": {
+              "name": "search-emails"
+            }
+          },
+          {
+            "callsTool": {
+              "name": "search-emails"
+            }
+          }
+        ]
+      },
+      {
+        "input": "@mail tell john i will have that pr done tomorrow",
+        "mocks": {
+          "list-addresses": [
+            {
+              "address": "john@example.com",
+              "name": "John Doe"
+            },
+            {
+              "address": "jane@example.com",
+              "name": "Jane Doe"
+            }
+          ],
+          "send-email": "Successfully called \"send-email\""
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {
+                "query": "john"
+              },
+              "name": "list-addresses"
+            }
+          },
+          {
+            "callsTool": {
+              "arguments": {
+                "content": {
+                  "includes": "tomorrow"
+                },
+                "subject": {
+                  "includes": "PR"
+                },
+                "to": [
+                  "john@example.com"
+                ]
+              },
+              "name": "send-email"
+            }
+          }
+        ]
+      },
+      {
+        "input": "@mail move the email from amazon about shipping to trash",
+        "mocks": {
+          "search-emails": [
+            {
+              "id": "101",
+              "from": "shipment-tracking@amazon.com",
+              "subject": "Your package has shipped",
+              "summary": "Your order is on the way and will arrive tomorrow."
+            }
+          ],
+          "move-to-trash": {
+            "message": "1 Email moved to Trash",
+            "emails": [
+              {
+                "id": "101",
+                "subject": "Your package has shipped",
+                "from": "shipment-tracking@amazon.com",
+                "accountName": "iCloud",
+                "mailboxName": "INBOX"
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "search-emails",
+              "arguments": {
+                "search": {
+                  "includes": "amazon"
+                }
+              }
+            }
+          },
+          {
+            "callsTool": {
+              "name": "move-to-trash",
+              "arguments": {
+                "messageId": "101"
+              }
+            }
+          }
+        ]
+      },
+      {
+        "input": "@mail find the security alert email in trash",
+        "mocks": {
+          "search-emails": [
+            {
+              "id": "6551",
+              "from": "no-reply@accounts.google.com",
+              "subject": "Security alert",
+              "summary": "A new sign-in on Mac"
+            }
+          ]
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "search-emails",
+              "arguments": {
+                "search": {
+                  "includes": "security alert"
+                },
+                "includeTrash": true
+              }
+            }
+          }
+        ]
+      },
+      {
+        "input": "@mail move all github notification emails about failed builds to trash",
+        "mocks": {
+          "search-emails": [
+            {
+              "id": "201",
+              "from": "notifications@github.com",
+              "subject": "Build failed for raycast/extensions",
+              "summary": "The build failed on main."
+            },
+            {
+              "id": "202",
+              "from": "notifications@github.com",
+              "subject": "CI failed for mail extension",
+              "summary": "The workflow completed with failures."
+            }
+          ],
+          "move-to-trash": {
+            "message": "2 Emails moved to Trash",
+            "emails": [
+              {
+                "id": "201",
+                "subject": "Build failed for raycast/extensions",
+                "from": "notifications@github.com",
+                "accountName": "iCloud",
+                "mailboxName": "INBOX"
+              },
+              {
+                "id": "202",
+                "subject": "CI failed for mail extension",
+                "from": "notifications@github.com",
+                "accountName": "iCloud",
+                "mailboxName": "INBOX"
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "search-emails",
+              "arguments": {
+                "search": {
+                  "includes": "github"
+                }
+              }
+            }
+          },
+          {
+            "callsTool": {
+              "name": "move-to-trash",
+              "arguments": {
+                "messageIds": [
+                  "201",
+                  "202"
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

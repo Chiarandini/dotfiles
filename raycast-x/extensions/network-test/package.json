@@ -1,0 +1,82 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "network-test",
+  "title": "Network Test",
+  "description": "Quick download/upload/latency check using the built-in macOS networkquality tool",
+  "icon": "extension-icon.png",
+  "author": "zak_katz",
+  "platforms": [
+    "macOS"
+  ],
+  "categories": [
+    "System"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "test-network",
+      "title": "Test Network",
+      "description": "Measure download, upload, latency, and responsiveness",
+      "mode": "view"
+    },
+    {
+      "name": "compare-networks",
+      "title": "Compare Networks",
+      "description": "Run a test on every active interface and pick a winner",
+      "mode": "view"
+    },
+    {
+      "name": "network-history",
+      "title": "Network Test History",
+      "description": "Browse past tests by network, with full per-run detail",
+      "mode": "view"
+    }
+  ],
+  "preferences": [
+    {
+      "name": "defaultMode",
+      "type": "dropdown",
+      "required": false,
+      "title": "Default test mode",
+      "description": "Which directions to measure when the command opens",
+      "default": "parallel",
+      "data": [
+        {
+          "title": "Parallel (down + up + latency, ~30s)",
+          "value": "parallel"
+        },
+        {
+          "title": "Sequential (peak speeds, ~55s)",
+          "value": "sequential"
+        },
+        {
+          "title": "Download only (~18s)",
+          "value": "download"
+        },
+        {
+          "title": "Upload only (~18s)",
+          "value": "upload"
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.103.3",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

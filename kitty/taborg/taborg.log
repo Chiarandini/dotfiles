@@ -1,0 +1,53 @@
+2026-06-22 05:05:18 [tabctl] unknown action: '__selftest__'
+2026-06-22 05:05:57 [tabctl] reconcile: processed 0 tabs
+2026-06-21 23:09:36 [route] win=505 tab=407 kind=claude (was '') -> seeded new claude window
+2026-06-21 23:09:36 [route] win=109 tab=93 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=161 tab=136 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=429 tab=334 kind=edit (was '') -> seeded new edit window
+2026-06-21 23:09:36 [route] win=550 tab=451 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=555 tab=456 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=561 tab=462 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=563 tab=464 kind=claude (was '') -> merged into home tab 470
+2026-06-21 23:09:36 [route] win=568 tab=468 kind=edit (was '') -> merged into home tab 473
+2026-06-21 23:09:36 [route] win=569 tab=469 kind=misc (was '') -> alone in window, tagged in place
+2026-06-21 23:09:36 [tabctl] reconcile: processed 10 tabs
+2026-06-21 23:45:16 [route] win=505 tab=470 kind=claude already placed; no-op
+2026-06-21 23:45:16 [route] win=109 tab=471 kind=claude already placed; no-op
+2026-06-21 23:45:16 [route] win=161 tab=472 kind=claude already placed; no-op
+2026-06-21 23:45:16 [route] win=550 tab=474 kind=claude already placed; no-op
+2026-06-21 23:45:16 [route] win=555 tab=475 kind=claude already placed; no-op
+2026-06-21 23:45:16 [route] win=561 tab=476 kind=claude already placed; no-op
+2026-06-21 23:45:17 [route] win=429 tab=479 kind=edit already placed; no-op
+2026-06-21 23:45:17 [route] win=568 tab=480 kind=edit already placed; no-op
+2026-06-21 23:45:17 [tabctl] reconcile: processed 8 tabs
+2026-06-21 23:45:20 [route] win=505 tab=470 kind=claude already placed; no-op
+2026-06-21 23:45:20 [route] win=109 tab=471 kind=claude already placed; no-op
+2026-06-21 23:45:20 [route] win=161 tab=472 kind=claude already placed; no-op
+2026-06-21 23:45:20 [route] win=550 tab=474 kind=claude already placed; no-op
+2026-06-21 23:45:21 [route] win=555 tab=475 kind=claude already placed; no-op
+2026-06-21 23:45:21 [route] win=561 tab=476 kind=claude already placed; no-op
+2026-06-21 23:45:21 [route] win=429 tab=479 kind=edit already placed; no-op
+2026-06-21 23:45:21 [route] win=568 tab=480 kind=edit already placed; no-op
+2026-06-21 23:45:21 [tabctl] reconcile: processed 8 tabs
+2026-06-22 14:25:41 [route] win=505 tab=470 kind=claude already placed; no-op
+2026-06-22 14:25:41 [route] win=109 tab=471 kind=claude already placed; no-op
+2026-06-22 14:25:42 [route] win=161 tab=472 kind=claude already placed; no-op
+2026-06-22 14:25:42 [route] win=550 tab=474 kind=claude already placed; no-op
+2026-06-22 14:25:42 [route] win=555 tab=475 kind=claude already placed; no-op
+2026-06-22 14:25:42 [route] win=561 tab=476 kind=claude already placed; no-op
+2026-06-22 14:25:42 [route] win=429 tab=479 kind=edit already placed; no-op
+2026-06-22 14:25:42 [route] win=568 tab=480 kind=edit already placed; no-op
+2026-06-22 14:25:42 [route] win=576 tab=487 kind=claude (was '') -> seeded new claude window
+2026-06-22 14:25:42 [tabctl] reconcile: processed 9 tabs
+15:50:37 [tabbar] module loaded (v5-raw-colour)
+15:52:22 [tabbar] module loaded (v5-raw-colour)
+16:00:17 [tabbar] module loaded (v6-user-palette)
+16:01:23 [tabbar] module loaded (v6-user-palette)
+16:02:28 [tabbar] module loaded (v7-fresh-load)
+16:04:01 [tabbar] module loaded (v7-fresh-load)
+16:10:43 [tabbar] module loaded (v7-fresh-load)
+16:12:11 [tabbar] module loaded (v7-fresh-load)
+2026-06-27 14:12:15 [tabctl] tabled: tab 472 marked
+2026-06-27 14:15:33 [tabctl] tabled: tab 479 marked
+2026-06-28 17:57:16 [tabctl] tabled: tab 562 marked
+2026-06-28 17:57:28 [tabctl] tabled: tab 562 unmarked

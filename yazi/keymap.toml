@@ -1,0 +1,8 @@
+# yazi keymap overrides — merged on top of the built-in defaults.
+# prepend_keymap wins over a default on the same key; the rest of the
+# defaults (including ~ and <F1> for help) stay intact.
+
+[mgr]
+prepend_keymap = [
+  { on = "<C-/>", run = "help", desc = "Open help" },
+]

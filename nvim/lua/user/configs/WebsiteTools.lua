@@ -3,21 +3,22 @@ local websiteTools = require("WebsiteTools")
 local config_dir = vim.fn.stdpath("config")
 
 websiteTools.setup({
-	blog_source_code_url = "~/website-nate/nate-website/src/assets/latex",
-	blog_webpage_url = "~/website-nate/nate-website/src/app/components/blog/blog.component.ts",
-	blog_public_post_url = "~/website-nate/nate-website/src/assets/pdfs/blogs",
+	blog_source_code_url = "~/programming/website-nate/nate-website/src/assets/latex",
+	blog_webpage_url = "~/programming/website-nate/nate-website/src/app/components/blog/blog.component.ts",
+	blog_public_post_url = "~/programming/website-nate/nate-website/src/assets/pdfs/blogs",
 	blog_latex_template = config_dir .. "/preamble/blog_preamble.tex",
 
-	books_pdf_url = "~/website-nate/nate-website/src/assets/pdfs/books",
-	books_webpage_url = "~/website-nate/nate-website/src/app/components/books/books.component.ts",
+	books_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/books",
+	books_webpage_url = "~/programming/website-nate/nate-website/src/app/components/books/books.component.ts",
 	books_latex_template = config_dir .. "/preamble/books_preamble.tex",
 
-	notes_source_code_url = "~/website-nate/nate-website/src/assets/latex/notes",
-	notes_pdf_url = "~/website-nate/nate-website/src/assets/pdfs/notes",
-	notes_webpage_url = "~/website-nate/nate-website/src/app/components/notes/notes.component.ts",
+	notes_source_code_url = "~/programming/website-nate/nate-website/src/assets/latex/notes",
+	notes_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/notes",
+	notes_webpage_url = "~/programming/website-nate/nate-website/src/app/components/notes/notes.component.ts",
 	notes_latex_template = config_dir .. "/preamble/notes_preamble.tex",
 
-	website_dir = "~/website-nate/nate-website"
+	website_dir = "~/programming/website-nate/nate-website",
+	series_map_dir = "~/Documents/academic/writing/textbooks/.eyntka/series-map"
 })
 
 local function complete_display_mode(arg_lead, cmd_line, cursor_pos)

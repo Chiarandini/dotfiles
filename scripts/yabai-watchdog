@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# yabai-watchdog — Detect a wedged yabai IPC and recover via fix-yabai.
+#
+# yabai's IPC thread occasionally hangs while the process stays alive, so
+# launchd's KeepAlive can't notice (the process is "running" from its POV).
+# This script is run on an interval by ~/Library/LaunchAgents/com.local.yabai-watchdog.plist
+# and self-heals by invoking fix-yabai.
+#
+# Tunables:
+#   TIMEOUT_S — seconds to wait for a `yabai -m query` response before
+#               declaring yabai unresponsive. 5s is generous (healthy
+#               yabai answers in <100ms).
+
+set -uo pipefail
+
+TIMEOUT_S=5
+LOG=/tmp/yabai-watchdog.log
+FIX="$HOME/.local/bin/fix-yabai"
+
+# Ensure $PATH includes Homebrew so `yabai` and `timeout` resolve when
+# launchd starts us with a minimal environment.
+export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:$PATH"
+
+ts() { date '+%Y-%m-%d %H:%M:%S'; }
+
+if timeout "$TIMEOUT_S" yabai -m query --spaces >/dev/null 2>&1; then
+    exit 0
+fi
+
+echo "[$(ts)] yabai unresponsive (>${TIMEOUT_S}s) — running fix-yabai" >> "$LOG"
+
+if [[ -x "$FIX" ]]; then
+    "$FIX" >> "$LOG" 2>&1
+    echo "[$(ts)] fix-yabai exit=$?" >> "$LOG"
+else
+    echo "[$(ts)] ERROR: fix-yabai not executable at $FIX" >> "$LOG"
+    exit 1
+fi

@@ -42,6 +42,8 @@ ln -sf "$DOTFILES_DIR/.zprofile" ~/.zprofile
 ln -sf "$DOTFILES_DIR/.ideavimrc" ~/.ideavimrc
 mkdir -p ~/.local/bin
 ln -sf "$DOTFILES_DIR/scripts/fix-yabai-sa" ~/.local/bin/fix-yabai-sa
+ln -sf "$DOTFILES_DIR/scripts/fix-yabai" ~/.local/bin/fix-yabai
+ln -sf "$DOTFILES_DIR/scripts/yabai-watchdog" ~/.local/bin/yabai-watchdog
 ln -sf "$DOTFILES_DIR/scripts/airdrop" ~/.local/bin/airdrop
 
 # 4. Install core packages from main Brewfile
@@ -96,5 +98,26 @@ skhd --start-service
 # 10. Configure yabai scripting addition (sudoers hash)
 echo "Configuring yabai scripting addition..."
 fix-yabai-sa
+
+# 11. Install LaunchAgents from $DOTFILES_DIR/launchd
+# Plists use __HOME__ as a placeholder so they're portable across machines.
+# We materialize a real copy into ~/Library/LaunchAgents with $HOME substituted,
+# then bootstrap each one into the user's GUI launchd domain.
+echo "Installing LaunchAgents..."
+mkdir -p ~/Library/LaunchAgents
+if [ -d "$DOTFILES_DIR/launchd" ]; then
+    for src in "$DOTFILES_DIR/launchd"/*.plist; do
+        [ -f "$src" ] || continue
+        name="$(basename "$src")"
+        dst="$HOME/Library/LaunchAgents/$name"
+        label="${name%.plist}"
+        sed "s|__HOME__|$HOME|g" "$src" > "$dst"
+        # Reload: bootout if already loaded (ignore failure on fresh install),
+        # then bootstrap. Either step alone isn't enough on subsequent runs.
+        launchctl bootout "gui/$UID/$label" 2>/dev/null || true
+        launchctl bootstrap "gui/$UID" "$dst"
+        echo "  loaded: $label"
+    done
+fi
 
 echo "Bootstrap complete!"

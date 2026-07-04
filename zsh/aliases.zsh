@@ -52,3 +52,28 @@ alias ....='cd ../../..'
 # ║   Claude with no session   ║
 # ╚════════════════════════════╝
 alias claudex='claude --no-session-persistence'
+
+# ╔═════════════════════════════════════════════════════════════╗
+# ║ rem — Apple Reminders from the terminal (EventKit, two-way) ║
+# ╚═════════════════════════════════════════════════════════════╝
+# Human CLI over constellation's EventKit Reminders library — the same source of
+# truth the secretary agent's MCP wraps, so terminal + agents + Raycast stay in
+# sync (Reminders itself). Verbs:
+#   rem                          overview: lists + open counts
+#   rem ls <list>                items in a list (fuzzy match)
+#   rem add <list> <text>        create  (--due 2026-06-23)
+#   rem done <text>              complete by title  (--list to disambiguate)
+#   rem --json ...               raw JSON for scripts/pipes
+alias rem="$HOME/programming/constellation/mcp-servers/apple-reminders/rem"
+
+# ╔════════════════════════════════════════════════════════════╗
+# ║ kitty over ssh — propagate terminfo + kitty-isms to remote ║
+# ╚════════════════════════════════════════════════════════════╝
+# `kitten ssh` copies kitty's terminfo and enables image/hyperlink protocols
+# over the SSH tunnel. Guard with command -v so the alias only activates when
+# kitten is on PATH; otherwise plain /usr/bin/ssh is used. Scripts and git's
+# internal ssh usage are unaffected — aliases don't expand in non-interactive
+# shells.
+if command -v kitten >/dev/null 2>&1; then
+  alias ssh='kitten ssh'
+fi

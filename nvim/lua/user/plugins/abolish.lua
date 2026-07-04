@@ -4,8 +4,24 @@
 --
 -- Add your own with:  :Abolish {typo} {correction}
 -- Abolish handles all case variants automatically.
+--
+-- Context gating (NoetherVim core sets this up automatically):
+--   The distro sets g:abolish_default_expr = "NoetherAbolishSpell", so every
+--   :Abolish line below is registered as <expr> and only fires inside prose
+--   buffers, comments, or @spell-tagged regions of code.  No change needed
+--   here for that to take effect.
+--
+--   To opt a single line out of the gate (always expand, even in code):
+--     Abolish -expr= some_typo some_correction
+--
+--   To force unconditional expansion in the current buffer at runtime:
+--     [oA   (force on)     ]oA   (return to gated)
+--
+-- Plugin URL must match NoetherVim's distro spec exactly so lazy.nvim merges
+-- the two specs into one plugin instance.  Currently: Chiarandini/vim-abolish
+-- (fork adds the -expr= option; PR open at tpope/vim-abolish#126).
 return {
-	"tpope/vim-abolish",
+	"Chiarandini/vim-abolish",
 	config = function()
 		vim.cmd([[
 Abolish ot to

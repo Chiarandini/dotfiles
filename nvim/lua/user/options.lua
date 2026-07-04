@@ -11,7 +11,8 @@ vim.o.autowriteall=false
 vim.o.confirm=false
 
 vim.bo.tabstop    = 2  -- default: 4
-vim.o.formatoptions  = "tcoq1jn"
+-- formatoptions left at distro default ("croq1jn"): keeps `r` so <CR>
+-- continues comment leaders, paired with the global <S-CR> escape.
 
 -- ── Personal spell dictionary ────────────────────────────────────────────────
 vim.opt.spellfile:append(vim.fn.stdpath("config") .. "/spell/en.utf-8.add")

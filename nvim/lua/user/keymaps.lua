@@ -89,6 +89,13 @@ if package.loaded["dial.map"] then
 	vim.schedule(bind_increment_fallback)
 end
 
+vim.keymap.set("n", "<C-a>", function()
+  local cword = vim.fn.expand("<cword>")
+  if cword:match("%d") then
+    return "<C-a>"
+  end
+  return "ggVG"
+end, { expr = true, desc = "increment number, else select all" })
 
 -- Quick run via overseer (replaces code_runner.nvim <leader>RR)
 vim.keymap.set("n", "<leader>RR", "<cmd>OverseerRun<cr>", { desc = "run task (overseer)" })
@@ -130,12 +137,16 @@ vim.api.nvim_create_user_command("J", function(opts)
 end, { nargs = "?", desc = "go to junk directory" })
 
 vim.api.nvim_create_user_command("O", function()
-  vim.cmd("cd ~/Documents/NateObsidianVault/")
+  vim.cmd("cd ~/Documents/vault/")
 end, { desc = "go to Obsidian vault" })
 
 vim.api.nvim_create_user_command("U", function()
   vim.cmd("cd ~/Documents/University/PhD/2025-2026/1st semester/")
 end, { desc = "go to university directory" })
+
+vim.api.nvim_create_user_command("Dashboard", function()
+  require("snacks").dashboard()
+end, { desc = "open snacks dashboard" })
 
 
 

@@ -118,10 +118,14 @@ rshift - e : yabai -m space --balance; yabai -m space --gap abs:5:5:5:5; yabai -
 #   h = toggle ceiling   b = toggle bed    d = toggle desk
 #   a = all on           o = all off
 #   s = scene beatsaber  r = scene reading
-cmd + ctrl - h : shortcuts run "Toggle Ceiling Lights"
+cmd + ctrl - c : shortcuts run "Toggle Ceiling Lights"
 cmd + ctrl - b : shortcuts run "Toggle Bed Lamp"
 cmd + ctrl - d : shortcuts run "Toggle Desk Lamp"
 cmd + ctrl - a : shortcuts run "Scene All On"
 cmd + ctrl - o : shortcuts run "Scene All Off"
 cmd + ctrl - s : shortcuts run "Scene Beatsaber"
 cmd + ctrl - r : shortcuts run "Scene Reading"
+
+# ----- yabai recovery -----
+# Manual on-demand fix when yabai feels wedged (faster than waiting for watchdog).
+shift + cmd + ctrl - r : ~/.local/bin/fix-yabai &

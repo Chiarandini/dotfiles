@@ -1,0 +1,631 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "raynab",
+  "title": "Raynab — Manage Your Budgets",
+  "description": "View and manage your YNAB Budgets directly from Raycast",
+  "icon": "command-icon.png",
+  "author": "CodetaroMiura",
+  "license": "MIT",
+  "categories": [
+    "Finance",
+    "Productivity"
+  ],
+  "contributors": [
+    "omarshahine",
+    "damian_duchnowski"
+  ],
+  "commands": [
+    {
+      "name": "activeBudget",
+      "title": "Select Active Budget",
+      "subtitle": "YNAB",
+      "description": "Select an active budget to use across Raynab.",
+      "mode": "view"
+    },
+    {
+      "name": "transactions",
+      "title": "List Transactions",
+      "subtitle": "YNAB",
+      "description": "List transactions for the selected budget.",
+      "mode": "view"
+    },
+    {
+      "name": "transaction",
+      "title": "Create Transaction",
+      "subtitle": "YNAB",
+      "description": "Create a new transaction in the selected budget.",
+      "mode": "view"
+    },
+    {
+      "name": "scheduleTransaction",
+      "title": "Schedule Transaction",
+      "subtitle": "YNAB",
+      "description": "Schedules a future transaction in the selected budget.",
+      "mode": "view"
+    },
+    {
+      "name": "accounts",
+      "title": "List Accounts",
+      "subtitle": "YNAB",
+      "description": "List accounts for the selected budget.",
+      "mode": "view"
+    },
+    {
+      "name": "budget",
+      "title": "View Active Budget",
+      "subtitle": "YNAB",
+      "description": "View and Edit Active Budget Information for the current month.",
+      "mode": "view"
+    },
+    {
+      "name": "unreviewed",
+      "title": "Unreviewed Transactions",
+      "subtitle": "YNAB",
+      "description": "Easily track unapproved or uncategorized transactions.",
+      "mode": "menu-bar",
+      "interval": "2h"
+    }
+  ],
+  "tools": [
+    {
+      "name": "add-transaction",
+      "title": "Add Transaction",
+      "description": "Add a new YNAB transaction",
+      "input": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "description": "Optional date for the transaction"
+          },
+          "payee_name": {
+            "type": "string",
+            "description": "The name of the payee"
+          },
+          "amount": {
+            "type": "number",
+            "description": "The amount of the transaction like $25.00"
+          },
+          "account_name": {
+            "type": "string",
+            "description": "Optional account name of the account to create the transaction in"
+          },
+          "memo": {
+            "type": "string",
+            "description": "Optional memo for the transaction. Any text not part of the previous fields will be added as a memo."
+          }
+        },
+        "required": [
+          "payee_name",
+          "amount"
+        ]
+      },
+      "confirmation": true
+    },
+    {
+      "name": "get-transactions",
+      "title": "Get Transactions",
+      "description": "Get YNAB transactions",
+      "instructions": "Get transactions from YNAB based on the specified filter\n\n@param input, ,The input parameters for filtering transactions\n@returns A list of transactions matching the filter criteria",
+      "input": {
+        "type": "object",
+        "properties": {
+          "filter": {
+            "type": "string",
+            "description": "Filter type for transactions\n- 'active': Shows unapproved or uncategorized transactions"
+          },
+          "payee": {
+            "type": "string",
+            "description": "Optional payee name to filter transactions"
+          },
+          "category": {
+            "type": "string",
+            "description": "Optional category name to filter transactions"
+          },
+          "period": {
+            "type": "string",
+            "description": "Optional period to fetch transactions for",
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "quarter",
+              "year"
+            ]
+          }
+        },
+        "required": []
+      },
+      "confirmation": false
+    },
+    {
+      "name": "get-accounts",
+      "title": "Get Accounts",
+      "description": "Get all YNAB accounts",
+      "instructions": "Get all accounts from YNAB\n\n@returns A list of all accounts with formatted data",
+      "confirmation": false
+    },
+    {
+      "name": "get-account-details",
+      "title": "Get Account Details",
+      "description": "Get details of a specific account such as the balance, type, and on_budget status",
+      "instructions": "Get details of a specific YNAB account\n\n@param input, ,The account name to search for\n@returns Details of the matching account",
+      "input": {
+        "type": "object",
+        "properties": {
+          "account_name": {
+            "type": "string",
+            "description": "The name of the account to retrieve"
+          }
+        },
+        "required": [
+          "account_name"
+        ]
+      },
+      "confirmation": false
+    },
+    {
+      "name": "get-big-numbers",
+      "title": "Big Numbers",
+      "description": "Get spending statistics for today, this week, and this month from budget accounts",
+      "confirmation": false
+    },
+    {
+      "name": "get-budget",
+      "title": "Get Budget",
+      "description": "Get current budget information including age of money and monthly budget details",
+      "input": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string"
+          }
+        },
+        "required": []
+      },
+      "confirmation": false
+    }
+  ],
+  "keywords": [
+    "ynab",
+    "budget"
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.98.5",
+    "@raycast/utils": "^1.18.1",
+    "dayjs": "^1.11.13",
+    "fuse.js": "^6.5.3",
+    "nanoid": "^3.2.0",
+    "node-fetch": "^3.0.0",
+    "node-localstorage": "^2.2.1",
+    "random-hex-color-generator": "^1.0.12",
+    "swr": "^2.2.5",
+    "ynab": "^2.6.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.1.1",
+    "@types/node": "^22.15.18",
+    "@types/react": "^19.1.4",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^8.3.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.9"
+  },
+  "preferences": [
+    {
+      "name": "apiToken",
+      "type": "password",
+      "required": true,
+      "title": "Token",
+      "description": "Your YNAB Personal Access Token",
+      "placeholder": "Enter your Personal access token"
+    },
+    {
+      "name": "quickRevalidate",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "title": "Quick Revalidate",
+      "label": "Enable Quick Revalidate",
+      "description": "Revalidate the transaction list immediately after editing, approving, or deleting a transaction. Turning this off might help if you're reaching the API rate limit often."
+    },
+    {
+      "name": "liveDistribute",
+      "type": "checkbox",
+      "required": false,
+      "default": true,
+      "title": "Live Distribute",
+      "label": "Enable Live Distribute",
+      "description": "Automatically distribute 2-way split transaction amounts according to the total"
+    }
+  ],
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "ray publish",
+    "test": "vitest"
+  },
+  "platforms": [
+    "macOS"
+  ],
+  "ai": {
+    "instructions": "You are a helpful assistant for managing YNAB (You Need A Budget) transactions. Always format amounts correctly and handle dates in ISO format. Be precise with payee names and account names. When showing transactions, format the information clearly and concisely.\n\nFor transaction queries, you can specify time periods using natural language. The following time periods are supported:\n- 'last year' or 'past year' for the last 12 months\n- 'last quarter' or 'past quarter' for the last 3 months\n- 'last month' or 'past month' for the last 30 days\n- 'last week' or 'past week' for the last 7 days\n- 'last day', 'past day', 'yesterday', or 'today' for the last 24 hours\n\nIf no time period is specified, the default is the last month.\n\nFor account balance queries, use get-accounts or get-account-details tools, not get-transactions.",
+    "evals": [
+      {
+        "input": "@raynab add a transaction for $25.50 at Starbucks",
+        "mocks": {
+          "add-transaction": {
+            "input": {
+              "amount": 25.5,
+              "payee_name": "Starbucks"
+            }
+          },
+          "error": "Please specify an account for this transaction",
+          "success": false
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {
+                "amount": 25.5,
+                "payee_name": "Starbucks"
+              },
+              "name": "add-transaction"
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab add a transaction for $25.50 at Starbucks to my Checking account",
+        "mocks": {
+          "add-transaction": {
+            "success": true,
+            "transaction": {
+              "date": "2024-03-15",
+              "payee_name": "Starbucks",
+              "amount": -25.5,
+              "account_name": "Checking",
+              "memo": "Morning coffee"
+            }
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "add-transaction",
+              "arguments": {}
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab show me my recent transactions",
+        "mocks": {
+          "get-transactions": [
+            {
+              "id": "123",
+              "date": "2024-03-14",
+              "payee_name": "Amazon",
+              "amount": -99.99,
+              "account_name": "Credit Card",
+              "category_name": "Office Supplies",
+              "cleared": true
+            },
+            {
+              "id": "124",
+              "date": "2024-03-13",
+              "payee_name": "Whole Foods",
+              "amount": -75.25,
+              "account_name": "Checking",
+              "category_name": "Groceries",
+              "cleared": true
+            }
+          ]
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-transactions",
+              "arguments": {}
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab show me my Amazon purchases from last month",
+        "mocks": {
+          "get-transactions": {
+            "success": true,
+            "transactions": [
+              {
+                "account_id": "123",
+                "account_name": "Credit Card",
+                "amount": "-$79.18",
+                "approved": true,
+                "category_id": "567",
+                "category_name": "Office Supplies",
+                "cleared": "uncleared",
+                "date": "2025-05-09",
+                "deleted": false,
+                "id": "896",
+                "payee_id": "478",
+                "payee_name": "Amazon",
+                "subtransactions": []
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {
+                "payee": "Amazon",
+                "period": "month"
+              },
+              "name": "get-transactions"
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab what did I spend at Target in the past month?",
+        "mocks": {
+          "get-transactions": {
+            "success": true,
+            "transactions": [
+              {
+                "account_id": "123",
+                "account_name": "Credit Card",
+                "amount": "-$79.18",
+                "approved": true,
+                "category_id": "567",
+                "category_name": "Groceries",
+                "cleared": "uncleared",
+                "date": "2025-05-09",
+                "deleted": false,
+                "id": "896",
+                "payee_id": "478",
+                "payee_name": "Target",
+                "subtransactions": []
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {
+                "payee": "Target",
+                "period": "month"
+              },
+              "name": "get-transactions"
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab show me my transactions with Amazon this month",
+        "mocks": {
+          "get-transactions": {
+            "success": true,
+            "transactions": [
+              {
+                "id": "456",
+                "date": "2024-03-15",
+                "payee_name": "Amazon",
+                "amount": -99.99,
+                "account_name": "Credit Card"
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-transactions",
+              "arguments": {
+                "payee": "Amazon",
+                "period": "month"
+              }
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab show me my account balances",
+        "mocks": {
+          "get-accounts": [
+            {
+              "name": "Checking",
+              "balance": "$5,000.00",
+              "on_budget": true
+            },
+            {
+              "name": "Savings",
+              "balance": "$10,000.00",
+              "on_budget": true
+            }
+          ]
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-accounts",
+              "arguments": {}
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab what is my checking account balance?",
+        "mocks": {
+          "get-account-details": {
+            "account": {
+              "balance": "$5,000",
+              "id": "123",
+              "name": "Checking",
+              "on_budget": true,
+              "type": "checking"
+            },
+            "success": true
+          }
+        },
+        "expected": [
+          {
+            "not": {
+              "callsTool": "get-accounts"
+            }
+          },
+          {
+            "callsTool": {
+              "name": "get-account-details",
+              "arguments": {
+                "account_name": {
+                  "includes": "checking"
+                }
+              }
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab what are my big three numbers?",
+        "mocks": {
+          "get-big-numbers": {
+            "success": true,
+            "today": "$150.00",
+            "thisWeek": "$750.00",
+            "thisMonth": "$2,500.00"
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-big-numbers",
+              "arguments": {}
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab show me my big numbers",
+        "mocks": {
+          "get-big-numbers": {
+            "success": true,
+            "today": "$150.00",
+            "thisWeek": "$750.00",
+            "thisMonth": "$2,500.00"
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-big-numbers",
+              "arguments": {}
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab what did I spend at Amazon last month?",
+        "mocks": {
+          "get-transactions": {
+            "success": true,
+            "transactions": [
+              {
+                "account_id": "123",
+                "account_name": "Credit Card",
+                "amount": "-$150.00",
+                "approved": true,
+                "category_id": "567",
+                "category_name": "Shopping",
+                "cleared": "uncleared",
+                "date": "2024-03-10",
+                "deleted": false,
+                "id": "896",
+                "payee_id": "478",
+                "payee_name": "Amazon",
+                "subtransactions": []
+              }
+            ]
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "name": "get-transactions",
+              "arguments": {
+                "payee": {
+                  "includes": "amazon"
+                },
+                "period": "month"
+              }
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab what is the age of money in my current budget?",
+        "mocks": {
+          "get-budget": {
+            "activity": "-$1,200.00",
+            "age_of_money": 40,
+            "budgeted": "$3,800.00",
+            "income": "$5,000.00",
+            "month": "2024-03-01",
+            "note": "",
+            "success": true,
+            "to_be_budgeted": "$2,000.00"
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {},
+              "name": "get-budget"
+            }
+          }
+        ],
+        "usedAsExample": true
+      },
+      {
+        "input": "@raynab tell me about my this month's budget",
+        "mocks": {
+          "get-budget": {
+            "activity": "$1,000.00",
+            "age_of_money": 0,
+            "budgeted": "$5,000.00",
+            "income": "$10,000.00",
+            "month": "2025-05-01",
+            "note": "",
+            "success": true,
+            "to_be_budgeted": "$5,000.00"
+          }
+        },
+        "expected": [
+          {
+            "callsTool": {
+              "arguments": {},
+              "name": "get-budget"
+            }
+          }
+        ],
+        "usedAsExample": true
+      }
+    ]
+  }
+}

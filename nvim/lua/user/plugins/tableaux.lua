@@ -3,7 +3,7 @@
 -- installation; this spec just deep-merges personal config into it.
 --
 -- For local plugin development, set `dev = true` here and lazy will load the
--- working tree at ~/programming/custom_plugins/noethervim-tableaux/ instead
+-- working tree at ~/programming/nvim-plugins/noethervim-tableaux/ instead
 -- of the GitHub clone.
 return {
 	"Chiarandini/noethervim-tableaux",
@@ -11,7 +11,7 @@ return {
 	opts = {
 		quotes = require("user.data.math_quotes"),
 		vault  = {
-			path      = "~/Documents/NateObsidianVault/",
+			path      = "~/Documents/vault/",
 			today_cmd = ":ObsidianToday",
 		},
 	},

@@ -14,5 +14,6 @@
 -- production, so testing mirrors the real config exactly.
 
 -- vim.g.noethervim_dashboard = false
+
 vim.g.noethervim_dev = vim.fn.expand("~/programming/NoetherVim")
 dofile(vim.fn.expand("~/.config/nvim/init.lua"))

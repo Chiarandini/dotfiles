@@ -6,6 +6,6 @@
 return {
   {
     "Chiarandini/NoetherVim-Typst",
-    dir = vim.fn.expand("~/programming/custom_plugins/noethervim-typst"),
+    dir = vim.fn.expand("~/programming/nvim-plugins/noethervim-typst"),
   },
 }

@@ -1,0 +1,122 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "pdf-library",
+  "title": "PDF Library",
+  "description": "Browse and search PDFs in a local directory with metadata preview",
+  "icon": "extension-icon.png",
+  "author": "nate-app",
+  "categories": [
+    "Productivity"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "search-pdfs",
+      "title": "Search PDFs",
+      "description": "Search through PDFs in your library directory",
+      "mode": "view",
+      "preferences": [
+        {
+          "name": "libraryPath",
+          "title": "Library Path",
+          "description": "Path to the directory containing your PDFs (e.g. ~/Documents/textbooks)",
+          "type": "textfield",
+          "required": true,
+          "default": "~/Documents"
+        }
+      ]
+    },
+    {
+      "name": "organize-loose-files",
+      "title": "Organize Loose Files",
+      "description": "Auto-sort book-type files at the library root into the appropriate subfolder using AI",
+      "mode": "view",
+      "icon": "command-organize.png",
+      "preferences": [
+        {
+          "name": "libraryPaths",
+          "title": "Library Paths",
+          "description": "Comma-separated roots to scan for loose files. Each root is scanned independently; loose files at that root are classified against its subfolder tree.",
+          "type": "textfield",
+          "required": true,
+          "default": "~/Documents/Books,~/Documents/Books/Mathematics"
+        },
+        {
+          "name": "extensions",
+          "title": "Extensions to Organize",
+          "description": "Comma-separated file extensions treated as book-type files",
+          "type": "textfield",
+          "required": false,
+          "default": "pdf,epub,djvu,mobi,azw3"
+        },
+        {
+          "name": "miscFolderName",
+          "title": "Misc Fallback Folder",
+          "description": "When the AI can't confidently classify a file, offer to move it to this folder within the same scan root. Leave blank to disable.",
+          "type": "textfield",
+          "required": false,
+          "default": "Misc"
+        }
+      ]
+    },
+    {
+      "name": "test-ai-connection",
+      "title": "Test AI Connection",
+      "description": "Diagnostic: runs a few small AI.ask calls and reports latency / errors",
+      "mode": "view"
+    },
+    {
+      "name": "organize-loose-math",
+      "title": "Organize Loose Math Files",
+      "description": "Auto-sort loose book-type files in the Mathematics folder into the right math subfolder using AI",
+      "mode": "view",
+      "icon": "command-math.png",
+      "preferences": [
+        {
+          "name": "libraryPaths",
+          "title": "Library Paths",
+          "description": "Comma-separated math root(s) to scan. Each root is scanned independently against its own subfolder tree.",
+          "type": "textfield",
+          "required": true,
+          "default": "~/Documents/Books/Mathematics"
+        },
+        {
+          "name": "extensions",
+          "title": "Extensions to Organize",
+          "description": "Comma-separated file extensions treated as book-type files",
+          "type": "textfield",
+          "required": false,
+          "default": "pdf,epub,djvu,mobi,azw3"
+        },
+        {
+          "name": "miscFolderName",
+          "title": "Misc Fallback Folder",
+          "description": "When the AI can't confidently classify a file, offer to move it to this folder within the same scan root. Leave blank to disable.",
+          "type": "textfield",
+          "required": false,
+          "default": "Misc"
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.103.3",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.13.10",
+    "@types/react": "19.0.10",
+    "eslint": "^9.22.0",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.2"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "prepublishOnly": "echo \"\\n\\nIt seems like you are trying to publish the Raycast extension to npm.\\n\\nIf you did intend to publish it to npm, remove the \\`prepublishOnly\\` script and rerun \\`npm publish\\` again.\\nIf you wanted to publish it to the Raycast Store instead, use \\`npm run publish\\` instead.\\n\\n\" && exit 1",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}

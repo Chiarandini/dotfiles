@@ -1,0 +1,20 @@
+"use strict";var A=Object.create;var f=Object.defineProperty;var T=Object.getOwnPropertyDescriptor;var _=Object.getOwnPropertyNames;var R=Object.getPrototypeOf,C=Object.prototype.hasOwnProperty;var U=(e,t)=>{for(var r in t)f(e,r,{get:t[r],enumerable:!0})},g=(e,t,r,a)=>{if(t&&typeof t=="object"||typeof t=="function")for(let s of _(t))!C.call(e,s)&&s!==r&&f(e,s,{get:()=>t[s],enumerable:!(a=T(t,s))||a.enumerable});return e};var d=(e,t,r)=>(r=e!=null?A(R(e)):{},g(t||!e||!e.__esModule?f(r,"default",{value:e,enumerable:!0}):r,e)),P=e=>g(f({},"__esModule",{value:!0}),e);var W={};U(W,{default:()=>M});module.exports=P(W);var p=require("@raycast/api");var c=d(require("react")),n=require("@raycast/api");var u=d(require("node:fs")),h=d(require("node:path"));var $=require("react/jsx-runtime");function m(e,t){let r=e instanceof Error?e.message:String(e);return(0,n.showToast)({style:n.Toast.Style.Failure,title:t?.title??"Something went wrong",message:t?.message??r,primaryAction:t?.primaryAction??y(e),secondaryAction:t?.primaryAction?y(e):void 0})}var y=e=>{let t=!0,r="[Extension Name]...",a="";try{let i=JSON.parse((0,u.readFileSync)((0,h.join)(n.environment.assetsPath,"..","package.json"),"utf8"));r=`[${i.title}]...`,a=`https://raycast.com/${i.owner||i.author}/${i.name}`,(!i.owner||i.access==="public")&&(t=!1)}catch{}let s=n.environment.isDevelopment||t,o=e instanceof Error?e?.stack||e?.message||"":String(e);return{title:s?"Copy Logs":"Report Error",onAction(i){i.hide(),s?n.Clipboard.copy(o):(0,n.open)(`https://github.com/raycast/extensions/issues/new?&labels=extension%2Cbug&template=extension_bug_report.yml&title=${encodeURIComponent(r)}&extension-url=${encodeURI(a)}&description=${encodeURIComponent(`#### Error:
+\`\`\`
+${o}
+\`\`\`
+`)}`)}}};var l=require("@raycast/api");var b=require("node:child_process"),v=d(require("node:path"));var I={cmux:"com.cmuxterm.app"};function w(e){let t=e?.trim();return t?t.toLowerCase():void 0}function k(e,t){let r=I[t],a=w(t),s=e.find(o=>o.name===t||o.localizedName===t);if(s)return s;if(r){let o=e.find(i=>i.bundleId===r);if(o)return o}if(a)return e.find(o=>[o.name,o.localizedName,o.bundleId].some(i=>w(i)===a))}function x(e){return e.includes("Access denied")?"cmux denied external control. In cmux, open Settings -> Automation and set Socket Mode to Allow all local processes or Password.":e.includes("Broken pipe")||e.includes("Failed to write to socket")?"Unable to reach cmux over its automation socket. Make sure cmux is running, then reopen Settings -> Automation and check Socket Mode.":e||"cmux command failed"}async function S(e){if(process.platform!=="darwin")throw new Error("macOS only");let t=process.env.LC_ALL;delete process.env.LC_ALL;let{stdout:r,stderr:a}=(0,b.spawnSync)("osascript",["-e",e]);if(process.env.LC_ALL=t,a?.length)throw new Error(a.toString());return r.toString()}async function O(e){let t=await(0,l.getApplications)(),r=k(t,e);if(!r)throw new Error(`${e} not found`);return r}var D=1e4;function L(e){return e.code==="ETIMEDOUT"?new Error("cmux command timed out. In cmux, open Settings -> Automation and set Socket Mode to Allow all local processes or Password."):e}async function E(e){let t=await O("cmux"),r=v.default.join(t.path,"Contents","Resources","bin","cmux"),a=(0,b.spawnSync)(r,e,{encoding:"utf8",timeout:D}),s=[a.stdout,a.stderr].filter(Boolean).join(`
+`).trim();if(a.error)throw L(a.error);if(a.status!==0)throw new Error(x(s));return a.stdout.trim()}var M=async()=>{let e=`
+      if application "Finder" is not running then
+          error "Finder is not running"
+      end if
+
+      tell application "Finder"
+          if (count of Finder windows) = 0 then error "No Finder window open"
+          try
+              set pathList to POSIX path of (folder of the front window as alias)
+              return pathList
+          on error
+              error "Could not access Finder window path"
+          end try
+      end tell
+  `;try{let t=(await S(e)).trim(),r=await E([t]);await(0,p.showToast)(p.Toast.Style.Success,"Done",r)}catch(t){await m(t)}};

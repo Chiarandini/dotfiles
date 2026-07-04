@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+set -uo pipefail
+
+# fix-yabai — Recover yabai when it stops responding to commands.
+#
+# Symptom: cmd+N space switches stop working, `yabai -m ...` hangs or fails to
+# connect to the socket, `pgrep yabai` shows multiple daemons or stale CLI
+# clients piling up.
+#
+# Root cause: launchd's KeepAlive sometimes spawns a replacement yabai before
+# the previous instance has fully exited. Both daemons hold FDs on
+# /tmp/yabai_$USER.socket, IPC wedges, every subsequent CLI call hangs and
+# accumulates.
+#
+# What this does:
+#   1. Disable the launchd job so KeepAlive can't respawn yabai mid-cleanup
+#      (this race was creating orphan daemons that survived the kickstart)
+#   2. Reap stuck `yabai -m ...` CLI clients
+#   3. Kill every yabai daemon (managed and orphaned)
+#   4. Remove the stale socket + lock files
+#   5. Re-enable + kickstart the launchd job for a clean single-daemon restart
+#   6. Sweep for orphans after the new daemon is up — defensive belt-and-braces
+#
+# Note: the new daemon usually binds its IPC socket in 1-2s, but can take 20-30s
+# on the first start after a long-wedged state.
+
+USER_NAME="$(whoami)"
+SOCKET="/tmp/yabai_${USER_NAME}.socket"
+LOCK="/tmp/yabai_${USER_NAME}.lock"
+LABEL="gui/$UID/com.koekeishiya.yabai"
+
+echo "==> Disabling launchd job (prevents respawn during cleanup)..."
+launchctl disable "$LABEL" 2>&1 || true
+
+echo "==> Killing stuck yabai CLI clients..."
+STUCK=$(pgrep -f "yabai -m " | wc -l | tr -d ' ')
+if [[ "$STUCK" -gt 0 ]]; then
+    pkill -9 -f "yabai -m " || true
+    echo "    killed $STUCK stuck client(s)"
+else
+    echo "    none"
+fi
+
+echo "==> Killing yabai daemon(s)..."
+DAEMONS=$(pgrep -f "^/opt/homebrew/bin/yabai$" || true)
+if [[ -n "$DAEMONS" ]]; then
+    echo "    PIDs: $(echo $DAEMONS | tr '\n' ' ')"
+    echo "$DAEMONS" | xargs kill -9 2>/dev/null || true
+    sleep 1
+else
+    echo "    none running"
+fi
+
+# Verify all daemons are gone before proceeding — if launchd already respawned
+# one despite disable, kill again.
+REMAINING=$(pgrep -f "^/opt/homebrew/bin/yabai$" || true)
+if [[ -n "$REMAINING" ]]; then
+    echo "    second sweep: $(echo $REMAINING | tr '\n' ' ')"
+    echo "$REMAINING" | xargs kill -9 2>/dev/null || true
+    sleep 1
+fi
+
+echo "==> Removing stale socket/lock files..."
+rm -f "$SOCKET" "$LOCK"
+
+echo "==> Re-enabling launchd job..."
+launchctl enable "$LABEL" 2>&1 || true
+
+echo "==> Kickstarting launchd job..."
+launchctl kickstart -k "$LABEL"
+
+echo "==> Waiting for daemon to bind socket (up to 45s)..."
+for i in $(seq 1 45); do
+    if yabai -m query --spaces >/dev/null 2>&1; then
+        echo "    bound after ${i}s"
+        break
+    fi
+    sleep 1
+    if [[ "$i" -eq 45 ]]; then
+        echo ""
+        echo "WARNING: yabai still not responding after 45s."
+        echo "Check: pgrep -lf yabai ; tail /tmp/yabai_${USER_NAME}.err.log"
+        exit 1
+    fi
+done
+
+# Post-bind sweep: ensure exactly one daemon is running. If multiple, kill the
+# orphans, leaving only the launchd-managed pid.
+MANAGED_PID=$(launchctl print "$LABEL" 2>/dev/null | awk '/^\s*pid =/ {print $3; exit}')
+ALL_DAEMONS=$(pgrep -f "^/opt/homebrew/bin/yabai$" || true)
+ORPHANS=""
+for pid in $ALL_DAEMONS; do
+    if [[ "$pid" != "$MANAGED_PID" ]]; then
+        ORPHANS="$ORPHANS $pid"
+    fi
+done
+if [[ -n "${ORPHANS// }" ]]; then
+    echo "==> Killing post-restart orphan daemon(s):$ORPHANS"
+    echo "$ORPHANS" | xargs kill -9 2>/dev/null || true
+fi
+
+echo ""
+echo "Done. yabai is responding (managed pid: ${MANAGED_PID:-unknown})."

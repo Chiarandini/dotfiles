@@ -62,10 +62,16 @@ else
     echo "    Attempting to verify by restarting yabai..."
 fi
 
-# Step 5: Restart yabai to pick up the SA
+# Step 5: Restart yabai to pick up the SA.
+# Use fix-yabai if available — `yabai --restart-service` has a 5s exit timeout
+# that can leave the previous daemon alive when launchd respawns, causing a
+# double-daemon IPC wedge.
 echo "==> Restarting yabai..."
-yabai --restart-service 2>/dev/null || brew services restart yabai 2>/dev/null || true
+if command -v fix-yabai >/dev/null 2>&1; then
+    fix-yabai
+else
+    yabai --restart-service 2>/dev/null || brew services restart yabai 2>/dev/null || true
+fi
 
 echo ""
 echo "Done! yabai scripting addition should now be working."
-echo "If you still have issues, try: yabai --stop-service && yabai --start-service"

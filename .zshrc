@@ -69,18 +69,6 @@ alias nvimf="_f_opener"
 # ╚════════════════════════╝
 alias jukit_kitty='kitty --listen-on=/tmp/kitty_"$(date +%s%N)" -o allow_remote_control=yes'
 
-# ╔════════════════════════════════════════════════════════════════════╗
-# ║ smarter cd — zoxide replaces `cd` entirely                         ║
-# ║   `cd foo`  → fuzzy-matches frecent dirs (no more guessing typos)  ║
-# ║   `cd`      → still $HOME (preserved)                              ║
-# ║   `cd -`    → still previous dir (preserved)                       ║
-# ║   `cdi`     → interactive fzf-style picker                         ║
-# ╚════════════════════════════════════════════════════════════════════╝
-eval "$(zoxide init zsh --cmd cd)"
-alias z=cd
-alias zi=cdi
-
-
 # ╔═══════════════════════════════════════════╗
 # ║ to launch different neovim configurations ║
 # ╚═══════════════════════════════════════════╝
@@ -161,3 +149,22 @@ eval "$(direnv hook zsh)"
 # ║ Work/machine-specific overrides (not in portable core)  ║
 # ╚═════════════════════════════════════════════════════════╝
 [[ -f ~/.config/zsh/work.zsh ]] && source ~/.config/zsh/work.zsh
+
+# ╔════════════════════════════════════════════════════════════════════╗
+# ║ smarter cd — zoxide replaces `cd` entirely                         ║
+# ║   `cd foo`  → fuzzy-matches frecent dirs (no more guessing typos)  ║
+# ║   `cd`      → still $HOME (preserved)                              ║
+# ║   `cd -`    → still previous dir (preserved)                       ║
+# ║   `cdi`     → interactive fzf-style picker                         ║
+# ║                                                                    ║
+# ║ Must be initialized LAST so zoxide's doctor doesn't warn that      ║
+# ║ later config could shadow `cd`.                                    ║
+# ║                                                                    ║
+# ║ _ZO_DOCTOR=0 silences the doctor's "possible config issue" warning.║
+# ║ Claude Code's Bash tool wraps `cd` to persist cwd across calls,    ║
+# ║ which trips the doctor even though zoxide is genuinely last here.  ║
+# ╚════════════════════════════════════════════════════════════════════╝
+export _ZO_DOCTOR=0
+eval "$(zoxide init zsh --cmd cd)"
+alias z=cd
+alias zi=cdi

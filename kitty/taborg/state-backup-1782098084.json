@@ -1,0 +1,967 @@
+[
+  {
+    "active_tab_history": [
+      477,
+      476,
+      470,
+      475,
+      474,
+      472,
+      471
+    ],
+    "background_opacity": 1.0,
+    "id": 3,
+    "is_active": true,
+    "is_focused": true,
+    "last_focused": true,
+    "platform_window_id": 118607,
+    "tabs": [
+      {
+        "active_window_history": [
+          505
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 411,
+            "windows": [
+              505
+            ]
+          }
+        ],
+        "id": 470,
+        "is_active": true,
+        "is_focused": true,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              411
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 411,
+                "window_ids": [
+                  505
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 411
+          }
+        },
+        "title": "\u2810 Continue theory work",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1781748984184918000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "505"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "caffeinate",
+                  "-i",
+                  "-t",
+                  "300"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 77766
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/opt/homebrew/bin/pyright-langserver",
+                  "--stdio"
+                ],
+                "cwd": "/opt/homebrew/lib/node_modules/pyright/dist",
+                "pid": 20921
+              },
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 12198
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 12173
+              }
+            ],
+            "id": 505,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 60735,
+            "title": "\u2810 Continue theory work",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          109
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 95,
+            "windows": [
+              109
+            ]
+          }
+        ],
+        "id": 471,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              95
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 95,
+                "window_ids": [
+                  109
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 95
+          }
+        },
+        "title": "galois",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1779440623381618000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "109",
+              "MANPATH": "/Applications/kitty.app/Contents/Resources/man:"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/Documents/academic/writing/textbooks/core-algebra",
+                "pid": 8252
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/Documents/academic/writing/textbooks/core-algebra",
+                "pid": 8222
+              }
+            ],
+            "id": 109,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 78669,
+            "title": "\u2733 Understand Galois action discreteness vs continuity",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          161
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 139,
+            "windows": [
+              161
+            ]
+          }
+        ],
+        "id": 472,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              139
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 139,
+                "window_ids": [
+                  161
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 139
+          }
+        },
+        "title": "file-org",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1780147151610560000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "161",
+              "MANPATH": "/Applications/kitty.app/Contents/Resources/man:"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "node",
+                  "/opt/homebrew/bin/pyright-langserver",
+                  "--stdio"
+                ],
+                "cwd": "/opt/homebrew/lib/node_modules/pyright/dist",
+                "pid": 96873
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/Users/nathanaelchwojko-srawkey/programming/mcp-servers/spotify/server.js"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey",
+                "pid": 97375
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/Users/nathanaelchwojko-srawkey/programming/mcp-servers/google-calendar/server.js"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey",
+                "pid": 97374
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/Users/nathanaelchwojko-srawkey/programming/mcp-servers/apple-reminders/server.js"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey",
+                "pid": 97372
+              },
+              {
+                "cmdline": [
+                  "claude",
+                  "--resume",
+                  "file-organization-restructure"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey",
+                "pid": 97119
+              }
+            ],
+            "id": 161,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude --resume \"file-organization-restructure\"",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 90806,
+            "title": "\u2733 files-organization-restructure",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          550
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 455,
+            "windows": [
+              550
+            ]
+          }
+        ],
+        "id": 474,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              455
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 455,
+                "window_ids": [
+                  550
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 455
+          }
+        },
+        "title": "\u2733 kitty-tab-organization",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1781970758680582000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "550"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "caffeinate",
+                  "-i",
+                  "-t",
+                  "300"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/programming",
+                "pid": 78727
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/opt/homebrew/bin/pyright-langserver",
+                  "--stdio"
+                ],
+                "cwd": "/opt/homebrew/lib/node_modules/pyright/dist",
+                "pid": 28682
+              },
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/programming",
+                "pid": 12235
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/programming",
+                "pid": 12210
+              }
+            ],
+            "id": 550,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": true,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 49320,
+            "title": "\u2810 kitty-tab-organization",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          555
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 460,
+            "windows": [
+              555
+            ]
+          }
+        ],
+        "id": 475,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              460
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 460,
+                "window_ids": [
+                  555
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 460
+          }
+        },
+        "title": "\u2733 Access Raycast encrypted notes programmatically",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1781972257556622000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "555"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "node",
+                  "/opt/homebrew/bin/pyright-langserver",
+                  "--stdio"
+                ],
+                "cwd": "/opt/homebrew/lib/node_modules/pyright/dist",
+                "pid": 25835
+              },
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/.config",
+                "pid": 83159
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/.config",
+                "pid": 83142
+              }
+            ],
+            "id": 555,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 82897,
+            "title": "\u2733 Access Raycast encrypted notes programmatically",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          561
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 466,
+            "windows": [
+              561
+            ]
+          }
+        ],
+        "id": 476,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              466
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 466,
+                "window_ids": [
+                  561
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 466
+          }
+        },
+        "title": "\u2733 Extract and generalize project framework for reusability",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1782094835702917000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "561"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "caffeinate",
+                  "-i",
+                  "-t",
+                  "300"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 78855
+              },
+              {
+                "cmdline": [
+                  "node",
+                  "/opt/homebrew/bin/pyright-langserver",
+                  "--stdio"
+                ],
+                "cwd": "/opt/homebrew/lib/node_modules/pyright/dist",
+                "pid": 70507
+              },
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 12584
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur",
+                "pid": 12561
+              }
+            ],
+            "id": 561,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 12322,
+            "title": "\u2733 Extract and generalize project framework for reusability",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          563
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 468,
+            "windows": [
+              563
+            ]
+          }
+        ],
+        "id": 477,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              468
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 468,
+                "window_ids": [
+                  563
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 468
+          }
+        },
+        "title": "\u2802 Update book with project progress",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1782095811298360000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "563"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "caffeinate",
+                  "-i",
+                  "-t",
+                  "300"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur/iterated-next",
+                "pid": 77010
+              },
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/uv/tools/safe-run-mcp/bin/python",
+                  "/Users/nathanaelchwojko-srawkey/.local/bin/safe-run-mcp"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur/iterated-next",
+                "pid": 26326
+              },
+              {
+                "cmdline": [
+                  "claude"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/tmp/cur/iterated-next",
+                "pid": 26303
+              }
+            ],
+            "id": 563,
+            "in_alternate_screen": false,
+            "is_active": true,
+            "is_focused": true,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "claude",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 25851,
+            "title": "\u2802 Update book with project progress",
+            "user_vars": {
+              "WKIND": "claude"
+            }
+          }
+        ]
+      }
+    ],
+    "wm_class": "kitty",
+    "wm_name": "kitty"
+  },
+  {
+    "active_tab_history": [
+      478,
+      473
+    ],
+    "background_opacity": 1.0,
+    "id": 4,
+    "is_active": false,
+    "is_focused": false,
+    "last_focused": false,
+    "platform_window_id": 118612,
+    "tabs": [
+      {
+        "active_window_history": [
+          429
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 338,
+            "windows": [
+              429
+            ]
+          }
+        ],
+        "id": 473,
+        "is_active": false,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              338
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 338,
+                "window_ids": [
+                  429
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 338
+          }
+        },
+        "title": "onedrive doc reorg",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1781397318136206000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "429"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/bob/v0.12.1/bin/nvim",
+                  "/Users/nathanaelchwojko-srawkey/Documents/_from-onedrive-UNIQUE-review/"
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/Documents/_from-onedrive-UNIQUE-review",
+                "pid": 74552
+              }
+            ],
+            "id": 429,
+            "in_alternate_screen": true,
+            "is_active": true,
+            "is_focused": false,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "nvim ~/Documents/_from-onedrive-UNIQUE-review/ ",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 74425,
+            "title": "nvim ~/Documents/_from-onedrive-UNIQUE-review/ ",
+            "user_vars": {
+              "WKIND": "edit"
+            }
+          }
+        ]
+      },
+      {
+        "active_window_history": [
+          568
+        ],
+        "enabled_layouts": [
+          "splits",
+          "stack"
+        ],
+        "groups": [
+          {
+            "id": 472,
+            "windows": [
+              568
+            ]
+          }
+        ],
+        "id": 478,
+        "is_active": true,
+        "is_focused": false,
+        "layout": "splits",
+        "layout_opts": {
+          "default_axis_is_horizontal": true
+        },
+        "layout_state": {
+          "all_windows": {
+            "active_group_history": [
+              472
+            ],
+            "active_group_idx": 0,
+            "window_groups": [
+              {
+                "id": 472,
+                "window_ids": [
+                  568
+                ]
+              }
+            ]
+          },
+          "class": "Splits",
+          "opts": {
+            "default_axis_is_horizontal": true
+          },
+          "pairs": {
+            "one": 472
+          }
+        },
+        "title": "nvim .",
+        "windows": [
+          {
+            "at_prompt": false,
+            "cmdline": [
+              "/bin/zsh"
+            ],
+            "columns": 154,
+            "created_at": 1782097138943438000,
+            "cwd": "/Users/nathanaelchwojko-srawkey",
+            "env": {
+              "KITTY_WINDOW_ID": "568"
+            },
+            "foreground_processes": [
+              {
+                "cmdline": [
+                  "/Users/nathanaelchwojko-srawkey/.local/share/bob/v0.12.1/bin/nvim",
+                  "."
+                ],
+                "cwd": "/Users/nathanaelchwojko-srawkey/research-os",
+                "pid": 52051
+              }
+            ],
+            "id": 568,
+            "in_alternate_screen": true,
+            "is_active": true,
+            "is_focused": false,
+            "is_self": false,
+            "last_cmd_exit_status": 0,
+            "last_reported_cmdline": "nvim .",
+            "lines": 51,
+            "neighbors": {},
+            "pid": 51570,
+            "title": "nvim .",
+            "user_vars": {
+              "WKIND": "edit"
+            }
+          }
+        ]
+      }
+    ],
+    "wm_class": "kitty",
+    "wm_name": "kitty"
+  }
+]

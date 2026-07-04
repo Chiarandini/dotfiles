@@ -1,0 +1,76 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "secretary",
+  "title": "Secretary",
+  "description": "Ask your secretary on `air` from Raycast, with streaming status and markdown rendering.",
+  "icon": "extension-icon.png",
+  "author": "you",
+  "categories": [
+    "Productivity"
+  ],
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "ask",
+      "title": "Ask Secretary",
+      "subtitle": "Chat with the agent on `air`",
+      "description": "Send a question to the secretary, see live status, get a streamed reply with conversation continuity.",
+      "mode": "view",
+      "keywords": [
+        "ask",
+        "secretary",
+        "agent",
+        "air",
+        "chat",
+        "claude"
+      ],
+      "arguments": [
+        {
+          "name": "question",
+          "placeholder": "your question",
+          "type": "text",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "tools": [
+    {
+      "name": "ask",
+      "title": "Ask the Secretary",
+      "description": "Send a natural-language question to the user's personal secretary agent (Claude, running on the user's always-on Mac called `air`). The secretary has access to the user's: Obsidian vault (notes, projects, friends, recipes, wishlist, places, briefs/debriefs); Gmail (read + draft only — cannot send); Google Calendar (read + own-events write); Apple Reminders (create/list/update/complete — no hard delete); web search/fetch; conversation memory across past sessions; and the user's laptop Documents folder via Google Drive stream-mode. Use this tool whenever you need information that lives in the user's personal context — their schedule, email, notes, contacts, files, or anything they would normally ask a personal assistant. Returns plain-text reply, may be long.",
+      "input": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "The natural-language question or instruction to send to the secretary. May be long."
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "confirmation": false
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.83.0",
+    "@raycast/utils": "^1.17.0"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^1.0.11",
+    "@types/node": "22.19.17",
+    "@types/react": "19.0.10",
+    "eslint": "^8.57.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "npx @raycast/api@latest publish"
+  }
+}
