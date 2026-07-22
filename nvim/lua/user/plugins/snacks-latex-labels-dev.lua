@@ -1,9 +1,9 @@
--- Dev override for noethervim-tex.
+-- Dev override for snacks-latex-labels.
 -- nvdn (vim.g.noethervim_dev set): loads the local working tree from
 -- ~/programming/nvim-plugins/ via lazy's dev.path.
 -- Plain nvim: uses the GitHub clone, so unpushed local work surfaces as
 -- missing -- exactly like production.  Set `dev = true` to opt in.
 
 return {
-	{ "Chiarandini/NoetherVim-Tex", dev = vim.g.noethervim_dev ~= nil },
+	{ "Chiarandini/snacks-latex-labels.nvim", dev = vim.g.noethervim_dev ~= nil },
 }

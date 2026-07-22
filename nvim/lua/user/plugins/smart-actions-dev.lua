@@ -1,11 +1,11 @@
--- Local dev override for smart-actions.nvim.
--- Uses the local working tree instead of the GitHub clone, so iterations
--- don't require a push → :Lazy update round-trip.
+-- Dev override for smart-actions.nvim.
+-- nvdn (vim.g.noethervim_dev set): loads the local working tree from
+-- ~/programming/nvim-plugins/ via lazy's dev.path.
+-- Plain nvim: uses the GitHub clone, so unpushed local work surfaces as
+-- missing -- exactly like production.  Set `dev = true` to opt in.
 --
 -- Also registers a NoetherVim-specific context provider so grA prompts
 -- are aware of bundle conventions when working inside this distribution.
---
--- Delete this file (or rename the dir) to fall back to the GitHub clone.
 
 -- ─── Status-report popup ──────────────────────────────────────────────
 -- Opens a floating window showing in-flight smart-actions requests
@@ -137,7 +137,7 @@ end)
 return {
 	{
 		"Chiarandini/smart-actions.nvim",
-		dir = vim.fn.expand("~/programming/nvim-plugins/smart-actions.nvim"),
+		dev = vim.g.noethervim_dev ~= nil,
 		opts = {
 			-- Opt-in speculative run: quickfix starts in background when an
 			-- explain stream finishes, so `a`/<CR> in the float opens the
