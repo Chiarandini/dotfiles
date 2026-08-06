@@ -6,15 +6,37 @@
 # This script is run on an interval by ~/Library/LaunchAgents/com.local.yabai-watchdog.plist
 # and self-heals by invoking fix-yabai.
 #
+# Diagnostics on a failed probe, in order:
+#   1. Re-probe with a longer timeout. A daemon that answers on the second try
+#      was merely SLOW, not wedged — that gets logged and left alone, because
+#      restarting a live yabai is far more disruptive than waiting out a stall.
+#      Killing on a single 5s miss cannot tell the two apart.
+#   2. On a confirmed hang, capture a `sample` of the daemon BEFORE killing it.
+#      The thread backtrace is the only artifact that says what yabai was
+#      actually blocked on; its stderr does not record hangs at all.
+#
 # Tunables:
-#   TIMEOUT_S — seconds to wait for a `yabai -m query` response before
-#               declaring yabai unresponsive. 5s is generous (healthy
-#               yabai answers in <100ms).
+#   TIMEOUT_S         — seconds to wait for a `yabai -m query` response before
+#                       suspecting a wedge. 5s is generous (healthy yabai
+#                       answers in <100ms).
+#   CONFIRM_TIMEOUT_S — seconds for the confirmation probe. Only a daemon that
+#                       misses both probes is treated as wedged.
+#   ERRLOG_CAP_BYTES  — truncate yabai's stderr in place once it grows past
+#                       this, keeping the tail. launchd holds the fd O_APPEND,
+#                       so an in-place truncate is safe: the daemon's next
+#                       write lands at the new EOF.
+#   HANG_KEEP         — how many `sample` captures to retain.
 
 set -uo pipefail
 
 TIMEOUT_S=5
+CONFIRM_TIMEOUT_S=20
+ERRLOG_CAP_BYTES=1048576   # 1 MiB
+HANG_KEEP=10
 LOG=/tmp/yabai-watchdog.log
+CAUSE_LOG=/tmp/yabai-watchdog-causes.log
+ERRLOG=/tmp/yabai_root.err.log
+HANG_DIR=/tmp/yabai-hangs
 FIX="$HOME/.local/bin/fix-yabai"
 
 # Ensure $PATH includes Homebrew so `yabai` and `timeout` resolve when
@@ -22,12 +44,71 @@ FIX="$HOME/.local/bin/fix-yabai"
 export PATH="/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:$PATH"
 
 ts() { date '+%Y-%m-%d %H:%M:%S'; }
+probe() { timeout "$1" yabai -m query --spaces >/dev/null 2>&1; }
 
-if timeout "$TIMEOUT_S" yabai -m query --spaces >/dev/null 2>&1; then
+# Keep yabai's stderr bounded: when it crosses the cap, truncate in place to
+# the last 500 lines. Must truncate the existing inode (not mv/rm) so launchd's
+# open fd keeps writing to the same file.
+trim_errlog() {
+    [[ -f "$ERRLOG" ]] || return 0
+    local size
+    size=$(stat -f%z "$ERRLOG" 2>/dev/null || echo 0)
+    if (( size > ERRLOG_CAP_BYTES )); then
+        local tmp="${ERRLOG}.trim"
+        if tail -n 500 "$ERRLOG" > "$tmp" 2>/dev/null; then
+            cat "$tmp" > "$ERRLOG"   # '>' truncates the inode in place
+        fi
+        rm -f "$tmp"
+    fi
+}
+
+# Capture thread backtraces for every live daemon and fold the call graph into
+# the caller's stdout, so a hang can be root-caused without opening the full
+# sample. Writes nothing to CAUSE_LOG itself — the caller owns that redirect.
+capture_hang() {
+    local stamp="$1" pids pid out
+    pids=$(pgrep -f "^/opt/homebrew/bin/yabai$" || true)
+    if [[ -z "$pids" ]]; then
+        echo "  (no yabai daemon alive to sample)"
+        return 0
+    fi
+    mkdir -p "$HANG_DIR"
+    for pid in $pids; do
+        out="$HANG_DIR/yabai-hang-${stamp}-pid${pid}.txt"
+        if /usr/bin/sample "$pid" 2 -file "$out" >/dev/null 2>&1; then
+            echo "  sample(pid $pid) -> $out"
+            # Call graph only; the Binary Images section is ~100 KB of noise.
+            awk '/^Call graph:/{f=1} /^Binary Images:/{f=0} f' "$out" \
+                | head -n 60 | sed 's/^/    /'
+        else
+            echo "  sample(pid $pid) FAILED"
+        fi
+    done
+    # Retention: keep only the most recent HANG_KEEP captures.
+    ls -t "$HANG_DIR"/yabai-hang-*.txt 2>/dev/null \
+        | tail -n +$((HANG_KEEP + 1)) | tr '\n' '\0' | xargs -0 rm -f 2>/dev/null
+}
+
+trim_errlog
+
+probe "$TIMEOUT_S" && exit 0
+
+# Missed the fast probe. Confirm before doing anything destructive.
+if probe "$CONFIRM_TIMEOUT_S"; then
+    echo "[$(ts)] STALL: no reply in ${TIMEOUT_S}s, recovered within ${CONFIRM_TIMEOUT_S}s — not restarting" >> "$LOG"
     exit 0
 fi
 
-echo "[$(ts)] yabai unresponsive (>${TIMEOUT_S}s) — running fix-yabai" >> "$LOG"
+echo "[$(ts)] yabai unresponsive (>${TIMEOUT_S}s + >${CONFIRM_TIMEOUT_S}s confirm) — running fix-yabai" >> "$LOG"
+
+STAMP=$(date '+%Y%m%d-%H%M%S')
+{
+    echo "===== [$(ts)] confirmed hang ====="
+    capture_hang "$STAMP"
+    echo "----- last 10 lines of $ERRLOG -----"
+    tail -n 10 "$ERRLOG" 2>/dev/null
+    echo
+} >> "$CAUSE_LOG"
 
 if [[ -x "$FIX" ]]; then
     "$FIX" >> "$LOG" 2>&1

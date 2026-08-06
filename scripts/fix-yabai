@@ -86,17 +86,29 @@ done
 
 # Post-bind sweep: ensure exactly one daemon is running. If multiple, kill the
 # orphans, leaving only the launchd-managed pid.
-MANAGED_PID=$(launchctl print "$LABEL" 2>/dev/null | awk '/^\s*pid =/ {print $3; exit}')
+#
+# The pid line from `launchctl print` is TAB-indented. Must use [[:space:]] —
+# BSD awk does not implement the GNU \s escape, so /^\s*pid =/ silently matches
+# nothing and MANAGED_PID comes back empty.
+MANAGED_PID=$(launchctl print "$LABEL" 2>/dev/null | awk '/^[[:space:]]*pid =/ {print $3; exit}')
 ALL_DAEMONS=$(pgrep -f "^/opt/homebrew/bin/yabai$" || true)
-ORPHANS=""
-for pid in $ALL_DAEMONS; do
-    if [[ "$pid" != "$MANAGED_PID" ]]; then
-        ORPHANS="$ORPHANS $pid"
+
+# Fail safe: with no managed pid to compare against, every daemon looks like an
+# orphan and the sweep would kill the healthy one we just started, leaving
+# launchd's KeepAlive to respawn it unmanaged over a stale socket. Skip instead.
+if [[ -z "$MANAGED_PID" ]]; then
+    echo "==> WARNING: could not read managed pid from launchctl; skipping orphan sweep"
+else
+    ORPHANS=""
+    for pid in $ALL_DAEMONS; do
+        if [[ "$pid" != "$MANAGED_PID" ]]; then
+            ORPHANS="$ORPHANS $pid"
+        fi
+    done
+    if [[ -n "${ORPHANS// }" ]]; then
+        echo "==> Killing post-restart orphan daemon(s):$ORPHANS"
+        echo "$ORPHANS" | xargs kill -9 2>/dev/null || true
     fi
-done
-if [[ -n "${ORPHANS// }" ]]; then
-    echo "==> Killing post-restart orphan daemon(s):$ORPHANS"
-    echo "$ORPHANS" | xargs kill -9 2>/dev/null || true
 fi
 
 echo ""
