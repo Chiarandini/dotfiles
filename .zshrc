@@ -24,7 +24,9 @@ setopt HIST_FIND_NO_DUPS
 export HISTSIZE=100000
 export SAVEHIST=100000
 
-eval "$(fzf --zsh)"
+# fzf's init runs `emulate zsh`, which warns "can't change option: zle" when
+# there is no controlling terminal. Its widgets need ZLE anyway, so skip it.
+[[ -t 0 ]] && eval "$(fzf --zsh)"
 
 # ╔══════════════════════════════════╗
 # ║ Atuin: searchable shell history  ║
