@@ -3,7 +3,7 @@ local websiteTools = require("WebsiteTools")
 local config_dir = vim.fn.stdpath("config")
 
 websiteTools.setup({
-	blog_source_code_url = "~/programming/website-nate/nate-website/src/assets/latex",
+	blog_source_code_url = "~/Documents/academic/blogs",
 	blog_webpage_url = "~/programming/website-nate/nate-website/src/app/components/blog/blog.component.ts",
 	blog_public_post_url = "~/programming/website-nate/nate-website/src/assets/pdfs/blogs",
 	blog_latex_template = config_dir .. "/preamble/blog_preamble.tex",
@@ -12,13 +12,14 @@ websiteTools.setup({
 	books_webpage_url = "~/programming/website-nate/nate-website/src/app/components/books/books.component.ts",
 	books_latex_template = config_dir .. "/preamble/books_preamble.tex",
 
-	notes_source_code_url = "~/programming/website-nate/nate-website/src/assets/latex/notes",
+	notes_source_code_url = "~/Documents/academic/notes",
 	notes_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/notes",
 	notes_webpage_url = "~/programming/website-nate/nate-website/src/app/components/notes/notes.component.ts",
 	notes_latex_template = config_dir .. "/preamble/notes_preamble.tex",
 
 	website_dir = "~/programming/website-nate/nate-website",
-	series_map_dir = "~/Documents/academic/writing/textbooks/.eyntka/series-map"
+	textbooks_dir = (os.getenv("TEXTBOOKS") or vim.fn.expand("~/Documents/academic/textbooks")),
+	series_map_dir = (os.getenv("TEXTBOOKS") or vim.fn.expand("~/Documents/academic/textbooks")) .. "/.eyntka/series-map"
 })
 
 local function complete_display_mode(arg_lead, cmd_line, cursor_pos)
@@ -73,7 +74,10 @@ end
 vim.api.nvim_create_user_command("CreateBlog",          function() websiteTools.createNewBlog()         end, {})
 vim.api.nvim_create_user_command("CreateNote",          function() websiteTools.createNewNote()         end, {})
 vim.api.nvim_create_user_command("CreateBook",          function() websiteTools.createNewBook()         end, {})
-vim.api.nvim_create_user_command("PublishToWebsite",    function() websiteTools.publishToWebsite()      end, {})
+vim.api.nvim_create_user_command("PublishToWebsite",    function(o) websiteTools.publishToWebsite({ skip_textbooks = o.bang }) end, {
+    bang = true,
+    desc = "Publish website; prompts to refresh out-of-date textbooks (! skips the check)",
+})
 vim.api.nvim_create_user_command("CopyBookToWebsite",   function() websiteTools.copyBooksToWebsite()    end, {})
 vim.api.nvim_create_user_command("CopyNotesToWebsite",  function() websiteTools.copyNotesToWebsite()    end, {})
 vim.api.nvim_create_user_command("CopyBlogToWebsite",   function() websiteTools.copyBlogToWebsite()     end, {})
