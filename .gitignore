@@ -8,6 +8,9 @@ tmpnvim/
 nvim/preamble/personal-info.tex
 
 # ── Secrets & auth state ──────────────────────────────────────────────────────
+# ntfy topic names are bearer secrets: knowing one is enough to read and post
+# to that channel, so the constellation agents' topics stay machine-local.
+**/ntfy-topic
 **/secrets.lua
 **/secrets.zsh
 gh/hosts.yml
@@ -31,6 +34,9 @@ tmux/plugins/
 # ── Backup files ──────────────────────────────────────────────────────────────
 *.bak
 *~
+
+# ── Runtime logs ──────────────────────────────────────────────────────────────
+*.log
 
 # ── Caches ────────────────────────────────────────────────────────────────────
 *.cache
