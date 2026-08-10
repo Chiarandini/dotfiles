@@ -76,4 +76,8 @@ return
 		{trig = 'RRR', name = 'ref:HERE'},
 		t('\\textcolor{red}{ref:HERE}')
 	),
+	s(
+		{trig = 'CCC', name = 'cite:HERE'},
+		t('\\textcolor{red}{cite:HERE}')
+	),
 }
