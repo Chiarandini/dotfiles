@@ -112,6 +112,15 @@ file-to-clipboard(){ osascript -e{'on run{a}','set the clipboard to posix file a
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
 
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║ Movable content roots — single source of truth for paths         ║
+# ║   $ACADEMIC $TEXTBOOKS $PAPERS ...   (defined in ~/.config/paths) ║
+# ║ Reorganize a dir → edit ONE line there; nvim reads these via      ║
+# ║ os.getenv, skills `cat` the file. `whereref <frag>` (functions)   ║
+# ║ sweeps the long tail (docs, notes) at move time — nothing to keep.║
+# ╚══════════════════════════════════════════════════════════════════╝
+[[ -f ~/.config/paths.env ]] && source ~/.config/paths.env
+
 # ╔══════════════════════════════════════════════════╗
 # ║ Auto-fix yabai SA hash after brew upgrade yabai  ║
 # ╚══════════════════════════════════════════════════╝
