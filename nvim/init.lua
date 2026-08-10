@@ -86,7 +86,6 @@ require("lazy").setup({
 		-- { import = "noethervim.bundles.languages.java" },        -- nvim-jdtls (proper Java LSP support)
 		{ import = "noethervim.bundles.languages.python" },      -- venv-selector (virtual environment switching)
 		{ import = "noethervim.bundles.languages.latex" },       -- VimTeX + snippets/textobjects
-		{ import = "noethervim.bundles.languages.latex-zotero" }, -- Zotero citation picker (needs Zotero + Better BibTeX)
 		{ import = "noethervim.bundles.languages.web-dev" },     -- JS/TS template string + color preview
 
 		-- Tools
@@ -112,6 +111,8 @@ require("lazy").setup({
 		{ import = "noethervim.bundles.writing.markdown" },    -- render, preview, tables, math, image paste
 		{ import = "noethervim.bundles.writing.obsidian" },    -- Obsidian vault (also enable markdown bundle)
 		-- { import = "noethervim.bundles.writing.neorg" },       -- .norg wiki / note-taking
+		{ import = "noethervim.bundles.writing.wrapsearch" },  -- / and ? match across hard wraps
+		{ import = "noethervim.bundles.writing.zotero" },      -- Zotero citation picker (needs Zotero + Better BibTeX)
 
 		-- Terminal & environment
 		{ import = "noethervim.bundles.terminal.better-term" }, -- named terminal windows
@@ -121,13 +122,14 @@ require("lazy").setup({
 		-- UI & appearance
 		-- { import = "noethervim.bundles.ui.colorscheme" }, -- 10 popular themes + persistence
 		{ import = "noethervim.bundles.ui.eye-candy" },   -- animations, scrollbar, block display
-		-- { import = "noethervim.bundles.ui.minimap" },     -- sidebar minimap
+		{ import = "noethervim.bundles.ui.minimap" },     -- sidebar minimap
 		{ import = "noethervim.bundles.ui.helpview" },    -- rendered :help pages
 		{ import = "noethervim.bundles.ui.tableaux" },    -- 31 mathematical dashboard scenes for snacks.nvim
 
 		-- Practice & utilities
 		{ import = "noethervim.bundles.practice.presentation" }, -- presenting.nvim + showkeys
 		{ import = "noethervim.bundles.tools.octo" },
+		{ import = "noethervim.bundles.practice.training" },  -- vim-be-good, speedtyper, typr
 		-- { import = "noethervim.bundles.practice.hardtime" },    -- motion habit trainer
 
 		-- ── Dev-only bundles (loaded only under `nvdn` / vim.g.noethervim_dev) ──
@@ -140,8 +142,9 @@ require("lazy").setup({
 			if not noethervim_dev then return {} end
 			return {
 				-- { import = "noethervim.bundles.practice.training" },  -- vim-be-good, speedtyper, typr
-				{ import = "noethervim.bundles.tools.smart-actions" },
 				-- { import = "noethervim.bundles.typst" },              -- only on feat/typst-bundle branch
+				-- smart-actions is no longer a bundle: the whole spec now
+				-- lives in lua/user/plugins/smart-actions-dev.lua.
 			}
 		end)(),
 

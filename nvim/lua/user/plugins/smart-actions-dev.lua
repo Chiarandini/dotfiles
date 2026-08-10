@@ -1,11 +1,29 @@
--- Dev override for smart-actions.nvim.
+-- smart-actions.nvim -- full spec (personal).
+--
+-- This used to be a NoetherVim bundle; it was moved here because the
+-- configuration is personal (model pinning, eager runs, the status popup)
+-- rather than something the distribution should ship. This file is now
+-- the whole spec, not an override of one.
+--
 -- nvdn (vim.g.noethervim_dev set): loads the local working tree from
 -- ~/programming/nvim-plugins/ via lazy's dev.path.
 -- Plain nvim: uses the GitHub clone, so unpushed local work surfaces as
 -- missing -- exactly like production.  Set `dev = true` to opt in.
 --
+-- AI-suggested code actions, separate from stock LSP gra. Press grA on a
+-- symbol; pick a scope (or set default_scope); review fixes in the
+-- picker's inline diff preview; <CR> applies, `e` hand-edits, <Esc>
+-- dismisses. Every apply is a single undo unit.
+--
+-- Provider resolution (auto-detected):
+--   1. `claude` CLI on $PATH (reuses your Claude Code auth)
+--   2. Anthropic API -- ANTHROPIC_API_KEY in env or lua/secrets.lua
+--
 -- Also registers a NoetherVim-specific context provider so grA prompts
 -- are aware of bundle conventions when working inside this distribution.
+--
+-- See :help smart-actions for the full surface (categories, context,
+-- extension points, known limitations).
 
 -- ─── Status-report popup ──────────────────────────────────────────────
 -- Opens a floating window showing in-flight smart-actions requests
@@ -114,9 +132,11 @@ local function show_status()
 	end))
 end
 
--- Register a richer busy-component override that also wires click →
--- status popup. Last-write-wins: this loads after the distro bundle, so
--- it takes priority over the label/colour-only override there.
+-- Take over the NoetherVim Busy statusline slot while a request is in
+-- flight: recolour it, label it "ai", and wire a click to the status
+-- popup. Registered at spec-import time rather than inside `config` so it
+-- survives even if `config` is later replaced; the override function
+-- itself guards against smart_actions not being loaded yet.
 pcall(function()
 	local sl = require("noethervim.statusline")
 	if not sl.register_busy_override then return end
@@ -138,7 +158,10 @@ return {
 	{
 		"Chiarandini/smart-actions.nvim",
 		dev = vim.g.noethervim_dev ~= nil,
+		cmd = { "SmartAction", "SmartActionCancel", "SmartActionLastDiff" },
 		opts = {
+			default_scope = "ask",
+			categories    = { "quickfix" },
 			-- Opt-in speculative run: quickfix starts in background when an
 			-- explain stream finishes, so `a`/<CR> in the float opens the
 			-- picker with minimal wait. Dismiss (`q`/<Esc>) cancels it.
@@ -157,7 +180,8 @@ return {
 			},
 		},
 		 keys = {
-			{ "grA", mode = { "n", "x" }, desc = "smart code [A]ction" },
+			{ "grA", function() require("smart_actions").run()      end,
+				mode = { "n", "x" }, desc = "smart code [A]ction" },
 			{ "grE", function() require("smart_actions").explain()  end, desc = "smart action: [E]xplain" },
 			{ "grS", function() require("smart_actions").suppress() end, desc = "smart action: [S]uppress diagnostic" },
 			{ "grR", function() require("smart_actions").refactor() end, desc = "smart action: [R]efactor" },
