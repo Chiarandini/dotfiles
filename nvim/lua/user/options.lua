@@ -19,7 +19,11 @@ vim.opt.spellfile:append(vim.fn.stdpath("config") .. "/spell/en.utf-8.add")
 
 -- ── VimTeX (must be set before any .tex file opens) ──────────────────────────
 vim.g.vimtex_view_method        = 'skim'
-vim.g.vimtex_view_skim_activate = 0
+-- activate = 1: bring the *target* PDF to Skim's front on forward search so the
+-- viewer's `app.documents[0].go(...)` (see vimtex/view/skim.vim) syncs the right
+-- document when several PDFs are open -- with activate = 0 it could sync whatever
+-- happened to be frontmost. Trade-off: Skim takes focus on <localleader>lv.
+vim.g.vimtex_view_skim_activate = 1
 vim.g.vimtex_view_skim_sync     = 0
 vim.cmd("let g:vimtex_mappings_disable = { 'i': [']]']}")
 vim.cmd([=[
