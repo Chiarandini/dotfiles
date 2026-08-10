@@ -88,3 +88,293 @@ _rem() {
     esac
 }
 (( $+functions[compdef] )) && compdef _rem rem
+
+# ─── nvim: "run a command in this dir on quit" handoff ────────────────────
+# Neovim can't inject a command into its parent shell, so Oil's `gR` keymap
+# (see ~/.config/nvim/ftplugin/oil.lua) hands one back through a file: it
+# writes "<dir>\n<command>" to $NVIM_RUN_ON_EXIT, then quits. Here we point
+# that env var at a fresh temp file before launching; once Neovim exits we
+# cd into <dir> and run <command> in the REAL terminal — no nested :terminal,
+# you're fully back in the shell (e.g. yazi, claude, lazygit).
+#
+# Transparent for every other launch: the file stays empty unless `gr` fires,
+# and every alias/function that ultimately calls `nvim` (oil, nvdn, nvims, n,
+# W) routes through here for free. `command nvim` avoids recursion; `builtin
+# cd` sidesteps the zoxide `cd`. Git's $EDITOR launches use the raw binary
+# (functions aren't exported), so commit editing is untouched.
+nvim() {
+    local handoff
+    handoff="$(mktemp "${TMPDIR:-/tmp}/nvim-onexit.XXXXXX")" \
+        || { command nvim "$@"; return $?; }
+
+    NVIM_RUN_ON_EXIT="$handoff" command nvim "$@"
+    local ret=$?
+
+    if [[ -s "$handoff" ]]; then
+        local dir cmd
+        dir="$(sed -n '1p' -- "$handoff")"
+        cmd="$(sed -n '2,$p' -- "$handoff")"
+        rm -f -- "$handoff"
+        [[ -n "$dir" && -d "$dir" ]] && builtin cd -- "$dir"
+        if [[ -n "$cmd" ]]; then
+            print -s -- "$cmd"   # save to shell history
+            eval "$cmd"
+            return $?
+        fi
+        return $ret
+    fi
+
+    rm -f -- "$handoff"
+    return $ret
+}
+
+# ─── c / ci: cd to a named directory (dirmarks) ───────────────────────────
+# Usage:
+#     c                      fzf picker over every bookmark
+#     c <name>               cd there (exact → unique prefix → unique substring)
+#     c <name>/sub/dir       cd into a subdirectory of a bookmark
+#     c <anything else>      falls through to zoxide's `cd` — never in the way
+#     c add [name] [path]    default: basename of $PWD, $PWD   (-n "note")
+#     c rm <name>...         c mv <old> <new>    c set <name> [path]
+#     c note <name> [text]   c ls    c check    c edit    c help
+#
+#     ci <name> [depth]      "change inside": fuzzy-pick a SUBDIRECTORY of a
+#     ci                     bookmark and cd there (depth 1 by default)
+#
+# `ci` reads as vim's `ci` — change *inside*. It exists because a bookmark
+# like `textbooks` is a container of 59 sibling projects: naming each one
+# would be upkeep, and browsing them is not the same act as jumping to a
+# name you already decided on. Also reachable as tab / ^l inside `c`.
+#
+# The bookmarks live in ~/.config/dirmarks and are owned by the `dirmarks`
+# script (~/.config/scripts/dirmarks, symlinked onto $PATH from
+# ~/.local/bin) — the same data and verbs Neovim's `:C`
+# and `:Ci` use, so the two front-ends cannot drift apart.
+#
+# The subcommand words above always win over a bookmark of the same name;
+# `dirmarks add` refuses to create one, so the ambiguity can't arise.
+
+# Options shared by both pickers, assigned once at source time. Every stream
+# fed to them is "display<TAB>abspath[<TAB>name]": field 1 is what fzf shows
+# and searches, field 2 feeds the preview and becomes the result.
+typeset -ga _DM_FZF
+_DM_FZF=(
+	--ansi --delimiter=$'\t' --with-nth=1
+	--height='~70%' --layout=reverse --border
+	--preview='eza -lh --icons --git --color=always {2} 2>/dev/null || ls -lahLG {2}'
+	--preview-window='right,55%,border-left'
+	--bind='ctrl-k:up,ctrl-j:down'
+	--bind='ctrl-u:preview-half-page-up,ctrl-d:preview-half-page-down'
+)
+
+# cd to a chosen directory, honouring the key that selected it.
+_dm_go() {
+	local key=$1 dir=$2
+	[[ -n $dir ]]  || { print -u2 -- "c: nothing selected"; return 1 }
+	[[ -d $dir ]]  || { print -u2 -- "c: no such directory: $dir"; return 1 }
+	builtin cd -- "$dir" || return 1
+	[[ $key == ctrl-o ]] && nvim .
+	return 0
+}
+
+# Picker over the bookmarks themselves. With an argument, <CR> descends into
+# the chosen bookmark instead of cd-ing to it (that is `ci` with no name).
+_dm_pick_marks() {
+	local descend=$1 out key line dir name
+	local -a f
+	out=$(dirmarks ls --fzf | fzf "${_DM_FZF[@]}" --prompt='  cd  ' \
+		--expect=ctrl-o,ctrl-e,ctrl-y,ctrl-l,tab \
+		--bind='ctrl-x:execute-silent(dirmarks rm {3})+reload(dirmarks ls --fzf)' \
+		--bind='ctrl-a:execute(dirmarks add)+reload(dirmarks ls --fzf)' \
+		--header='enter cd · tab/^l into · ^o cd+nvim · ^a add $PWD · ^x delete · ^e edit · ^y copy')
+	[[ -z $out ]] && return 0
+
+	key=${out%%$'\n'*}
+	line=${out#*$'\n'}
+	f=("${(@ps:\t:)line}")            # display, abspath, name
+	dir=$f[2]; name=$f[3]
+
+	case $key in
+		ctrl-e)     dirmarks edit; return $? ;;
+		ctrl-y)     print -rn -- "$dir" | copy_to_clipboard
+		            print -r -- "copied: $dir"; return 0 ;;
+		ctrl-l|tab) _dm_pick_children "$name"; return $? ;;
+	esac
+	[[ -n $descend ]] && { _dm_pick_children "$name"; return $? }
+	_dm_go "$key" "$dir"
+}
+
+# Picker over one bookmark's subdirectories. Deliberately one column of
+# relative paths, not the three-column bookmark view: this is browsing a
+# directory, not choosing from the curated list.
+_dm_pick_children() {
+	local name=$1 depth=${2:-1} list out key line dir
+	local -a f
+	list=$(dirmarks children "$name" "$depth") || return 1
+	[[ -n $list ]] || { print -u2 -- "c: no subdirectories under '$name'"; return 1 }
+
+	out=$(print -r -- "$list" | fzf "${_DM_FZF[@]}" --prompt="  $name/  " \
+		--expect=ctrl-o,ctrl-y \
+		--header="inside $name · enter cd · ^o cd+nvim · ^y copy path")
+	[[ -z $out ]] && return 0
+
+	key=${out%%$'\n'*}
+	line=${out#*$'\n'}
+	f=("${(@ps:\t:)line}")            # relative path, abspath
+	dir=$f[2]
+
+	[[ $key == ctrl-y ]] && {
+		print -rn -- "$dir" | copy_to_clipboard
+		print -r -- "copied: $dir"; return 0
+	}
+	_dm_go "$key" "$dir"
+}
+
+c() {
+	(( $# == 0 )) && { _dm_pick_marks; return $? }
+
+	case $1 in
+		add|rm|remove|edit|ls|list|mv|rename|set|note|check|file|names|path|resolve|children|fmt|help|-h|--help)
+			dirmarks "$@"; return $? ;;
+	esac
+
+	# Anything that already looks like a path (or `-`) is plain navigation:
+	# hand it to zoxide untouched rather than second-guessing it.
+	if [[ $1 == - || $1 == .* || $1 == /* || $1 == '~'* || -d $1 ]]; then
+		cd "$@"; return $?
+	fi
+
+	local dir rc
+	dir=$(dirmarks resolve "$1"); rc=$?
+	if (( rc == 2 )); then
+		return 1                      # ambiguous — dirmarks already explained
+	elif (( rc == 0 )) && [[ -n $dir ]]; then
+		[[ -d $dir ]] || { print -u2 -- "c: $1 → $dir (gone; fix with \`c set $1\`)"; return 1 }
+		builtin cd -- "$dir"; return $?
+	fi
+	cd "$@"                           # not a bookmark → zoxide's frecency
+}
+
+ci() {
+	(( $# == 0 )) && { _dm_pick_marks descend; return $? }
+	_dm_pick_children "$1" "${2:-1}"
+}
+
+# Bookmark names as "name:path" completion candidates. Parsed inline rather
+# than by shelling out to `dirmarks names`, because zsh-autocomplete
+# re-completes on every keystroke and a fork per keypress is exactly the lag
+# these commands exist to avoid. Read-only, so it cannot corrupt the file —
+# `dirmarks` stays the only writer.
+_dm_names() {
+	setopt localoptions extendedglob
+	local file=${DIRMARKS_FILE:-$HOME/.config/dirmarks}
+	local line name rest p
+	reply=()
+	[[ -f $file ]] || return
+	for line in ${(f)"$(<$file)"}; do
+		line=${line//$'\t'/  }
+		[[ -z ${line//[[:space:]]/} || ${line##[[:space:]]#} == '#'* ]] && continue
+		name=${line%%[[:space:]][[:space:]]*}
+		rest=${${line#$name}##[[:space:]]#}
+		p=${rest%%[[:space:]][[:space:]]*}
+		reply+=("$name:$p")
+	done
+}
+
+_c() {
+	setopt localoptions extendedglob
+	# After "<name>/", complete real directories underneath that bookmark.
+	if compset -P '(#b)([^/]##)/'; then
+		local base=$(dirmarks path $match[1] 2>/dev/null)
+		[[ -n $base ]] && _path_files -/ -W $base
+		return
+	fi
+
+	local -a reply verbs
+	_dm_names
+	verbs=(
+		'add:bookmark $PWD (or a given path)'
+		'rm:delete a bookmark'      'mv:rename a bookmark'
+		'set:repoint a bookmark'    'note:set the note column'
+		'ls:print the table'        'edit:open the list in $EDITOR'
+		'check:validate the list'   'help:usage'
+	)
+	_describe -t dirmarks 'directory' reply
+	_describe -t commands 'dirmarks command' verbs
+}
+
+_ci() {
+	local -a reply
+	if (( CURRENT == 2 )); then
+		_dm_names
+		_describe -t dirmarks 'container' reply
+	else
+		_message 'depth (default 1)'
+	fi
+}
+
+if (( $+functions[compdef] )); then
+	compdef _c  c
+	compdef _ci ci
+fi
+
+# ─── whereref: find who references a path fragment ────────────────────────
+# The zero-upkeep "registry" for file reorganizations. Before or after moving
+# a dir, run e.g. `whereref Documents/textbooks` to list every config, skill,
+# and doc that hard-codes it. Your greppable configs ARE the registry — always
+# current, nothing to maintain. Searches the roots that actually hold path
+# strings and skips backups/caches/transcripts/archives that self-heal or
+# don't matter. Pair with the $-anchors in ~/.config/paths.env: send the few
+# hard code deps through an anchor (edit one line on a move), and use this to
+# sweep the long tail of prose that can't read an env var.
+whereref() {
+    local frag="${1:?Usage: whereref <path-fragment>   e.g. whereref Documents/textbooks}"
+    rg -n --hidden -S "$frag" \
+        ~/.config ~/.claude/skills ~/programming ~/Documents/vault ~/Documents/academic \
+        -g '!**/.git/**' -g '!**/node_modules/**' -g '!**/.venv/**' -g '!**/venv/**' \
+        -g '!**/target/**' -g '!**/dist/**' -g '!**/build/**' \
+        -g '!**/.claude/backups/**' -g '!**/.claude/file-history/**' \
+        -g '!**/.claude/projects/**' -g '!**/.claude/todos/**' \
+        -g '!**/.claude/shell-snapshots/**' -g '!**/.claude/sessions/**' \
+        -g '!**/taborg/state-backup*' -g '!**/_archive/**' -g '!**/*.DS_Store'
+}
+
+# ─── pages: EYNTKA series page-count odometer ─────────────────────────────
+# The private "how many pages have I written" counter. Walks up from $PWD to
+# find the textbooks repo's .eyntka/ dir (no hardcoded path — works from any
+# subfolder, and survives moving the repo). With no args it prints the
+# distinct-live total AND records a dated snapshot to a gitignored log, then
+# shows the WIP-inclusive view for fun (display-only, so the tracked history
+# stays the single canonical number). Any args pass straight through, e.g.
+#   pages --history      # the growth log over time
+#   pages --flat         # hide the per-member mega breakdown
+#   pages --mode=all     # just the WIP-inclusive number (records its own log)
+#   pages --no-log       # print without recording
+pages() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" && ! -d "$dir/.eyntka" ]]; do dir="${dir:h}"; done
+    local sp="$dir/.eyntka/scripts/series-pages.sh"
+    if [[ ! -x "$sp" ]]; then
+        print -u2 "pages: not inside the EYNTKA textbooks repo (no .eyntka/series-pages.sh found)"
+        return 1
+    fi
+    if (( $# )); then
+        "$sp" "$@"                              # explicit flags → run once, pass through
+    else
+        "$sp"                                   # distinct-live: full view + records a snapshot
+        "$sp" --mode=all --no-log --brief       # WIP-inclusive: one-line summary
+    fi
+}
+# tab-completion: `pages --<TAB>` lists the flags (and `--mode=<TAB>` the modes)
+if (( $+functions[compdef] )); then
+    _pages() {
+        _arguments -s \
+            '--mode=-[which set of books to count]:mode:(distinct site all)' \
+            '--flat[hide the per-member mega breakdown]' \
+            '--brief[print just a one-line total summary]' \
+            '--no-log[print without recording a snapshot]' \
+            '--history[show the growth log over time, then exit]' \
+            '--help[show usage]'
+    }
+    compdef _pages pages
+fi

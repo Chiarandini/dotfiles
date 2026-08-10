@@ -1,0 +1,35 @@
+# ╔══════════════════════════════════════════════════════════════════════╗
+# ║ dirmarks — named directories, shared by `c` (shell) and `:C` (nvim)  ║
+# ╚══════════════════════════════════════════════════════════════════════╝
+# One bookmark per line:   name <2+ spaces or tab> path <2+ spaces> note
+#   • Paths may use ~ and the $ANCHORS from ~/.config/paths.env, so moving a
+#     content root stays a one-line edit there.
+#   • The note column is fuzzy-searchable in both pickers — put the words you
+#     would actually type to find the directory, not a description.
+#   • Comments and blank lines survive `c add` / `c rm`, so group freely.
+#   • `c edit` (or `:C edit`) opens this file with column alignment on save.
+
+# ── config ────────────────────────────────────────────────────────────────
+nvim           ~/.config/nvim               neovim daily driver config lua
+noethervim     ~/programming/NoetherVim     personal nvim distro dev tree
+plugins        ~/programming/nvim-plugins   custom nvim plugin checkouts
+config         ~/.config                    dotfiles zsh kitty yabai
+claude         ~/.claude                    claude code skills agents
+
+# ── academic ──────────────────────────────────────────────────────────────
+academic       $ACADEMIC                    all academic work
+textbooks      $TEXTBOOKS                   EYNTKA series source
+papers         $PAPERS                      papers preprints
+research       $RESEARCH                    research notes drafts
+talks          $PRESENTATIONS               presentations slides beamer
+university     $ACADEMIC/university/PhD     PhD coursework TA semesters
+vault          $VAULT                       obsidian notes
+
+# ── code ──────────────────────────────────────────────────────────────────
+programming    ~/programming                all code projects
+constellation  ~/programming/constellation  agents monorepo secretary
+
+# ── scratch ───────────────────────────────────────────────────────────────
+junk           /tmp                         scratch throwaway
+downloads      ~/Downloads                  downloads inbox
+gdrive         ~/gdrive                     google drive sync

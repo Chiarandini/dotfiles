@@ -89,14 +89,6 @@ if package.loaded["dial.map"] then
 	vim.schedule(bind_increment_fallback)
 end
 
-vim.keymap.set("n", "<C-a>", function()
-  local cword = vim.fn.expand("<cword>")
-  if cword:match("%d") then
-    return "<C-a>"
-  end
-  return "ggVG"
-end, { expr = true, desc = "increment number, else select all" })
-
 -- Quick run via overseer (replaces code_runner.nvim <leader>RR)
 vim.keymap.set("n", "<leader>RR", "<cmd>OverseerRun<cr>", { desc = "run task (overseer)" })
 
@@ -130,19 +122,22 @@ vim.keymap.set("n", "<space>cP", function()
   require("snacks").picker.files({ cwd = vim.fn.stdpath("config") .. "/preamble/" })
 end, { desc = "[P]reamble" })
 
--- ── Personal directory shortcuts ──────────────────────────────
-vim.api.nvim_create_user_command("J", function(opts)
-  vim.cmd("cd ~/Documents/junk/")
-  if opts.args ~= "" then vim.cmd("edit " .. opts.args) end
-end, { nargs = "?", desc = "go to junk directory" })
+-- ── Personal directory shortcuts (dirmarks) ───────────────────
+-- `:C` + <space>j are the general front-end; implementation and the full
+-- key list live in lua/user/configs/dirmarks.lua. The shell twin is `c`.
+local dirmarks = require("user.configs.dirmarks")
+dirmarks.setup()
 
-vim.api.nvim_create_user_command("O", function()
-  vim.cmd("cd ~/Documents/vault/")
-end, { desc = "go to Obsidian vault" })
-
-vim.api.nvim_create_user_command("U", function()
-  vim.cmd("cd ~/Documents/University/PhD/2025-2026/1st semester/")
-end, { desc = "go to university directory" })
+-- The four single-letter commands that predate dirmarks, kept for muscle
+-- memory but no longer carrying their own hard-coded paths: each one now
+-- resolves a bookmark, so ~/.config/dirmarks is the only place a path
+-- appears. (`:U` had already rotted — it pointed at ~/Documents/University,
+-- which moved under Documents/academic/ in the 2026 file reorg.)
+for cmd, mark in pairs({ J = "junk", O = "vault", U = "university", T = "textbooks" }) do
+  vim.api.nvim_create_user_command(cmd, function(opts)
+    dirmarks.goto_mark(mark, { edit = opts.args })
+  end, { nargs = "?", complete = "file", desc = "go to " .. mark .. " (dirmarks)" })
+end
 
 vim.api.nvim_create_user_command("Dashboard", function()
   require("snacks").dashboard()

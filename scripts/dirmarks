@@ -1,0 +1,538 @@
+#!/usr/bin/env zsh
+#
+# dirmarks — named directory bookmarks.
+#
+# THE single source of truth behind two front-ends that must never drift:
+#   • shell    `c`  (~/.config/zsh/functions.zsh)      — cd, then work
+#   • Neovim   `:C` (~/.config/nvim/lua/user/configs/dirmarks.lua) — nvim, then cd
+# Both shell out to this script for every read and every mutation, so the
+# format, the $VAR expansion rules and the add/rm semantics exist ONCE.
+#
+# Data file: ~/.config/dirmarks  (override with $DIRMARKS_FILE)
+#
+#   name    path                  note
+#   nvim    ~/.config/nvim        daily-driver neovim config
+#   books   $TEXTBOOKS            EYNTKA series source
+#
+# Format rules:
+#   • Fields are separated by a TAB or by TWO-OR-MORE SPACES. A path may
+#     therefore contain single spaces ("1st semester") with no quoting.
+#   • `#` comments and blank lines are preserved verbatim across every
+#     mutation — this file is meant to be hand-edited and grouped.
+#   • Paths may use `~` and `$ANCHOR` (anything exported by
+#     ~/.config/paths.env). Anchors are re-applied on `add`, so moving a
+#     content root stays a one-line edit in paths.env.
+#   • The note column is free text. It is fuzzy-searchable in both pickers,
+#     so it is the place for the words you'd actually type to find the dir.
+#
+# Subcommands: run `dirmarks help`.
+
+emulate zsh
+setopt extended_glob
+
+DM_FILE="${DIRMARKS_FILE:-$HOME/.config/dirmarks}"
+DM_PATHS_ENV="${DIRMARKS_PATHS_ENV:-$HOME/.config/paths.env}"
+
+# Pull in $TEXTBOOKS & friends even when the caller's env lacks them (a GUI
+# Neovim, a launchd job). Sourcing is safe: paths.env is exports only.
+[[ -f $DM_PATHS_ENV ]] && source $DM_PATHS_ENV
+
+# Names that can never be bookmarks: they are subcommands of `c` / `:C`, and
+# a bookmark shadowed by a verb is a trap you'd hit once a year and hate.
+DM_RESERVED=(add rm edit ls mv set note check file names path resolve fmt help children)
+
+# ── tiny helpers ──────────────────────────────────────────────────────────
+
+dm_die() { print -u2 -- "dirmarks: $*"; exit 1 }
+
+# Strip leading/trailing whitespace (extended_glob `#` = zero-or-more).
+dm_trim() { local s=$1; print -r -- ${${s##[[:space:]]#}%%[[:space:]]#} }
+
+# Literal (non-glob) prefix test: is $2 a path-prefix of $1?
+dm_has_prefix() {
+	local s=$1 p=${2%/}
+	(( ${#p} )) || return 1
+	[[ ${s[1,${#p}]} == "$p" ]] || return 1
+	(( ${#s} == ${#p} )) || [[ ${s[${#p}+1]} == "/" ]]
+}
+
+# ── parse ─────────────────────────────────────────────────────────────────
+
+# Split one line into REPLY_NAME / REPLY_PATH / REPLY_NOTE.
+# Returns 1 for blank lines and comments (i.e. "not a data row").
+dm_split() {
+	local l=${1//$'\t'/  }                       # a tab acts as a separator
+	l=${${l##[[:space:]]#}%%[[:space:]]#}
+	[[ -z $l || $l == '#'* ]] && return 1
+
+	[[ $l =~ '^([^ ]+)([ ]{2,}(.*))?$' ]] || return 1
+	REPLY_NAME=$match[1]
+	local rest=$match[3]
+	REPLY_PATH=""; REPLY_NOTE=""
+	[[ -z $rest ]] && return 0
+
+	# The path is a run of non-space chunks joined by SINGLE spaces; anything
+	# after the next 2+ space gap is the note.
+	if [[ $rest =~ '^([^ ]+( [^ ]+)*)([ ]{2,}(.*))?$' ]]; then
+		REPLY_PATH=$match[1]
+		REPLY_NOTE=${match[4]}
+	else
+		REPLY_PATH=$rest
+	fi
+	return 0
+}
+
+typeset -ga DM_NAMES DM_RAW DM_NOTES
+
+dm_load() {
+	DM_NAMES=(); DM_RAW=(); DM_NOTES=()
+	[[ -f $DM_FILE ]] || return 0
+	local line
+	while IFS= read -r line || [[ -n $line ]]; do
+		dm_split "$line" || continue
+		DM_NAMES+=("$REPLY_NAME"); DM_RAW+=("$REPLY_PATH"); DM_NOTES+=("$REPLY_NOTE")
+	done < $DM_FILE
+}
+
+# ── path expansion / contraction ──────────────────────────────────────────
+
+# `~/x` and `$ANCHOR/x` → absolute. Command substitution is refused, so a
+# stray `$(...)` in the data file can never execute.
+dm_expand() {
+	local p=$1
+	[[ $p == '~'  ]] && p=$HOME
+	[[ $p == '~/'* ]] && p="$HOME/${p#\~/}"
+	if [[ $p == *'$('* || $p == *'`'* ]]; then
+		print -r -- "$p"; return
+	fi
+	p=${(e)p}
+	print -r -- "${p:a}"      # absolute, WITHOUT resolving symlinks (~/gdrive)
+}
+
+# Absolute → the most portable spelling: longest matching paths.env anchor,
+# else `~`, else unchanged.
+dm_contract() {
+	local abs=${1%/}
+	[[ -z $abs ]] && abs=/
+	local best_var="" best_len=0 var val
+	if [[ -f $DM_PATHS_ENV ]]; then
+		for var in ${(f)"$(sed -n 's/^export \([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p' $DM_PATHS_ENV)"}; do
+			val=${${(P)var}%/}
+			[[ -n $val && $val != / ]] || continue
+			if dm_has_prefix "$abs" "$val" && (( ${#val} > best_len )); then
+				best_var=$var; best_len=${#val}
+			fi
+		done
+	fi
+	if   [[ -n $best_var ]];  then print -r -- "\$$best_var${abs[best_len+1,-1]}"
+	elif [[ $abs == $HOME ]]; then print -r -- '~'
+	elif dm_has_prefix "$abs" "$HOME"; then print -r -- "~${abs[${#HOME}+1,-1]}"
+	else print -r -- "$abs"
+	fi
+}
+
+# ── formatting ────────────────────────────────────────────────────────────
+
+# stdin → stdout, columns aligned, comments/blanks untouched. Every writer
+# (this script AND Neovim's :w hook) funnels through here, so the file looks
+# the same no matter who last touched it.
+dm_fmt() {
+	local -a lines
+	local line w_name=4 w_path=10
+	while IFS= read -r line || [[ -n $line ]]; do lines+=("$line"); done
+
+	for line in "${lines[@]}"; do
+		dm_split "$line" || continue
+		(( ${#REPLY_NAME} > w_name )) && w_name=${#REPLY_NAME}
+		(( ${#REPLY_PATH} > w_path )) && w_path=${#REPLY_PATH}
+	done
+
+	for line in "${lines[@]}"; do
+		if dm_split "$line"; then
+			if [[ -n $REPLY_NOTE ]]; then
+				printf '%-*s  %-*s  %s\n' $w_name "$REPLY_NAME" $w_path "$REPLY_PATH" "$REPLY_NOTE"
+			else
+				printf '%-*s  %s\n' $w_name "$REPLY_NAME" "$REPLY_PATH"
+			fi
+		else
+			print -r -- "${line%%[[:space:]]#}"
+		fi
+	done
+}
+
+# stdin → the data file, formatted, atomically.
+dm_save() {
+	local tmp="${DM_FILE}.$$.tmp"
+	dm_fmt > $tmp || { rm -f $tmp; dm_die "could not format" }
+	mv -f $tmp $DM_FILE
+}
+
+dm_ensure() {
+	[[ -f $DM_FILE ]] && return
+	mkdir -p ${DM_FILE:h}
+	cat > $DM_FILE <<-'EOF'
+	# ╔══════════════════════════════════════════════════════════════════════╗
+	# ║ dirmarks — named directories, shared by `c` (shell) and `:C` (nvim)  ║
+	# ╚══════════════════════════════════════════════════════════════════════╝
+	# One bookmark per line:  name <2+ spaces or tab> path <2+ spaces> note
+	# Paths may use ~ and $ANCHORS from ~/.config/paths.env.
+	# Comments and blank lines survive every `c add` / `c rm`, so group freely.
+
+	EOF
+}
+
+# ── colors (ANSI; suppressed when not a terminal or $NO_COLOR is set) ──────
+
+if [[ -t 1 && -z $NO_COLOR ]]; then
+	C_NAME=$'\e[1;33m'; C_PATH=$'\e[34m'; C_NOTE=$'\e[2;37m'
+	C_BAD=$'\e[31m';    C_OFF=$'\e[0m'
+else
+	C_NAME=""; C_PATH=""; C_NOTE=""; C_BAD=""; C_OFF=""
+fi
+
+# ── subcommands ───────────────────────────────────────────────────────────
+
+cmd_ls() {
+	local mode=table
+	case $1 in
+		--raw) mode=raw ;;
+		# fzf reads us through a pipe (never a tty) but renders with --ansi,
+		# so this is the one mode that colours unconditionally.
+		--fzf) mode=fzf
+		       C_NAME=$'\e[1;33m'; C_PATH=$'\e[34m'; C_NOTE=$'\e[2;37m'
+		       C_BAD=$'\e[31m';    C_OFF=$'\e[0m' ;;
+		--plain|"") ;;
+		*) dm_die "ls: unknown flag $1" ;;
+	esac
+	dm_load
+	(( ${#DM_NAMES} )) || { [[ $mode == table ]] && print -u2 -- "dirmarks: no bookmarks yet — try \`c add\`"; return 0 }
+
+	local i abs cp w_name=4 w_path=10 exists
+	for i in {1..${#DM_NAMES}}; do
+		(( ${#DM_NAMES[i]} > w_name )) && w_name=${#DM_NAMES[i]}
+		(( ${#DM_RAW[i]}   > w_path )) && w_path=${#DM_RAW[i]}
+	done
+
+	for i in {1..${#DM_NAMES}}; do
+		abs=$(dm_expand "${DM_RAW[i]}")
+		[[ -d $abs ]] && exists=1 || exists=0
+		# A bookmark whose directory has vanished is worth seeing at a glance.
+		(( exists )) && cp=$C_PATH || cp=$C_BAD
+		case $mode in
+			raw) printf '%s\t%s\t%s\t%s\t%s\n' \
+			         "${DM_NAMES[i]}" "${DM_RAW[i]}" "$abs" "$exists" "${DM_NOTES[i]}" ;;
+			fzf)
+				# field 1 = what fzf shows and searches, 2 = path for the
+				# preview command, 3 = name for the delete binding.
+				printf '%s%-*s%s %s%-*s%s %s%s%s\t%s\t%s\n' \
+					"$C_NAME" $w_name "${DM_NAMES[i]}" "$C_OFF" \
+					"$cp" $w_path "${DM_RAW[i]}" "$C_OFF" \
+					"$C_NOTE" "${DM_NOTES[i]}" "$C_OFF" \
+					"$abs" "${DM_NAMES[i]}" ;;
+			*)
+				printf '%s%-*s%s %s%-*s%s %s%s%s\n' \
+					"$C_NAME" $w_name "${DM_NAMES[i]}" "$C_OFF" \
+					"$cp" $w_path "${DM_RAW[i]}" "$C_OFF" \
+					"$C_NOTE" "${DM_NOTES[i]}" "$C_OFF" ;;
+		esac
+	done
+}
+
+cmd_names() { dm_load; print -l -- "${DM_NAMES[@]}" }
+
+cmd_file() { print -r -- $DM_FILE }
+
+# Resolve a query to an absolute path.
+#   exact name  →  unique prefix  →  unique substring
+# A `name/sub/dir` suffix is carried through, so `c nvim/lua` works.
+cmd_resolve() {
+	local q=$(dm_trim "${1-}")
+	[[ -n $q ]] || dm_die "resolve: nothing to resolve"
+	local sub=""
+	if [[ $q == */* ]]; then sub="/${q#*/}"; q=${q%%/*}; fi
+
+	dm_load
+	local i
+	local -a hits names
+
+	for i in {1..${#DM_NAMES}}; do
+		[[ ${DM_NAMES[i]} == "$q" ]] && { print -r -- "$(dm_expand "${DM_RAW[i]}")$sub"; return 0 }
+	done
+
+	# Two widening passes: prefix first (so `c tex` beats a stray substring
+	# match), then substring. Either is only honoured when it is unambiguous.
+	local pass
+	for pass in prefix substring; do
+		hits=()
+		for i in {1..${#DM_NAMES}}; do
+			if [[ $pass == prefix ]]; then
+				[[ ${DM_NAMES[i][1,${#q}]} == "$q" ]] && hits+=($i)
+			else
+				[[ ${DM_NAMES[i]} == *"$q"* ]] && hits+=($i)
+			fi
+		done
+		if (( ${#hits} == 1 )); then
+			print -r -- "$(dm_expand "${DM_RAW[$hits[1]]}")$sub"; return 0
+		elif (( ${#hits} > 1 )); then
+			names=(); for i in $hits; do names+=("${DM_NAMES[$i]}"); done
+			print -u2 -- "dirmarks: '$q' is ambiguous: ${(j:, :)names}"
+			return 2
+		fi
+	done
+	return 1
+}
+
+# Strict lookup by exact name (used by mutations).
+cmd_path() {
+	local q=$(dm_trim "${1-}")
+	dm_load
+	local i
+	for i in {1..${#DM_NAMES}}; do
+		[[ ${DM_NAMES[i]} == "$q" ]] && { print -r -- "$(dm_expand "${DM_RAW[i]}")"; return 0 }
+	done
+	return 1
+}
+
+dm_check_name() {
+	local n=$1
+	[[ $n == [A-Za-z0-9_][A-Za-z0-9_.+-]# ]] \
+		|| dm_die "'$n' is not a valid name (letters, digits, _ . + - ; no spaces)"
+	(( ${DM_RESERVED[(Ie)$n]} )) \
+		&& dm_die "'$n' is a reserved subcommand — pick another name"
+	return 0
+}
+
+# add [name] [path] [-n|--note TEXT]     name defaults to the dir's basename,
+#                                        path defaults to $PWD.
+cmd_add() {
+	# NB: never `local path` in zsh — it is tied to the special $PATH array.
+	local name="" where="" note="" have_note=0
+	local -a pos
+	while (( $# )); do
+		case $1 in
+			-n|--note) note=$2; have_note=1; shift 2 ;;
+			--) shift; pos+=("$@"); break ;;
+			-*) dm_die "add: unknown flag $1" ;;
+			*)  pos+=("$1"); shift ;;
+		esac
+	done
+	name=${pos[1]-}; where=${pos[2]-}
+
+	local abs
+	abs=$(dm_expand "${where:-$PWD}")
+	[[ -d $abs ]] || dm_die "no such directory: $abs"
+	[[ -n $name ]] || name=${abs:t}
+	dm_check_name "$name"
+
+	local raw=$(dm_contract "$abs")
+	[[ $raw == *'  '* ]] && dm_die "path contains a double space, which is the field separator: $raw"
+
+	dm_ensure
+	# Decide re-add vs append BEFORE the pipeline: zsh runs the left-hand side
+	# in a subshell, so anything the loop learns would be lost here.
+	dm_load
+	local idx=${DM_NAMES[(Ie)$name]} verb=added
+	if (( idx )); then
+		verb=updated
+		(( have_note )) || note=${DM_NOTES[idx]}      # keep the existing note
+	fi
+
+	local line
+	{
+		while IFS= read -r line || [[ -n $line ]]; do
+			if dm_split "$line" && [[ $REPLY_NAME == "$name" ]]; then
+				printf '%s\t%s\t%s\n' "$name" "$raw" "$note"
+			else
+				print -r -- "$line"
+			fi
+		done < $DM_FILE
+		(( idx )) || printf '%s\t%s\t%s\n' "$name" "$raw" "$note"
+	} | dm_save
+	print -r -- "dirmarks: $verb  $name → $raw"
+}
+
+cmd_rm() {
+	(( $# )) || dm_die "rm: which bookmark?"
+	dm_load
+	local -a want
+	local a
+	for a in "$@"; do want+=("$(dm_trim "$a")"); done
+	for a in "${want[@]}"; do
+		(( ${DM_NAMES[(Ie)$a]} )) || dm_die "no such bookmark: $a"
+	done
+	local line
+	{
+		while IFS= read -r line || [[ -n $line ]]; do
+			dm_split "$line" && (( ${want[(Ie)$REPLY_NAME]} )) && continue
+			print -r -- "$line"
+		done < $DM_FILE
+	} | dm_save
+	print -r -- "dirmarks: removed ${(j:, :)want}"
+}
+
+cmd_mv() {
+	local old=$(dm_trim "${1-}") new=$(dm_trim "${2-}")
+	[[ -n $old && -n $new ]] || dm_die "mv: usage: dirmarks mv <old> <new>"
+	dm_load
+	(( ${DM_NAMES[(Ie)$old]} )) || dm_die "no such bookmark: $old"
+	(( ${DM_NAMES[(Ie)$new]} )) && dm_die "'$new' already exists"
+	dm_check_name "$new"
+	local line
+	{
+		while IFS= read -r line || [[ -n $line ]]; do
+			if dm_split "$line" && [[ $REPLY_NAME == "$old" ]]; then
+				printf '%s\t%s\t%s\n' "$new" "$REPLY_PATH" "$REPLY_NOTE"
+			else
+				print -r -- "$line"
+			fi
+		done < $DM_FILE
+	} | dm_save
+	print -r -- "dirmarks: renamed $old → $new"
+}
+
+# set <name> [path]   — repoint an existing bookmark (default: $PWD)
+cmd_set() {
+	local name=$(dm_trim "${1-}")
+	[[ -n $name ]] || dm_die "set: usage: dirmarks set <name> [path]"
+	dm_load
+	(( ${DM_NAMES[(Ie)$name]} )) || dm_die "no such bookmark: $name"
+	local abs=$(dm_expand "${2:-$PWD}")
+	[[ -d $abs ]] || dm_die "no such directory: $abs"
+	local raw=$(dm_contract "$abs") line
+	{
+		while IFS= read -r line || [[ -n $line ]]; do
+			if dm_split "$line" && [[ $REPLY_NAME == "$name" ]]; then
+				printf '%s\t%s\t%s\n' "$name" "$raw" "$REPLY_NOTE"
+			else
+				print -r -- "$line"
+			fi
+		done < $DM_FILE
+	} | dm_save
+	print -r -- "dirmarks: $name → $raw"
+}
+
+# note <name> [text...]   — no text clears the note
+cmd_note() {
+	local name=$(dm_trim "${1-}")
+	[[ -n $name ]] || dm_die "note: usage: dirmarks note <name> [text...]"
+	shift
+	dm_load
+	(( ${DM_NAMES[(Ie)$name]} )) || dm_die "no such bookmark: $name"
+	local note="$*" line
+	{
+		while IFS= read -r line || [[ -n $line ]]; do
+			if dm_split "$line" && [[ $REPLY_NAME == "$name" ]]; then
+				printf '%s\t%s\t%s\n' "$name" "$REPLY_PATH" "$note"
+			else
+				print -r -- "$line"
+			fi
+		done < $DM_FILE
+	} | dm_save
+	if [[ -n $note ]]; then print -r -- "dirmarks: $name — $note"
+	else                    print -r -- "dirmarks: note cleared for $name"
+	fi
+}
+
+# children <name> [depth]  →  "relative<TAB>absolute" per subdirectory.
+#
+# The data model is a curated list of NAMES, not a filesystem browser — this
+# is the one deliberate exception: a bookmark like `textbooks` is a container
+# of 59 sibling projects, and picking one shouldn't mean maintaining 59
+# bookmarks. Depth 1 by default (59 entries for textbooks; depth 2 is 153 and
+# already noise); pass a depth when a container genuinely nests.
+cmd_children() {
+	local q=$(dm_trim "${1-}")
+	[[ -n $q ]] || dm_die "children: which bookmark?"
+	local depth=${2:-1}
+	[[ $depth == <1-> ]] || dm_die "children: depth must be a positive number"
+
+	local base
+	base=$(cmd_resolve "$q")
+	[[ -n $base ]] || dm_die "no bookmark matching '$q'"
+	[[ -d $base ]] || dm_die "no such directory: $base"
+
+	local -a rels
+	if (( $+commands[fd] )); then
+		# fd's defaults are the right ones here: skips hidden dirs and honours
+		# ignore files, so build/venv noise stays out of the picker.
+		rels=(${(f)"$(fd --type d --max-depth $depth --base-directory "$base" 2>/dev/null)"})
+	else
+		rels=(${(f)"$(cd "$base" && find . -mindepth 1 -maxdepth $depth -type d -not -path '*/.*' 2>/dev/null)"})
+		rels=(${rels#./})
+	fi
+
+	local r
+	for r in ${(o)rels}; do
+		r=${r%/}
+		[[ -n $r ]] || continue
+		printf '%s\t%s\n' "$r" "$base/$r"
+	done
+}
+
+cmd_check() {
+	dm_load
+	local -a seen problems
+	local i abs
+	for i in {1..${#DM_NAMES}}; do
+		local n=${DM_NAMES[i]}
+		(( ${seen[(Ie)$n]} )) && problems+=("duplicate name: $n")
+		seen+=("$n")
+		(( ${DM_RESERVED[(Ie)$n]} )) && problems+=("reserved name (shadowed by a subcommand): $n")
+		if [[ -z ${DM_RAW[i]} ]]; then
+			problems+=("$n: no path")
+		else
+			abs=$(dm_expand "${DM_RAW[i]}")
+			[[ -d $abs ]] || problems+=("$n: missing directory  $abs")
+		fi
+	done
+	if (( ${#problems} )); then
+		print -l -- "${problems[@]/#/dirmarks: }" >&2
+		return 1
+	fi
+	print -r -- "dirmarks: ${#DM_NAMES} bookmarks, all good"
+}
+
+cmd_help() {
+	cat <<-EOF
+	dirmarks — named directory bookmarks (data file: $DM_FILE)
+
+	  dirmarks                     print the table
+	  dirmarks ls [--raw|--fzf]    machine-readable variants
+	  dirmarks names               names only (completion)
+	  dirmarks resolve <query>     path for exact→prefix→substring match
+	  dirmarks path <name>         path for an exact name
+	  dirmarks children <name> [n] subdirectories, depth n (default 1)
+	  dirmarks add [name] [path]   default: basename of \$PWD, \$PWD  [-n NOTE]
+	  dirmarks rm <name>...        delete
+	  dirmarks mv <old> <new>      rename
+	  dirmarks set <name> [path]   repoint (default \$PWD)
+	  dirmarks note <name> [text]  set/clear the note
+	  dirmarks check               duplicates, missing dirs, bad lines
+	  dirmarks fmt [file]          realign columns (stdin → stdout)
+	  dirmarks edit                open in \$EDITOR
+	  dirmarks file                print the data file path
+
+	Front-ends: \`c\` in the shell, \`:C\` in Neovim — same data, same verbs.
+	EOF
+}
+
+# ── dispatch ──────────────────────────────────────────────────────────────
+
+case ${1-} in
+	""|ls|list)   (( $# )) && shift; cmd_ls "$@" ;;
+	names)        cmd_names ;;
+	file)         cmd_file ;;
+	resolve)      shift; cmd_resolve "$@" ;;
+	path)         shift; cmd_path "$@" ;;
+	children)     shift; cmd_children "$@" ;;
+	add)          shift; cmd_add "$@" ;;
+	rm|remove)    shift; cmd_rm "$@" ;;
+	mv|rename)    shift; cmd_mv "$@" ;;
+	set)          shift; cmd_set "$@" ;;
+	note)         shift; cmd_note "$@" ;;
+	check)        cmd_check ;;
+	fmt)          shift; dm_ensure; if [[ -n ${1-} ]]; then dm_fmt < "$1"; else dm_fmt; fi ;;
+	edit)         dm_ensure; ${EDITOR:-nvim} $DM_FILE ;;
+	help|-h|--help) cmd_help ;;
+	*)            dm_die "unknown subcommand '$1' (try: dirmarks help)" ;;
+esac

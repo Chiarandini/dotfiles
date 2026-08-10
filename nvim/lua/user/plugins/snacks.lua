@@ -23,11 +23,21 @@ return {
 				end,
 				desc = "[f]ind [B]ooks",
 			},
-			-- university: current semester
+			-- university: current semester.
+			-- Both of these used to hard-code ~/Documents/University/…, which
+			-- the 2026 reorg moved under Documents/academic/ — they had been
+			-- silently opening a nonexistent directory. They now resolve
+			-- through dirmarks (~/.config/dirmarks), so a future move is one
+			-- line there. `semester` is optional: bookmark it when you want
+			-- this key narrowed to the term you're actually teaching/taking,
+			-- otherwise it falls back to the PhD root.
 			{
 				"<space>fdu",
 				function()
-					Snacks.picker.files({ cwd = vim.fn.expand("~/Documents/University/PhD/2025-2026/1st semester/") })
+					local dm = require("user.configs.dirmarks")
+					local cwd = dm.resolve("semester") or dm.resolve("university")
+					if not cwd then return end
+					Snacks.picker.files({ cwd = cwd, title = "University" })
 				end,
 				desc = "[d]oc [u]niversity (semester)",
 			},
@@ -35,7 +45,8 @@ return {
 			{
 				"<space>fdU",
 				function()
-					Snacks.picker.files({ cwd = vim.fn.expand("~/Documents/University/") })
+					local cwd = (os.getenv("ACADEMIC") or vim.fn.expand("~/Documents/academic")) .. "/university"
+					Snacks.picker.files({ cwd = cwd, title = "University (all)" })
 				end,
 				desc = "[d]oc [U]niversity (all)",
 			},
@@ -51,9 +62,9 @@ return {
 			{
 				"<space>fdt",
 				function()
-					Snacks.picker.files({ cwd = vim.fn.expand("~/Documents/academic/writing/textbooks/")})
+					Snacks.picker.files({ cwd = os.getenv("TEXTBOOKS") or vim.fn.expand("~/Documents/academic/textbooks/") })
 				end,
-				desc = "[d]oc [e]YNTKA",
+				desc = "[d]oc [t]extbooks",
 			},
 			-- homework finder: fd with multi-pattern regex (migrated from telescope)
 			-- homework finder: fd with multi-pattern regex (migrated from telescope)
