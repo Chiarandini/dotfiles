@@ -5,5 +5,8 @@
 -- missing -- exactly like production.  Set `dev = true` to opt in.
 
 return {
-	{ "Chiarandini/snacks-latex-labels.nvim", dev = vim.g.noethervim_dev ~= nil },
+	{
+		"Chiarandini/snacks-latex-labels.nvim",
+		dev = vim.g.noethervim_dev ~= nil,
+	},
 }
