@@ -15,6 +15,9 @@ nvim/preamble/personal-info.tex
 **/secrets.zsh
 gh/hosts.yml
 gh/config.yml
+# Holds a live OAuth token, refreshed on use. Was tracked until 2026-08-10;
+# older tokens remain in history, so revoke rather than trust the untracking.
+rclone/rclone.conf
 github-copilot/
 raycast/config.json
 raycast/ai/
