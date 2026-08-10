@@ -75,8 +75,10 @@ alias jukit_kitty='kitty --listen-on=/tmp/kitty_"$(date +%s%N)" -o allow_remote_
 # ║ to launch different neovim configurations ║
 # ╚═══════════════════════════════════════════╝
 # `nvdn` = NoetherVim Dev — run the in-development personal distro.
+# `tmpnvim` = A through-away fresh configuration meant to be regularly deleted.
 # Plain `nvim` uses ~/.config/nvim (main daily driver).
 alias nvdn="NVIM_APPNAME=noethervim nvim"
+alias tmpnvim="NVIM_APPNAME=tmpnvim nvim"
 
 function nvims() {
   items=("default" "noethervim")

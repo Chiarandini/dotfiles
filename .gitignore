@@ -1,6 +1,8 @@
 # ── Local-only / per-machine state ────────────────────────────────────────────
 **/.claude/
 zsh/work.zsh
+# Deliberately disposable scratch config (see the `tmpnvim` alias in .zshrc)
+tmpnvim/
 **/spell/*.add
 **/spell/*.add.spl
 nvim/preamble/personal-info.tex
