@@ -141,6 +141,13 @@ nvim() {
 #     ci <name> [depth]      "change inside": fuzzy-pick a SUBDIRECTORY of a
 #     ci                     bookmark and cd there (depth 1 by default)
 #
+#     cn [name]              "cd, then nvim": same targeting as `c`, then opens
+#                            `nvim .` so you land in an Oil buffer
+#
+# The three verbs differ only in what happens once a directory is chosen, so
+# they share one targeting path (_dm_navigate) and one picker (_dm_pick_marks)
+# — a bookmark resolves the same way no matter which one you typed.
+#
 # `ci` reads as vim's `ci` — change *inside*. It exists because a bookmark
 # like `textbooks` is a container of 59 sibling projects: naming each one
 # would be upkeep, and browsing them is not the same act as jumping to a
@@ -177,11 +184,15 @@ _dm_go() {
 	return 0
 }
 
-# Picker over the bookmarks themselves. With an argument, <CR> descends into
-# the chosen bookmark instead of cd-ing to it (that is `ci` with no name).
+# Picker over the bookmarks themselves. $1 says what <CR> means, which is the
+# only thing separating the three verbs:
+#     (empty)   cd there            `c`
+#     descend   go inside it        `ci`
+#     open      cd there + nvim .   `cn`
 _dm_pick_marks() {
-	local descend=$1 out key line dir name
+	local mode=$1 out key line dir name kidmode=""
 	local -a f
+	[[ $mode == open ]] && kidmode=open
 	out=$(dirmarks ls --fzf | fzf "${_DM_FZF[@]}" --prompt='  cd  ' \
 		--expect=ctrl-o,ctrl-e,ctrl-y,ctrl-l,tab \
 		--bind='ctrl-x:execute-silent(dirmarks rm {3})+reload(dirmarks ls --fzf)' \
@@ -198,9 +209,12 @@ _dm_pick_marks() {
 		ctrl-e)     dirmarks edit; return $? ;;
 		ctrl-y)     print -rn -- "$dir" | copy_to_clipboard
 		            print -r -- "copied: $dir"; return 0 ;;
-		ctrl-l|tab) _dm_pick_children "$name"; return $? ;;
+		ctrl-l|tab) _dm_pick_children "$name" 1 "$kidmode"; return $? ;;
 	esac
-	[[ -n $descend ]] && { _dm_pick_children "$name"; return $? }
+	[[ $mode == descend ]] && { _dm_pick_children "$name" 1 "$kidmode"; return $? }
+	# `cn` asks for exactly what ^o already does, so route it through the same
+	# key rather than duplicating the "cd, then nvim" step.
+	[[ $mode == open && -z $key ]] && key=ctrl-o
 	_dm_go "$key" "$dir"
 }
 
@@ -208,7 +222,7 @@ _dm_pick_marks() {
 # relative paths, not the three-column bookmark view: this is browsing a
 # directory, not choosing from the curated list.
 _dm_pick_children() {
-	local name=$1 depth=${2:-1} list out key line dir
+	local name=$1 depth=${2:-1} mode=$3 list out key line dir
 	local -a f
 	list=$(dirmarks children "$name" "$depth") || return 1
 	[[ -n $list ]] || { print -u2 -- "c: no subdirectories under '$name'"; return 1 }
@@ -227,7 +241,35 @@ _dm_pick_children() {
 		print -rn -- "$dir" | copy_to_clipboard
 		print -r -- "copied: $dir"; return 0
 	}
+	[[ $mode == open && -z $key ]] && key=ctrl-o
 	_dm_go "$key" "$dir"
+}
+
+# Targeting shared by `c` and `cn`, so a name can never resolve one way for
+# one verb and another way for the other. $1 is what to do after landing:
+# "" (stay in the shell) or "open" (drop into nvim's Oil buffer).
+_dm_navigate() {
+	local mode=$1; shift
+	local dir rc
+
+	# Anything that already looks like a path (or `-`) is plain navigation:
+	# hand it to zoxide untouched rather than second-guessing it.
+	if [[ $1 == - || $1 == .* || $1 == /* || $1 == '~'* || -d $1 ]]; then
+		cd "$@" || return $?
+	else
+		dir=$(dirmarks resolve "$1"); rc=$?
+		if (( rc == 2 )); then
+			return 1                  # ambiguous — dirmarks already explained
+		elif (( rc == 0 )) && [[ -n $dir ]]; then
+			[[ -d $dir ]] || { print -u2 -- "c: $1 → $dir (gone; fix with \`c set $1\`)"; return 1 }
+			builtin cd -- "$dir" || return 1
+		else
+			cd "$@" || return $?      # not a bookmark → zoxide's frecency
+		fi
+	fi
+
+	[[ $mode == open ]] && { nvim .; return $? }
+	return 0
 }
 
 c() {
@@ -237,27 +279,20 @@ c() {
 		add|rm|remove|edit|ls|list|mv|rename|set|note|check|file|names|path|resolve|children|fmt|help|-h|--help)
 			dirmarks "$@"; return $? ;;
 	esac
-
-	# Anything that already looks like a path (or `-`) is plain navigation:
-	# hand it to zoxide untouched rather than second-guessing it.
-	if [[ $1 == - || $1 == .* || $1 == /* || $1 == '~'* || -d $1 ]]; then
-		cd "$@"; return $?
-	fi
-
-	local dir rc
-	dir=$(dirmarks resolve "$1"); rc=$?
-	if (( rc == 2 )); then
-		return 1                      # ambiguous — dirmarks already explained
-	elif (( rc == 0 )) && [[ -n $dir ]]; then
-		[[ -d $dir ]] || { print -u2 -- "c: $1 → $dir (gone; fix with \`c set $1\`)"; return 1 }
-		builtin cd -- "$dir"; return $?
-	fi
-	cd "$@"                           # not a bookmark → zoxide's frecency
+	_dm_navigate "" "$@"
 }
 
 ci() {
 	(( $# == 0 )) && { _dm_pick_marks descend; return $? }
 	_dm_pick_children "$1" "${2:-1}"
+}
+
+# `cn` deliberately has no subcommands: `cn add` would mean "bookmark this,
+# then open an editor on it", which is not a thing anyone wants. Management
+# stays on `c`.
+cn() {
+	(( $# == 0 )) && { _dm_pick_marks open; return $? }
+	_dm_navigate open "$@"
 }
 
 # Bookmark names as "name:path" completion candidates. Parsed inline rather
@@ -281,17 +316,24 @@ _dm_names() {
 	done
 }
 
-_c() {
+# Bookmark names, or real directories after "<name>/". Returns 0 when it
+# handled a "<name>/…" completion, so the caller knows to add nothing else.
+_dm_complete_marks() {
 	setopt localoptions extendedglob
-	# After "<name>/", complete real directories underneath that bookmark.
 	if compset -P '(#b)([^/]##)/'; then
 		local base=$(dirmarks path $match[1] 2>/dev/null)
 		[[ -n $base ]] && _path_files -/ -W $base
-		return
+		return 0
 	fi
-
-	local -a reply verbs
+	local -a reply
 	_dm_names
+	_describe -t dirmarks 'directory' reply
+	return 1
+}
+
+_c() {
+	_dm_complete_marks && return
+	local -a verbs
 	verbs=(
 		'add:bookmark $PWD (or a given path)'
 		'rm:delete a bookmark'      'mv:rename a bookmark'
@@ -299,9 +341,11 @@ _c() {
 		'ls:print the table'        'edit:open the list in $EDITOR'
 		'check:validate the list'   'help:usage'
 	)
-	_describe -t dirmarks 'directory' reply
 	_describe -t commands 'dirmarks command' verbs
 }
+
+# No verbs on `cn` — only places to go.
+_cn() { _dm_complete_marks }
 
 _ci() {
 	local -a reply
@@ -316,6 +360,7 @@ _ci() {
 if (( $+functions[compdef] )); then
 	compdef _c  c
 	compdef _ci ci
+	compdef _cn cn
 fi
 
 # ─── whereref: find who references a path fragment ────────────────────────

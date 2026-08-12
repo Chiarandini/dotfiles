@@ -217,7 +217,11 @@ local function dir_actions(path_of)
 	end
 	return {
 		dm_tcd   = with(function(p) M.cd(p, "tcd") end),
-		dm_oil   = with(function(p) vim.cmd("edit " .. vim.fn.fnameescape(p)) end),
+		-- cd AND open Oil, which is what the shell's `cn` does. Looking at a
+		-- directory without committing to it is what the preview pane is for.
+		dm_oil   = with(function(p)
+			if M.cd(p) then vim.cmd("edit " .. vim.fn.fnameescape(p)) end
+		end),
 		dm_files = with(function(p) require("snacks").picker.files({ cwd = p }) end),
 		dm_grep  = with(function(p) require("snacks").picker.grep({ cwd = p }) end),
 		dm_shell = with(function(p) M.shell_follow(p) end),
@@ -226,7 +230,7 @@ end
 
 local DIR_KEYS = {
 	["<C-t>"] = { "dm_tcd",   mode = { "n", "i" }, desc = "tcd (this tab)" },
-	["<C-o>"] = { "dm_oil",   mode = { "n", "i" }, desc = "open in Oil" },
+	["<C-o>"] = { "dm_oil",   mode = { "n", "i" }, desc = "cd + open in Oil" },
 	["<C-f>"] = { "dm_files", mode = { "n", "i" }, desc = "find files here" },
 	["<C-g>"] = { "dm_grep",  mode = { "n", "i" }, desc = "grep here" },
 	["<C-s>"] = { "dm_shell", mode = { "n", "i" }, desc = "shell cds here on exit" },
@@ -243,7 +247,7 @@ end
 ---   <CR>   cd            <C-t>  tcd (this tab only)
 ---   <Tab>  go inside     <C-l>  go inside
 ---   <C-f>  find files    <C-g>  grep
----   <C-o>  open in Oil   <C-s>  shell cds here when nvim exits
+---   <C-o>  cd + Oil      <C-s>  shell cds here when nvim exits
 ---   <C-a>  add cwd       <C-d>  delete   <C-e>  edit the list
 ---@param opts? { descend?: boolean }   descend: <CR> goes inside instead
 function M.pick(opts)
