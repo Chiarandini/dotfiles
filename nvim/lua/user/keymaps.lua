@@ -139,6 +139,15 @@ for cmd, mark in pairs({ J = "junk", O = "vault", U = "university", T = "textboo
   end, { nargs = "?", complete = "file", desc = "go to " .. mark .. " (dirmarks)" })
 end
 
+-- ── Textbook results (definitions/theorems across $TEXTBOOKS) ─────────────
+-- `:Textbook` + <space>e are the front-end; implementation lives in
+-- lua/user/configs/textbook.lua. The shell twin is `tb`. Both shell out to
+-- .eyntka/scripts/results-search.py, which owns the ranking (a port of the
+-- website's command palette) so the two can never disagree.
+local textbook = require("user.configs.textbook")
+vim.keymap.set("n", "<space>e", function() textbook.pick() end,
+	{ desc = "[e]yntka results (definition/theorem/…)" })
+
 vim.api.nvim_create_user_command("Dashboard", function()
   require("snacks").dashboard()
 end, { desc = "open snacks dashboard" })

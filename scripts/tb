@@ -1,0 +1,128 @@
+#!/usr/bin/env zsh
+#
+# tb — find a definition/theorem/example in the EYNTKA corpus, from anywhere.
+#
+# The terminal half of a pair that must never drift:
+#   • shell    `tb`         (this file)
+#   • Neovim   `:Textbook`  (~/.config/nvim/lua/user/configs/textbook.lua)
+# Both shell out to $TEXTBOOKS/.eyntka/scripts/results-search.py, which owns the
+# index, the ranking and the "open in Skim" step — so the two front-ends can
+# only differ in their UI, never in what they find or where they land.
+#
+# The ranking is a port of the website's command palette, tier for tier, so the
+# order you learn in the browser is the order you get here.
+#
+#   tb                    browse all 12k results
+#   tb yoneda lemma       ranked, live — keep typing to narrow
+#   tb -b category-theory yoneda      scope to one book
+#   tb -t definition ideal            scope to one result type
+#   tb -1 noetherian ring             print the best match, no picker
+#   tb --refresh          rebuild the index cache now
+#
+# In the picker:
+#   <CR>    open the LaTeX source at the result        (that's the "jump")
+#   <C-p>   open the compiled PDF in Skim, at the page (synctex)
+#   <C-y>   copy \cref{label} to the clipboard
+#   <C-o>   print the statement and exit
+#   <C-r>   rebuild the index cache
+#   ?       toggle a bigger preview
+
+emulate zsh
+setopt pipefail
+
+# Pull in $TEXTBOOKS even when the caller's env lacks it (a GUI app, a launchd
+# job). Sourcing is safe: paths.env is exports only.
+[[ -f $HOME/.config/paths.env ]] && source $HOME/.config/paths.env
+
+SEARCH="${TEXTBOOKS:?TEXTBOOKS is not set — see ~/.config/paths.env}/.eyntka/scripts/results-search.py"
+[[ -x $SEARCH ]] || { print -u2 -- "tb: backend not found at $SEARCH"; exit 1 }
+
+tb_die() { print -u2 -- "tb: $*"; exit 1 }
+
+# ── argument parsing ──────────────────────────────────────────────────────
+
+scope=() first=0 query=()
+while (( $# )); do
+	case $1 in
+		-b|--book)  [[ -n $2 ]] || tb_die "--book needs a value"; scope+=(--book "$2"); shift 2 ;;
+		-t|--type)  [[ -n $2 ]] || tb_die "--type needs a value"; scope+=(--type "$2"); shift 2 ;;
+		-1|--first) first=1; shift ;;
+		--no-asides) scope+=(--no-asides); shift ;;
+		--refresh)  exec python3 $SEARCH --refresh ;;
+		-h|--help)  awk 'NR>2 && /^#/ {sub(/^# ?/,""); print; next} NR>2 {exit}' $0; exit 0 ;;
+		--)         shift; query+=("$@"); break ;;
+		-*)         tb_die "unknown flag $1 (try --help)" ;;
+		*)          query+=("$1"); shift ;;
+	esac
+done
+
+# If we are standing inside a book, references to it should come out as \cref
+# rather than \cite — see results-search.py's reference().
+here=''
+if [[ -n $TEXTBOOKS && ${PWD:A} == ${TEXTBOOKS:A}/* ]]; then
+	rel=${${PWD:A}#${TEXTBOOKS:A}/}
+	here=${rel%%/*}
+fi
+
+# `tb -1 <query>`: skip the picker entirely and print the top-ranked statement.
+if (( first )); then
+	label_book=$(python3 $SEARCH $scope --json --limit 1 -- "${query[@]}" \
+		| jq -r '.[0] | select(.) | "\(.label)\t\(.book)"') || tb_die "search failed"
+	[[ -n $label_book ]] || tb_die "no result for: ${query[*]}"
+	exec python3 $SEARCH --no-refresh --show ${label_book%%$'\t'*} --book ${label_book##*$'\t'}
+fi
+
+# ── the picker ────────────────────────────────────────────────────────────
+
+# Check staleness ONCE, here (it stats ~2000 files, and rebuilds in ~1s when a
+# book has changed). Every command below passes --no-refresh, so a keystroke
+# costs only the ~70ms search.
+python3 $SEARCH --ensure >/dev/null 2>&1 || tb_die "could not build the index"
+
+# fzf's own matcher is --disabled: the whole point is the website's ranking, so
+# every keystroke re-runs the backend and fzf renders the order it is given.
+# Fields 1 and 2 (book, label) are hidden and identify the result for the
+# preview and the actions — the PAIR is required, label alone is ambiguous.
+#
+# The preview is deliberately NOT piped through bat: the backend colours its own
+# header, and bat would print those escapes literally.
+RELOAD="python3 $SEARCH --no-refresh --fzf --limit 200 $scope -- {q}"
+PREVIEW="python3 $SEARCH --no-refresh --show {2} --book {1}"
+
+choice=$(
+	python3 $SEARCH --no-refresh --fzf --limit 200 $scope -- "${query[@]}" |
+	fzf --ansi --disabled --delimiter=$'\t' --with-nth='3..' \
+		--query="${query[*]}" \
+		--prompt='result ▸ ' \
+		--info=inline \
+		--layout=reverse \
+		--height='90%' \
+		--preview="$PREVIEW" \
+		--preview-window='right,58%,wrap,border-left' \
+		--bind="change:reload:$RELOAD" \
+		--bind='?:change-preview-window(down,75%,wrap|right,58%,wrap)' \
+		--bind="ctrl-r:reload(python3 $SEARCH --refresh >/dev/null 2>&1; $RELOAD)" \
+		--bind="ctrl-p:execute-silent(python3 $SEARCH --no-refresh --pdf {2} --book {1})" \
+		--bind="ctrl-y:execute-silent(python3 $SEARCH --no-refresh --ref {2} --book {1} --from '$here' | pbcopy)+abort" \
+		--expect='ctrl-o' \
+		--header='╱ ⏎ source ╱ ⌃p pdf ╱ ⌃y cite ╱ ⌃o print ╱ ⌃r reindex ╱ ? preview ╱'
+) || exit 0            # fzf exits 130 on <Esc>; that is a cancel, not an error
+
+[[ -n $choice ]] || exit 0
+
+key=${choice%%$'\n'*}                       # --expect line (empty for <CR>)
+line=${choice#*$'\n'}
+book=${line%%$'\t'*}
+rest=${line#*$'\t'}
+label=${rest%%$'\t'*}
+
+if [[ $key == ctrl-o ]]; then
+	exec python3 $SEARCH --no-refresh --show $label --book $book
+fi
+
+# <CR>: jump to the source. --loc is a direct (book, label) lookup, not a search
+# for the label text — the two can disagree, and only the lookup is exact.
+loc=$(python3 $SEARCH --no-refresh --loc $label --book $book) \
+	|| tb_die "lost track of $label in $book (try: tb --refresh)"
+
+exec ${EDITOR:-nvim} +${loc##*$'\t'} ${loc%%$'\t'*}
