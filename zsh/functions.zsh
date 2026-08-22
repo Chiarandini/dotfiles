@@ -423,3 +423,23 @@ if (( $+functions[compdef] )); then
     }
     compdef _pages pages
 fi
+
+# ─── pdf: open a PDF from the current directory ───────────────────────────
+# The command itself is a script (~/.config/scripts/pdf, on $PATH via
+# ~/.local/bin) — nothing here needs the shell's state, and keeping it a
+# script means Neovim's `:!pdf` and any non-zsh caller get the same thing.
+#   pdf              the only PDF here opens; several → fzf picker w/ preview
+#   pdf <query>      a unique name match opens straight away
+#   pdf -r / -a / -p recurse · force the picker · print the path
+# Only the completion lives here, because compdef does.
+if (( $+functions[compdef] )); then
+    _pdf() {
+        _arguments -s \
+            '(-r --recursive)'{-r,--recursive}'[look in subdirectories too]' \
+            '(-a --all)'{-a,--all}'[always show the picker, even for one match]' \
+            '(-p --print)'{-p,--print}'[print the path instead of opening it]' \
+            '(- *)'{-h,--help}'[show usage]' \
+            '*:pdf:_files -g "*.pdf(-.)"'
+    }
+    compdef _pdf pdf
+fi

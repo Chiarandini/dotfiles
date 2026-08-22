@@ -1,0 +1,201 @@
+#!/usr/bin/env zsh
+#
+# pdf — open a PDF that lives in the current directory.
+#
+#   pdf                  one PDF here → it opens; several → fzf picker
+#   pdf <query>          narrow by name; a unique match opens straight away
+#   pdf <path.pdf>       an explicit file always wins, no picker
+#   pdf -r [query]       look in subdirectories too (newest first)
+#   pdf -a [query]       always show the picker, even for a single match
+#   pdf -p [query]       print the path instead of opening it
+#
+# In the picker:
+#   <CR>    open              <TAB>   select several, <CR> opens them all
+#   <C-y>   copy the path     <C-f>   reveal in Finder
+#   ?       toggle a bigger preview
+#
+# The preview is page 1, rendered by poppler and drawn inline with kitty's
+# unicode-placeholder graphics — the one method that survives fzf redrawing
+# the pane. Anywhere that can't do images (zellij, ssh, another terminal) it
+# degrades to the first page as text; nothing to configure either way.
+#
+# Opening goes through `open`, so it honours whatever LaunchServices says is
+# your PDF app (currently Skim, which is also what VimTeX drives — same
+# window, same reload behaviour). Set $PDF_VIEWER to override for this
+# command alone, e.g. PDF_VIEWER=Preview pdf.
+
+emulate zsh
+setopt extendedglob nullglob pipefail
+zmodload -F zsh/stat b:zstat
+zmodload zsh/datetime
+
+SELF=${0:A}
+die() { print -u2 -- "pdf: $*"; exit 1 }
+
+# ── human-readable size / date, shared by the list and the preview ────────
+_pdf_size() {
+	local b=$1
+	if   (( b >= 1048576 )); then printf '%.1f MB' $(( b / 1048576.0 ))
+	elif (( b >= 1024    )); then printf '%.0f KB' $(( b / 1024.0 ))
+	else                          printf '%d B'    $b
+	fi
+}
+
+_pdf_date() {
+	# Recent files get a time (you probably just compiled it); older ones a
+	# year, because "12 Aug" alone is a lie once it's from a different one.
+	local t=$1
+	if (( EPOCHSECONDS - t < 15552000 )); then strftime '%e %b %H:%M' $t
+	else                                      strftime '%e %b  %Y'    $t
+	fi
+}
+
+# ── the fzf preview (invoked by fzf, never by you) ────────────────────────
+if [[ $1 == --preview ]]; then
+	file=$2
+	[[ -r $file ]] || exit 0
+	cols=${FZF_PREVIEW_COLUMNS:-60}
+	rows=${FZF_PREVIEW_LINES:-20}
+	dim=$'\e[2m' rst=$'\e[0m'
+
+	typeset -A st; zstat -H st -- $file 2>/dev/null
+	pages=$(pdfinfo -- $file 2>/dev/null | awk '/^Pages:/ {print $2; exit}')
+	meta="${file:t}"
+	[[ -n $pages ]] && meta+="  ·  ${pages} pp"
+	meta+="  ·  $(_pdf_size ${st[size]})  ·  $(_pdf_date ${st[mtime]})"
+	print -r -- "${dim}${meta}${rst}"
+	print
+
+	# One cached PNG per (path, mtime, size), so flicking up and down the
+	# list re-renders nothing.
+	cache=${TMPDIR:-/tmp}/pdf-preview.$UID
+	mkdir -p $cache
+	key=$(print -rn -- "${file:A}:${st[mtime]}:${st[size]}" | md5 -q 2>/dev/null) \
+		|| key=${${file:A}//\//_}
+	png=$cache/$key.png
+	[[ -s $png ]] || pdftoppm -png -r 100 -f 1 -l 1 -singlefile -- $file ${png%.png} 2>/dev/null
+
+	if [[ -s $png && ( -n $KITTY_WINDOW_ID || $TERM == *kitty* ) ]] \
+	   && kitten icat --stdin=no --transfer-mode=memory --unicode-placeholder \
+	        --place=${cols}x$(( rows > 3 ? rows - 2 : 1 ))@0x0 -- $png 2>/dev/null
+	then
+		exit 0
+	fi
+
+	# No graphics: the first page as text is still enough to tell two
+	# similarly-named drafts apart.
+	pdftotext -f 1 -l 1 -- $file - 2>/dev/null | sed '/^[[:space:]]*$/d' | head -n $(( rows - 2 ))
+	exit 0
+fi
+
+# ── arguments ─────────────────────────────────────────────────────────────
+recurse=0 always=0 printonly=0 query=()
+while (( $# )); do
+	case $1 in
+		-r|--recursive) recurse=1; shift ;;
+		-a|--all)       always=1;  shift ;;
+		-p|--print)     printonly=1; shift ;;
+		-h|--help)      awk 'NR>2 && /^#/ {sub(/^# ?/,""); print; next} NR>2 {exit}' $0; exit 0 ;;
+		--)             shift; query+=("$@"); break ;;
+		-*)             die "unknown flag $1 (try --help)" ;;
+		*)              query+=("$1"); shift ;;
+	esac
+done
+
+# ── the "just open this one" shortcuts ────────────────────────────────────
+_pdf_open() {
+	(( printonly )) && { print -rl -- "$@"; return 0 }
+	if [[ -n $PDF_VIEWER ]]; then open -a "$PDF_VIEWER" -- "$@"
+	else                          open -- "$@"
+	fi
+}
+
+# An argument that is already a readable file is not a search term.
+if (( $# == 0 && $#query == 1 )) && [[ -f ${~query[1]} ]]; then
+	_pdf_open ${${~query[1]}:A}; exit $?
+fi
+
+# ── collect ───────────────────────────────────────────────────────────────
+# Globbed, not `fd`: the `om` qualifier sorts newest-first for free, and a
+# LaTeX build dir is usually gitignored — which is exactly the PDF you want,
+# and exactly what fd would hide.
+if (( recurse )); then
+	files=( **/*.pdf~(*/.git/*|*/node_modules/*|*/.venv/*|*/venv/*)(#qN.om) )
+else
+	files=( *.pdf(#qN.om) )
+fi
+
+if (( $#files == 0 )); then
+	(( recurse )) && die "no PDF under ${PWD/#$HOME/~}"
+	die "no PDF in ${PWD/#$HOME/~} (try \`pdf -r\` to look below it)"
+fi
+
+# ── unique substring match opens without a picker ─────────────────────────
+if (( $#query )) && ! (( always )); then
+	matches=()
+	for f in $files; do
+		ok=1
+		for w in $query; do
+			[[ ${f:l} == *${w:l}* ]] || { ok=0; break }
+		done
+		(( ok )) && matches+=($f)
+	done
+	(( $#matches == 1 )) && { _pdf_open ${matches[1]:A}; exit $? }
+fi
+
+if (( $#files == 1 && $#query == 0 && always == 0 )); then
+	_pdf_open ${files[1]:A}; exit $?
+fi
+
+# ── the picker ────────────────────────────────────────────────────────────
+# Each line is "display<TAB>abspath": field 1 is what you see and search,
+# field 2 feeds the preview and becomes the result.
+bold=$'\e[1m' dim=$'\e[2m' rst=$'\e[0m'
+width=0 dirwidth=0
+for f in $files; do
+	(( ${#f:t} > width )) && width=${#f:t}
+	[[ ${f:h} != . ]] && (( ${#f:h} + 1 > dirwidth )) && dirwidth=$(( ${#f:h} + 1 ))
+done
+(( width > 44 )) && width=44
+(( dirwidth > 30 )) && dirwidth=30
+
+rows=()
+for f in $files; do
+	typeset -A st; zstat -H st -- $f 2>/dev/null || continue
+	# Name first (that's what you search), then the columns it takes to tell
+	# two same-named PDFs apart. Padded here rather than left to fzf, which
+	# has no notion of columns.
+	pad=$(( width - ${#f:t} )); (( pad < 0 )) && pad=0
+	disp="${bold}${f:t}${rst}${(l:$pad:: :):-}"
+	if (( dirwidth )); then
+		dir=''; [[ ${f:h} != . ]] && dir="${f:h}/"
+		dpad=$(( dirwidth - ${#dir} )); (( dpad < 0 )) && dpad=0
+		disp+="  ${dim}${dir}${rst}${(l:$dpad:: :):-}"
+	fi
+	disp+="  ${dim}$(_pdf_size ${st[size]})  ·  $(_pdf_date ${st[mtime]})${rst}"
+	rows+=( "${disp}"$'\t'"${f:A}" )
+done
+
+choice=$(
+	print -rl -- "${rows[@]}" |
+	fzf --ansi --multi --delimiter=$'\t' --with-nth=1 \
+		--query="${query[*]}" \
+		--prompt='  pdf  ' \
+		--info=inline \
+		--layout=reverse \
+		--height='90%' \
+		--border \
+		--preview="${(q)SELF} --preview {2}" \
+		--preview-window='right,55%,border-left,nowrap' \
+		--bind='ctrl-k:up,ctrl-j:down' \
+		--bind='?:change-preview-window(down,75%|right,55%)' \
+		--bind='ctrl-y:execute-silent(printf %s {2} | pbcopy)+abort' \
+		--bind='ctrl-f:execute-silent(open -R {2})' \
+		--header='╱ ⏎ open ╱ ⇥ several ╱ ⌃y copy path ╱ ⌃f Finder ╱ ? preview ╱'
+) || exit 0            # fzf exits 130 on <Esc>; that is a cancel, not an error
+
+[[ -n $choice ]] || exit 0
+
+picked=()
+for line in ${(f)choice}; do picked+=( "${line##*$'\t'}" ); done
+_pdf_open "${picked[@]}"
