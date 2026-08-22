@@ -24,8 +24,13 @@ raycast/ai/
 spotify-tui/
 **/configs/calendar.lua
 
-# ── Raycast extensions (user-managed, not dotfiles) ───────────────────────────
-raycast/extensions/
+# ── Raycast (app state, user-managed, not dotfiles) ───────────────────────────
+# The whole directory rather than its subfolders. `raycast/extensions/` was
+# listed on its own until 2026-08-22, which left `raycast/node-compile-cache/`
+# addable -- V8 cache blobs that `git add .` would have published to what is a
+# PUBLIC repo. Naming subfolders means every new one Raycast invents is exposed
+# until someone notices; nothing under here is worth tracking, so ignore the lot.
+raycast/
 # Compiled extension bundles + node compile cache: 1.3 GB of minified JS that
 # Raycast regenerates on install/update. Not config, and it churned on every
 # extension update.
