@@ -26,6 +26,23 @@
 #   <C-o>   print the statement and exit
 #   <C-r>   rebuild the index cache
 #   ?       toggle a bigger preview
+#
+# And the other question you ask of the corpus — not "where is this result" but
+# "open that book":
+#
+#   tb -B                 browse all 56 books, newest build first
+#   tb -B galois          a unique match opens straight away, as in `pdf`
+#
+# In the book picker:
+#   <CR>    open the compiled PDF in Skim
+#   <C-e>   open the book's main .tex in $EDITOR
+#   <C-y>   copy the PDF path        <C-f>  reveal it in Finder
+#   ?       toggle a bigger preview
+#
+# The book list comes from the SAME backend, for the same reason the result
+# list does: `tb -B`, the Raycast command and anything after them must agree on
+# what a book is and where opening one lands. BOOK.md frontmatter names it, the
+# compiled PDF beside its main .tex is the thing that opens.
 
 emulate zsh
 setopt pipefail
@@ -41,12 +58,13 @@ tb_die() { print -u2 -- "tb: $*"; exit 1 }
 
 # ── argument parsing ──────────────────────────────────────────────────────
 
-scope=() first=0 query=()
+scope=() first=0 books=0 query=()
 while (( $# )); do
 	case $1 in
 		-b|--book)  [[ -n $2 ]] || tb_die "--book needs a value"; scope+=(--book "$2"); shift 2 ;;
 		-t|--type)  [[ -n $2 ]] || tb_die "--type needs a value"; scope+=(--type "$2"); shift 2 ;;
 		-1|--first) first=1; shift ;;
+		-B|--books) books=1; shift ;;
 		--no-asides) scope+=(--no-asides); shift ;;
 		--refresh)  exec python3 $SEARCH --refresh ;;
 		-h|--help)  awk 'NR>2 && /^#/ {sub(/^# ?/,""); print; next} NR>2 {exit}' $0; exit 0 ;;
@@ -55,6 +73,53 @@ while (( $# )); do
 		*)          query+=("$1"); shift ;;
 	esac
 done
+
+# ── the book picker ───────────────────────────────────────────────────────
+
+if (( books )); then
+	# A unique match opens straight away — the same bargain `pdf` makes, and
+	# the reason `tb -B galois` is a complete thought rather than a first
+	# keystroke. Ambiguity always falls through to the picker.
+	if (( $#query )); then
+		hits=$(python3 $SEARCH --books --tsv -- "${query[@]}") || tb_die "could not list the books"
+		[[ -n $hits ]] || tb_die "no book matching: ${query[*]}"
+		lines=("${(f)hits}")
+		if (( $#lines == 1 )); then
+			exec python3 $SEARCH --open-book ${lines[1]%%$'\t'*}
+		fi
+	fi
+
+	# The first page, drawn by the sibling `pdf` — it already solved rendering
+	# a PDF into an fzf pane (cached PNG, kitty placeholders, text fallback),
+	# and a second copy of that would be a second thing to fix.
+	choice=$(
+		python3 $SEARCH --books --fzf |
+		fzf --ansi --delimiter=$'\t' --with-nth='3..' \
+			--query="${query[*]}" \
+			--prompt='book ▸ ' \
+			--info=inline \
+			--layout=reverse \
+			--height='90%' \
+			--preview="${(q)${0:A:h}}/pdf --preview {2}" \
+			--preview-window='right,55%,border-left,nowrap' \
+			--bind='ctrl-k:up,ctrl-j:down' \
+			--bind='?:change-preview-window(down,75%|right,55%)' \
+			--bind='ctrl-y:execute-silent(printf %s {2} | pbcopy)+abort' \
+			--bind='ctrl-f:execute-silent(open -R {2})' \
+			--expect='ctrl-e' \
+			--header='╱ ⏎ pdf ╱ ⌃e tex ╱ ⌃y copy path ╱ ⌃f Finder ╱ ? preview ╱'
+	) || exit 0            # fzf exits 130 on <Esc>; that is a cancel, not an error
+
+	[[ -n $choice ]] || exit 0
+	key=${choice%%$'\n'*}                       # --expect line (empty for <CR>)
+	dir=${${choice#*$'\n'}%%$'\t'*}
+
+	if [[ $key == ctrl-e ]]; then
+		tex=$(python3 $SEARCH --book-loc $dir) || tb_die "no source for $dir"
+		exec ${EDITOR:-nvim} $tex
+	fi
+	exec python3 $SEARCH --open-book $dir
+fi
 
 # If we are standing inside a book, references to it should come out as \cref
 # rather than \cite — see results-search.py's reference().
