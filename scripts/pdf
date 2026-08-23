@@ -8,6 +8,12 @@
 #   pdf -r [query]       look in subdirectories too (newest first)
 #   pdf -a [query]       always show the picker, even for a single match
 #   pdf -p [query]       print the path instead of opening it
+#   pdf -x epub,djvu     match these extensions instead of pdf
+#
+# `-x` exists because the picker, the preview and the columns turned out to be
+# the general thing and PDF the special case: `lib` is this command with a
+# pinned root and a wider `-x`. Anything poppler can't render still lists and
+# still opens; it just previews as metadata alone.
 #
 # In the picker:
 #   <CR>    open              <TAB>   select several, <CR> opens them all
@@ -66,6 +72,14 @@ if [[ $1 == --preview ]]; then
 	print -r -- "${dim}${meta}${rst}"
 	print
 
+	# poppler is a PDF renderer, so for the djvu/epub half of a library there is
+	# nothing to draw and no text to fall back on. The metadata line above is
+	# the whole preview; say which format rather than leaving a blank pane.
+	if [[ ${file:l} != *.pdf ]]; then
+		print -r -- "${dim}${${file:e}:u} — no preview; ⏎ opens it${rst}"
+		exit 0
+	fi
+
 	# One cached PNG per (path, mtime, size), so flicking up and down the
 	# list re-renders nothing.
 	cache=${TMPDIR:-/tmp}/pdf-preview.$UID
@@ -89,12 +103,13 @@ if [[ $1 == --preview ]]; then
 fi
 
 # ── arguments ─────────────────────────────────────────────────────────────
-recurse=0 always=0 printonly=0 query=()
+recurse=0 always=0 printonly=0 exts=pdf query=()
 while (( $# )); do
 	case $1 in
 		-r|--recursive) recurse=1; shift ;;
 		-a|--all)       always=1;  shift ;;
 		-p|--print)     printonly=1; shift ;;
+		-x|--ext)       [[ -n $2 ]] || die "--ext needs a value"; exts=$2; shift 2 ;;
 		-h|--help)      awk 'NR>2 && /^#/ {sub(/^# ?/,""); print; next} NR>2 {exit}' $0; exit 0 ;;
 		--)             shift; query+=("$@"); break ;;
 		-*)             die "unknown flag $1 (try --help)" ;;
@@ -119,15 +134,17 @@ fi
 # Globbed, not `fd`: the `om` qualifier sorts newest-first for free, and a
 # LaTeX build dir is usually gitignored — which is exactly the PDF you want,
 # and exactly what fd would hide.
+alt="(${(j:|:)${(s:,:)exts}})"
 if (( recurse )); then
-	files=( **/*.pdf~(*/.git/*|*/node_modules/*|*/.venv/*|*/venv/*)(#qN.om) )
+	files=( **/*.(#i)${~alt}~(*/.git/*|*/node_modules/*|*/.venv/*|*/venv/*)(#qN.om) )
 else
-	files=( *.pdf(#qN.om) )
+	files=( *.(#i)${~alt}(#qN.om) )
 fi
 
 if (( $#files == 0 )); then
-	(( recurse )) && die "no PDF under ${PWD/#$HOME/~}"
-	die "no PDF in ${PWD/#$HOME/~} (try \`pdf -r\` to look below it)"
+	what=${exts//,/ or }
+	(( recurse )) && die "no $what under ${PWD/#$HOME/~}"
+	die "no $what in ${PWD/#$HOME/~} (try \`pdf -r\` to look below it)"
 fi
 
 # ── unique substring match opens without a picker ─────────────────────────

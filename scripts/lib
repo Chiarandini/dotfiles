@@ -1,0 +1,42 @@
+#!/usr/bin/env zsh
+#
+# lib — open a book from the library, from anywhere.
+#
+# $LIBRARY is books by other people (949 of them, sorted into subjects); the
+# EYNTKA series you write is $TEXTBOOKS, and `tb -B` opens those. Keeping the
+# two commands apart is the point: they answer different questions and only one
+# of them has a build.
+#
+#   lib                  browse the whole library, newest first
+#   lib gravity          narrow by name; a unique match opens straight away
+#   lib -a [query]       always show the picker, even for a single match
+#   lib -p [query]       print the path instead of opening it
+#
+# In the picker:
+#   <CR>    open              <TAB>   select several, <CR> opens them all
+#   <C-y>   copy the path     <C-f>   reveal in Finder
+#   ?       toggle a bigger preview
+#
+# There is deliberately almost nothing here. The picker, the inline first-page
+# preview and the columns are `pdf`, which already solved all three and gained
+# `-x` so the djvu and epub half of the library is not invisible. This file
+# owns exactly two facts: where the library is, and what counts as a book in
+# it — and `pdf -r`'s newest-first order then reads as "what I last added".
+
+emulate zsh
+setopt pipefail
+
+# Pull in $LIBRARY even when the caller's env lacks it (a GUI app, a launchd
+# job). Sourcing is safe: paths.env is exports only.
+[[ -f $HOME/.config/paths.env ]] && source $HOME/.config/paths.env
+
+if [[ $1 == -h || $1 == --help ]]; then
+	awk 'NR>2 && /^#/ {sub(/^# ?/,""); print; next} NR>2 {exit}' $0
+	exit 0
+fi
+
+[[ -n $LIBRARY ]] || { print -u2 -- "lib: LIBRARY is not set — see ~/.config/paths.env"; exit 1 }
+[[ -d $LIBRARY ]] || { print -u2 -- "lib: no library at $LIBRARY"; exit 1 }
+
+cd -q -- $LIBRARY || exit 1
+exec ${0:A:h}/pdf -r -x pdf,epub,djvu,mobi,azw,azw3 "$@"
