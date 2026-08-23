@@ -4,12 +4,16 @@ local config_dir = vim.fn.stdpath("config")
 
 websiteTools.setup({
 	blog_source_code_url = "~/Documents/academic/blogs",
-	blog_webpage_url = "~/programming/website-nate/nate-website/src/app/components/blog/blog.component.ts",
+	-- The post list lives in blog-posts.ts, not the component; likewise the book
+	-- entries live in book-descriptions.ts. Both were split out of their
+	-- components and these paths were left pointing at the old files, so
+	-- :UpdateBlogPage / :UpdateBooksPage opened the wrong buffer to paste into.
+	blog_webpage_url = "~/programming/website-nate/nate-website/src/app/components/blog/blog-posts.ts",
 	blog_public_post_url = "~/programming/website-nate/nate-website/src/assets/pdfs/blogs",
 	blog_latex_template = config_dir .. "/preamble/blog_preamble.tex",
 
 	books_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/books",
-	books_webpage_url = "~/programming/website-nate/nate-website/src/app/components/books/books.component.ts",
+	books_webpage_url = "~/programming/website-nate/nate-website/src/app/components/books/book-descriptions.ts",
 	books_latex_template = config_dir .. "/preamble/books_preamble.tex",
 
 	notes_source_code_url = "~/Documents/academic/notes",
@@ -76,7 +80,7 @@ vim.api.nvim_create_user_command("CreateNote",          function() websiteTools.
 vim.api.nvim_create_user_command("CreateBook",          function() websiteTools.createNewBook()         end, {})
 vim.api.nvim_create_user_command("PublishToWebsite",    function(o) websiteTools.publishToWebsite({ skip_textbooks = o.bang }) end, {
     bang = true,
-    desc = "Publish website; prompts to refresh out-of-date textbooks (! skips the check)",
+    desc = "Publish website; syncs every PDF from source and runs the checks first (! skips both)",
 })
 vim.api.nvim_create_user_command("CopyBookToWebsite",   function() websiteTools.copyBooksToWebsite()    end, {})
 vim.api.nvim_create_user_command("CopyNotesToWebsite",  function() websiteTools.copyNotesToWebsite()    end, {})
