@@ -109,6 +109,10 @@ end
 --   <CR>    open — like pressing <CR> on the entry in Oil (enter dir / open file)
 --   <S-CR>  jump — land the Oil cursor on the entry WITHOUT opening it
 --
+-- The picker itself lives in the distro (noethervim.util.oil_pick) so that
+-- filtered variants can share it — the LaTeX bundle's `gt` is this same
+-- picker narrowed to .tex, with the same two keys. Here it runs unfiltered.
+--
 -- Rebind the jump key here (single, obvious override point). <CR> stays Snacks'
 -- built-in confirm. <S-CR> needs a terminal that distinguishes it from <CR>
 -- (kitty keyboard protocol — same requirement as the distro's browse picker).
@@ -117,85 +121,7 @@ local FUZZY_KEYS = {
 }
 
 local function fuzzy_pick_in_oil()
-  local oil    = require("oil")
-  local Snacks = require("snacks")
-  local bufnr  = vim.api.nvim_get_current_buf()
-  local win    = vim.api.nvim_get_current_win()
-
-  -- Read entries straight off the buffer lines so the picker mirrors exactly
-  -- what Oil is showing (no recursion, honours the show_hidden toggle).
-  local items = {}
-  for lnum = 1, vim.api.nvim_buf_line_count(bufnr) do
-    local entry = oil.get_entry_on_line(bufnr, lnum)
-    if entry and entry.name ~= ".." then
-      table.insert(items, {
-        text = entry.name,
-        lnum = lnum,
-        dir  = entry.type == "directory",
-      })
-    end
-  end
-  if #items == 0 then
-    vim.notify("[oil] no entries to search", vim.log.levels.WARN)
-    return
-  end
-
-  -- Land the Oil cursor on `item` (refocus the Oil window + move the cursor),
-  -- then optionally run `after` in that window. Deferred so it fires after the
-  -- picker has fully torn down. Shared by <CR> (open) and <S-CR> (jump).
-  local function land_on(item, after)
-    vim.schedule(function()
-      if not (item and vim.api.nvim_win_is_valid(win)) then return end
-      vim.api.nvim_set_current_win(win)
-      vim.api.nvim_win_set_cursor(win, { item.lnum, 0 })
-      if after then after() end
-    end)
-  end
-
-  local dir = oil.get_current_dir(bufnr)
-  Snacks.picker({
-    title  = dir and vim.fn.fnamemodify(dir, ":~") or "Oil",
-    layout = "select", -- compact centered box (no preview); see snacks layout presets
-    -- Return focus to the Oil window (not some other editor window) when the
-    -- picker closes. Snacks' default "main" excludes floating windows, so for a
-    -- floating Oil it would restore focus to whatever sat behind the float; that
-    -- non-float WinEnter trips Oil's float-only auto-close (oil.nvim init.lua's
-    -- "Close floating oil window" WinLeave handler), wiping the float out from
-    -- under us before the deferred oil.select() below can run. current = true
-    -- pins main to the Oil window so the float survives and select() lands.
-    main   = { current = true },
-    items  = items,
-    format = function(item)
-      local icon, hl = Snacks.util.icon(item.text, item.dir and "directory" or "file")
-      return {
-        { icon .. " ", hl },
-        { item.text, item.dir and "SnacksPickerDirectory" or "SnacksPickerFile" },
-      }
-    end,
-    -- <CR>: behave exactly like pressing <CR> on the entry in Oil — land on the
-    -- line, then oil.select() (enter dir / open file).
-    confirm = function(picker, item)
-      picker:close()
-      land_on(item, oil.select)
-    end,
-    -- Named actions, bound below in win.input.keys (rebind via FUZZY_KEYS).
-    actions = {
-      -- <S-CR>: jump to the entry — land the Oil cursor on it WITHOUT opening
-      -- (no oil.select), so you can then act on it with the usual Oil keys.
-      jump_to_entry = function(picker)
-        local item = picker:current()
-        picker:close()
-        land_on(item)
-      end,
-    },
-    win = {
-      input = {
-        keys = {
-          [FUZZY_KEYS.jump] = { "jump_to_entry", mode = { "i", "n" }, desc = "jump to entry (no open)" },
-        },
-      },
-    },
-  })
+  require("noethervim.util.oil_pick").pick({ keys = FUZZY_KEYS })
 end
 
 vim.api.nvim_create_autocmd("FileType", {
