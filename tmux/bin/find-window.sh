@@ -9,24 +9,28 @@ scope=all
 [ "$1" = "--project" ] && scope=project
 
 if [ "$scope" = project ]; then
-  list=$(tmux list-windows -F '#{session_name}	#{window_index}	#{window_name}	#{pane_current_command}	#{pane_title}')
+  list=$(tmux list-windows -F '#{session_name}	#{window_index}	#{window_name}	#{pane_current_command}	#{window_activity}')
   prompt='window (this project) > '
 else
-  list=$(tmux list-windows -a -F '#{session_name}	#{window_index}	#{window_name}	#{pane_current_command}	#{pane_title}')
+  list=$(tmux list-windows -a -F '#{session_name}	#{window_index}	#{window_name}	#{pane_current_command}	#{window_activity}')
   prompt='window (all projects) > '
 fi
 
 [ -z "$list" ] && exit 0
 
-# Same state vocabulary as the status line: working > ready, then role.
-rows=$(printf '%s\n' "$list" | awk -F'\t' '
+# Same definition of "working" as the status line: recent output, not the
+# title. Claude keeps a static "* <topic>" in its title whether idle or busy,
+# so the title cannot answer this. Comparing the title here also hit a macOS
+# BSD awk bug where multibyte strings compare equal, which made every Claude
+# window report "ready" regardless.
+now=$(date +%s)
+rows=$(printf '%s\n' "$list" | LC_ALL=C awk -F'\t' -v now="$now" '
   {
-    cmd = $4; title = $5; state = ""
-    first = substr(title, 1, 3)
-    if (cmd ~ /^claude/) { state = (first == "\342\234\263") ? "ready" : "working" }
-    else if (cmd ~ /^nvim/) { state = "edit" }
+    cmd = $4; state = ""
+    if (cmd ~ /^claude/)    state = (now - $5 < 3) ? "working" : "ready"
+    else if (cmd ~ /^nvim/) state = "edit"
     printf "%s\t%s\t%s\t%s\t%s\n", $1, $2, $3, state, cmd
-  }' | sort -t'	' -k1,1 -k2,2n)
+  }' | sort -t'\t' -k1,1 -k2,2n)
 
 picked=$(printf '%s\n' "$rows" | fzf \
   --delimiter='\t' --with-nth=1,3,4 \

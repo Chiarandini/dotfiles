@@ -12,6 +12,11 @@
 # idle. Printing nothing is deliberate; this is called from status-right for
 # its side effect, once per status interval.
 #
+# LC_ALL=C on the awk is load-bearing, not tidiness: macOS's BSD awk under a
+# UTF-8 locale compares multibyte strings as equal even when they differ, so
+# `cur[s] != g` silently returned false for every glyph and no session was ever
+# updated. Byte semantics make the comparison honest.
+#
 # It runs every second, so it is written to cost as little as possible: two
 # tmux reads, then a single batched write containing only the sessions whose
 # state actually changed. In the common case, nothing changed and there is no
@@ -29,7 +34,7 @@ cmds=$(
   {
     printf '%s\n' "$current" | sed 's/^/CUR\t/'
     tmux list-windows -a -F "WIN${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}" 2>/dev/null
-  } | awk -F"$TAB" -v now="$now" '
+  } | LC_ALL=C awk -F"$TAB" -v now="$now" '
     $1 == "CUR" { cur[$2] = $3; seen[$2] = 1; next }
     $1 == "WIN" {
       s = $2; seen[s] = 1
