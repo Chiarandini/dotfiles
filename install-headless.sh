@@ -89,3 +89,12 @@ echo "  3. Authenticate Claude Code:  claude  (then /login)"
 echo "  4. If this box needs Tailscale SSH server:"
 echo "       sudo brew services start tailscale"
 echo "       sudo tailscale up --ssh"
+
+# ─── Verify ───────────────────────────────────────────────────────────────────
+# Assert the setup actually worked. Running commands is not evidence they did
+# what they looked like they did; see BOOTSTRAP.md.
+"$DOTFILES_DIR/install-verify.sh" || {
+    echo
+    echo "Bootstrap finished but verification found problems (see above)."
+    echo "Re-run any time with: $DOTFILES_DIR/install-verify.sh"
+}

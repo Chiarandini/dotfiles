@@ -40,6 +40,12 @@ ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
 ln -sf "$DOTFILES_DIR/.zshrc" ~/.zshrc
 ln -sf "$DOTFILES_DIR/.zprofile" ~/.zprofile
 ln -sf "$DOTFILES_DIR/.ideavimrc" ~/.ideavimrc
+mkdir -p ~/.claude
+# Claude Code settings live here so they are reproducible; settings.local.json
+# is deliberately NOT tracked, it holds machine-specific permission grants.
+# preferredNotifChannel in this file is what makes the terminal bell fire, and
+# without it the "Claude wants you" state is silently dead.
+ln -sf "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
 mkdir -p ~/.local/bin
 ln -sf "$DOTFILES_DIR/scripts/fix-yabai-sa" ~/.local/bin/fix-yabai-sa
 ln -sf "$DOTFILES_DIR/scripts/fix-yabai" ~/.local/bin/fix-yabai
@@ -120,3 +126,12 @@ if [ -d "$DOTFILES_DIR/launchd" ]; then
 fi
 
 echo "Bootstrap complete!"
+
+# ─── Verify ───────────────────────────────────────────────────────────────────
+# Assert the setup actually worked. Running commands is not evidence they did
+# what they looked like they did; see BOOTSTRAP.md.
+"$DOTFILES_DIR/install-verify.sh" || {
+    echo
+    echo "Bootstrap finished but verification found problems (see above)."
+    echo "Re-run any time with: $DOTFILES_DIR/install-verify.sh"
+}
