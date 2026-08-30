@@ -136,9 +136,15 @@ to the current epoch inside a format:
 #{?#{e|<:#{e|-:%s,#{window_activity}},3},working,ready}
 ```
 
-Known false positive: typing into a Claude pane is output, so it flickers
-yellow while you type. Raising the 3-second threshold makes the state linger
-after work ends instead, which is worse.
+It is **debounced**, and that is not a detail. "Recent output" alone counts a
+single repaint as work: focusing a kitty tab makes tmux forward a focus event,
+Claude repaints in response, and the tab flashes yellow for no reason. So
+working means output in **two consecutive samples**, which a one-shot repaint
+never reaches. The trade is that work shorter than about two ticks (4s) does
+not show, which is the right way round for a glance-level indicator.
+
+Typing into a Claude pane is sustained output, so it still reads as working
+while you type. That one is inherent to using output as the signal.
 
 If a window's colour looks wrong, `bin/watch-title.sh` samples the title and
 the glyph it produces, so you get data instead of a hunch.

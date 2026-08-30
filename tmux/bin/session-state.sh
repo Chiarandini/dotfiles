@@ -1,46 +1,58 @@
 #!/bin/sh
-# Compute each session's most urgent state and publish it as @state, which
-# set-titles-string reads. That is what the kitty tab shows.
+# Publish two things every status tick:
+#   @working  per window   1 while a Claude is actually working
+#   @state    per session  the session's most urgent glyph, for the kitty tab
 #
-# This used to be done inside the title format with a #{W:...} loop, and it was
-# quietly wrong: strftime does not reach inside a loop body, so the `%s` meant
-# to supply "now" expanded to nothing, every window's computed age became 0,
-# and every session read as permanently working. The per-window status bar was
-# unaffected because it does not loop.
+# Both used to be computed inside format strings, and both were wrong there.
+# The session aggregate used a #{W:...} loop, and strftime does not reach into
+# a loop body, so the `%s` supplying "now" expanded to nothing and every
+# session read as permanently working.
 #
-# Precedence matches the window bar: attention > working > ready > editing >
-# idle. Printing nothing is deliberate; this is called from status-right for
-# its side effect, once per status interval.
+# Debounce is why the per-window test moved here too. "Working" cannot mean
+# "produced output recently", because a single repaint counts: focusing a kitty
+# tab makes tmux forward a focus event, Claude repaints in response, and the
+# tab flashes yellow for no reason. So working means output in TWO CONSECUTIVE
+# samples. A one-shot repaint from focus, resize or a bell never reaches a
+# streak of two; real work advances every tick. The cost is that work shorter
+# than roughly two ticks is not shown, which is the right trade for a
+# glance-level indicator.
 #
-# LC_ALL=C on the awk is load-bearing, not tidiness: macOS's BSD awk under a
-# UTF-8 locale compares multibyte strings as equal even when they differ, so
-# `cur[s] != g` silently returned false for every glyph and no session was ever
-# updated. Byte semantics make the comparison honest.
-#
-# It runs every second, so it is written to cost as little as possible: two
-# tmux reads, then a single batched write containing only the sessions whose
-# state actually changed. In the common case, nothing changed and there is no
-# write at all.
+# LC_ALL=C on the awk is load-bearing: macOS BSD awk under a UTF-8 locale
+# compares different multibyte strings as equal, so glyph comparisons silently
+# always said "unchanged" and nothing was ever updated.
 PATH=/opt/homebrew/bin:$PATH
+. "$HOME/.config/tmux/bin/lib.sh"
 
+STREAK="$STATE_DIR/window-activity"
 now=$(date +%s)
 TAB=$(printf '\t')
 
-# Current published state, so we can skip writes that would be no-ops.
-current=$(tmux list-sessions -F "#{session_name}${TAB}#{@state}" 2>/dev/null)
-[ -n "$current" ] || exit 0
+sessions=$(tmux list-sessions -F "SES${TAB}#{session_name}${TAB}#{@state}" 2>/dev/null)
+[ -n "$sessions" ] || exit 0
 
-cmds=$(
+out=$(
   {
-    printf '%s\n' "$current" | sed 's/^/CUR\t/'
-    tmux list-windows -a -F "WIN${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}" 2>/dev/null
-  } | LC_ALL=C awk -F"$TAB" -v now="$now" '
-    $1 == "CUR" { cur[$2] = $3; seen[$2] = 1; next }
+    [ -f "$STREAK" ] && sed 's/^/OLD	/' "$STREAK"
+    printf '%s\n' "$sessions"
+    tmux list-windows -a -F "WIN${TAB}#{window_id}${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}${TAB}#{@working}" 2>/dev/null
+  } | LC_ALL=C awk -F"$TAB" -v now="$now" -v streak_file="$STREAK" '
+    $1 == "OLD" { prev_act[$2] = $3; prev_streak[$2] = $4; next }
+    $1 == "SES" { cur_state[$2] = $3; seen[$2] = 1; next }
     $1 == "WIN" {
-      s = $2; seen[s] = 1
-      if ($3 == "1")      bell[s] = 1
-      if ($4 ~ /^claude/) { claude[s] = 1; if (now - $5 < 3) working[s] = 1 }
-      if ($4 ~ /^nvim/)   edit[s] = 1
+      id = $2; s = $3; seen[s] = 1
+      act = $6; was = $7
+
+      # Consecutive samples that produced new output.
+      st = (id in prev_act && act != prev_act[id]) ? prev_streak[id] + 1 : 0
+      new_act[id] = act; new_streak[id] = st
+
+      w = ($5 ~ /^claude/ && st >= 2 && now - act < 5) ? 1 : 0
+      if (w != (was == "1" ? 1 : 0))
+        printf "set-option -w -t %s @working %d ; ", id, w
+
+      if ($4 == "1")      bell[s] = 1
+      if ($5 ~ /^claude/) { claude[s] = 1; if (w) working[s] = 1 }
+      if ($5 ~ /^nvim/)   edit[s] = 1
     }
     END {
       for (s in seen) {
@@ -49,20 +61,21 @@ cmds=$(
         else if (claude[s])  g = "\342\234\263 "   # U+2733
         else if (edit[s])    g = "\342\234\216 "   # U+270E
         else                 g = "\342\200\272 "   # U+203A
-        if (cur[s] != g) {
-          gsub(/"/, "\\\"", s)
-          printf "set-option -t \"%s\" @state \"%s\" ; ", s, g
+        if (cur_state[s] != g) {
+          t = s; gsub(/"/, "\\\"", t)
+          printf "set-option -t \"%s\" @state \"%s\" ; ", t, g
         }
       }
+      for (id in new_act)
+        printf "%s\t%s\t%s\n", id, new_act[id], new_streak[id] > streak_file
     }')
 
-# One invocation for every change, or none at all when nothing moved.
-# Fed through source-file rather than the shell: the commands carry quoting for
-# tmux's parser, and session names contain spaces ("short story"), so shell
-# word-splitting mangles both.
-if [ -n "$cmds" ]; then
+# One invocation for every change, or none at all when nothing moved. Fed
+# through source-file, not the shell: session names contain spaces and the
+# quoting is tmux's, not the shell's.
+if [ -n "$out" ]; then
   f=$(mktemp) || exit 0
-  printf '%s\n' "${cmds%; }" > "$f"
+  printf '%s\n' "${out%; }" > "$f"
   tmux source-file "$f" 2>/dev/null
   rm -f "$f"
 fi
