@@ -12,7 +12,7 @@ from kitty.tab_bar import draw_tab_with_separator
 from kitty.boss import get_boss
 
 # Version sentinel: logged on every (re)import so we can confirm the live code.
-_VERSION = 'v7-fresh-load'
+_VERSION = 'v8-spinner-family'
 try:
     import os as _os
     import time as _time

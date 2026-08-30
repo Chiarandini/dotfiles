@@ -55,6 +55,16 @@ Re-apply after edits: `cmd+shift+f5` (or `kitty @ load-config`). The shim loads
 `tabbar.py` fresh each time, so code edits take effect; the watcher attaches to
 windows created afterwards.
 
+**Bump `_VERSION` whenever you edit `tabbar.py`.** The log line it writes is
+the only way to tell which code is actually live, and it is useless if the
+string never changes: a stale build and a fresh one both log `v7`, so the log
+looks like proof while proving nothing.
+
+To see what the bar actually decides for a tab, append a line to `taborg.log`
+from inside `_glyph_and_colour` with `head`, `_exe(w)` and the branch taken,
+reload, then remove it. Note that a probe placed after the tmux branch never
+sees tmux tabs, since those return early.
+
 ## Resilience
 
 - Built only on kitty's documented custom-tab-bar API, watchers, and remote
