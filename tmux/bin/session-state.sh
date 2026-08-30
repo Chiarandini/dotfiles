@@ -81,16 +81,20 @@ out=$(
         printf "set-option -w -t %s @working %d ; ", id, w
 
       if ($4 == "1")      bell[s] = 1
-      if ($5 ~ /^claude/) { claude[s] = 1; if (w) working[s] = 1 }
+      if ($5 ~ /^claude/) { claude[s] = 1; nclaude[s]++; if (w) working[s] = 1 }
       if ($5 ~ /^nvim/)   edit[s] = 1
     }
     END {
       for (s in seen) {
-        if      (bell[s])    g = "! "
-        else if (working[s]) g = "\342\240\277 "   # U+283F
-        else if (claude[s])  g = "\342\234\263 "   # U+2733
-        else if (edit[s])    g = "\342\234\216 "   # U+270E
-        else                 g = "\342\200\272 "   # U+203A
+        if      (bell[s])    g = "!"
+        else if (working[s]) g = "\342\240\277"   # U+283F
+        else if (claude[s])  g = "\342\234\263"   # U+2733
+        else if (edit[s])    g = "\342\234\216"   # U+270E
+        else                 g = "\342\200\272"   # U+203A
+
+        # How many Claudes live in this project. One is the common case and a
+        # "1" everywhere would be noise, so it only shows from two up.
+        g = g (nclaude[s] > 1 ? nclaude[s] : "") " "
         if (cur_state[s] != g) {
           t = s; gsub(/"/, "\\\"", t)
           printf "set-option -t \"%s\" @state \"%s\" ; ", t, g

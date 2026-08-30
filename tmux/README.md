@@ -389,6 +389,17 @@ The kitty tab carries the session's **most urgent** state, attention beating
 working beating ready beating nvim beating idle. Same glyphs, same colours as
 the window bar, so `!` means the same thing at both levels.
 
+It also carries **how many Claudes are in the project**, from two up:
+
+```
+⠿ 2 topos      two Claudes, at least one working
+✳ 3 textbooks  three Claudes, all idle
+⠿ tmux         one Claude, working
+```
+
+A "1" on every tab would be noise, so the count only appears when there is
+more than one to distinguish.
+
 Crucially the state is computed **once, in tmux**, and shipped to kitty as a
 single leading glyph in the window title. `taborg/tabbar.py` only maps that
 glyph to a colour (`TMUX_GLYPHS`); it does not inspect processes or titles to
