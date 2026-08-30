@@ -139,6 +139,11 @@ for cmd, mark in pairs({ J = "junk", O = "vault", U = "university", T = "textboo
   end, { nargs = "?", complete = "file", desc = "go to " .. mark .. " (dirmarks)" })
 end
 
+-- ── Spell dictionaries (zg picks config vs noethervim-tex source) ─────────
+-- Implementation, and the spellfile registration, live in
+-- lua/user/configs/spell_dict.lua.
+require("user.configs.spell_dict").setup()
+
 -- ── Textbook results (definitions/theorems across $TEXTBOOKS) ─────────────
 -- `:Textbook` + <space>e are the front-end; implementation lives in
 -- lua/user/configs/textbook.lua. The shell twin is `tb`. Both shell out to
