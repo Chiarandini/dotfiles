@@ -43,6 +43,12 @@ If you prefer a central override, create `nvim/preamble/personal-info.tex` (alre
 
 Follow these steps in exact order when setting up a new machine (e.g., migrating to the M5).
 
+> **After installing, run `~/.config/install-verify.sh`.** It asserts the setup
+> actually worked rather than assuming the installer's commands did what they
+> looked like they did, and exits with the number of failures. Both installers
+> call it automatically at the end. See [BOOTSTRAP.md](BOOTSTRAP.md) for what it
+> checks and the rule for keeping it honest as this repo changes.
+
 ### Phase 1: The Secure Transfer (SSH Keys)
 Before we can download this repository, the new Mac needs your developer identity to authenticate with GitHub. Do not use Google Drive for this.
 
@@ -141,6 +147,13 @@ If you need a new programming language or want to update a global version, simpl
 ```bash
 mise install
 ```
+
+**Adding anything a machine needs to have:**
+Add an assertion to `install-verify.sh`, not just a step to `install.sh`. Every
+expensive failure in this setup has been silent: TPM read a path it could not
+see and left tmux-resurrect inert for three years; Claude's notification
+channel defaulted to one that never rang. An installer that only runs commands
+cannot catch either. See [BOOTSTRAP.md](BOOTSTRAP.md).
 
 ---
 

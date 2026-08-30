@@ -49,6 +49,19 @@ def _is_braille(ch):
     return bool(ch) and 0x2800 <= ord(ch) <= 0x28FF
 
 
+# Claude marks "working" in the terminal title with a spinner glyph, and it
+# does not use one family. Braille (U+2800-28FF) was what it used when this
+# file was written; sampled live in 2026-08 it uses the half-circle family
+# instead (U+25D0-25D3, e.g. U+25D1). Match both, and render whichever frame
+# is live rather than normalising it, so the tab animates for free and a
+# non-tmux Claude is instantly distinguishable from a tmux one, which shows
+# tmux's own static "⠿".
+def _is_spinner(ch):
+    if not ch:
+        return False
+    return _is_braille(ch) or 0x25D0 <= ord(ch) <= 0x25D3
+
+
 def _active_window(tab):
     try:
         t = get_boss().tab_for_id(tab.tab_id)
@@ -75,19 +88,23 @@ def _glyph_and_colour(tab):
 
     head = title.lstrip()[:1]
 
-    # tmux states first: the title is authoritative for a tmux tab, and a live
-    # bell still wins so a background window can shout.
-    if head in TMUX_GLYPHS:
+    # Which layer is this tab? A tmux tab's child exe is literally "tmux", so
+    # that is the reliable discriminator; without it a bare "✳" is ambiguous
+    # between "tmux says a Claude is ready" and "a Claude here is ready".
+    if _exe(w).startswith('tmux'):
+        # tmux already computed the session's most urgent state and put it in
+        # the title. A live bell still wins so a background window can shout.
         if tab.needs_attention:
             return '!', C_ATTN
-        return head, TMUX_GLYPHS[head]
+        if head in TMUX_GLYPHS:
+            return head, TMUX_GLYPHS[head]
+        return '›', C_SHELL
 
-    is_claude = wkind == 'claude' or _is_braille(head)
+    is_claude = wkind == 'claude' or _is_spinner(head) or head == '✳'
     if is_claude:
         # Working wins over a (possibly stale) bell: an actively spinning tab
-        # is not waiting on you. Render Claude's *live* braille frame, which
-        # changes each redraw, so the glyph appears to animate for free.
-        if _is_braille(head):
+        # is not waiting on you.
+        if _is_spinner(head):
             return head, C_WORK
         if tab.needs_attention:
             return '!', C_ATTN
@@ -101,7 +118,7 @@ def _glyph_and_colour(tab):
 
 def _clean_title(title):
     t = (title or '').lstrip()
-    if t[:1] in TMUX_GLYPHS or _is_braille(t[:1]):
+    if t[:1] in TMUX_GLYPHS or _is_spinner(t[:1]):
         t = t[1:].lstrip()
     return t
 
