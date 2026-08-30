@@ -52,10 +52,21 @@ are learning; type straight through it once your fingers know. Nothing here
 has to be memorised, and there is no separate cheat sheet to keep in sync.
 
 `cmd+k` `/` fuzzy searches the same actions, for when you know what you want
-but not which letter it is. The menu and the search are both rendered from
-`actions.tsv` by `bin/menu.sh`, so they cannot drift apart; add an action
-there and it appears in both. That file is the only place actions are
-defined, which is why the menu is no longer written out in `tmux.conf`.
+but not which letter it is. `actions.tsv` is the only place actions are
+defined; both the menu and the search come from it.
+
+**After editing `actions.tsv`, regenerate:**
+
+```sh
+~/.config/tmux/bin/menu.sh generate > ~/.config/tmux/menu.generated.tmux
+```
+
+The menu binding is generated rather than built at keypress time because
+building it cost **126 ms** of fork, source and file read before the menu could
+be drawn, which is long enough that a quickly typed second key lands in the
+pane instead of the menu. Generating moves that to config-load time and leaves
+the keypress path pure tmux. `install-verify.sh` fails if the generated file
+and `actions.tsv` disagree, so the two cannot drift.
 
 | Key | Action |
 |---|---|

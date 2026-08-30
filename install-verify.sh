@@ -76,6 +76,18 @@ else
       "panes with no title restore in the wrong directory; apply tmux/resurrect-empty-pane-title.patch"
 fi
 
+gen="$DOTFILES_DIR/tmux/menu.generated.tmux"
+if [ -f "$gen" ]; then
+  if "$DOTFILES_DIR/tmux/bin/menu.sh" generate 2>/dev/null | diff -q - "$gen" >/dev/null 2>&1; then
+    ok "cmd+k menu matches actions.tsv"
+  else
+    bad "cmd+k menu is stale" \
+        "regenerate: $DOTFILES_DIR/tmux/bin/menu.sh generate > $gen"
+  fi
+else
+  bad "menu.generated.tmux missing" "cmd+k will not be bound"
+fi
+
 # ── shell integration ───────────────────────────────────────────────────────
 section "Shell"
 for fn in tx nvs; do

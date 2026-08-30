@@ -43,6 +43,34 @@ run-picked)
   run_tmux_command "$cmd"
   ;;
 
+generate)
+  # Emit a NATIVE display-menu binding for tmux.conf to source.
+  #
+  # Binding cmd+k to `run-shell menu.sh` put a fork, a lib.sh source and a file
+  # read in front of every menu: 126 ms before the menu could be drawn, so a
+  # quickly-typed second key went to the pane instead of the menu. Generating
+  # the binding moves all of that to config-load time and leaves the keypress
+  # path pure tmux.
+  #
+  # actions.tsv stays the single source of truth; this file is generated from
+  # it and committed, and install-verify.sh fails if the two drift.
+  esc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
+  {
+    printf '# GENERATED from actions.tsv by bin/menu.sh generate. Do not edit.\n'
+    printf '# Regenerate: ~/.config/tmux/bin/menu.sh generate\n'
+    printf "bind -T root 'C-\\\\' display-menu -T \"#[align=centre fg=#F08C3A,bold] cmd+k \" -x C -y C"
+    read_tsv "$ACTIONS" | while IFS= read -r line; do
+      if [ "$line" = "-" ]; then printf ' \\\n  ""'; continue; fi
+      k=$(printf '%s' "$line" | cut -f1)
+      lbl=$(printf '%s' "$line" | cut -f2)
+      cmd=$(printf '%s' "$line" | cut -f3-)
+      [ -n "$k" ] && [ -n "$cmd" ] || continue
+      printf ' \\\n  "%s" "%s" "%s"' "$(esc "$lbl")" "$(esc "$k")" "$(esc "$cmd")"
+    done
+    printf '\n'
+  }
+  ;;
+
 menu)
   # Build the display-menu argument list: label, key, command per entry, and a
   # lone empty string for each separator.
@@ -62,5 +90,5 @@ EOF
   ;;
 
 *)
-  printf 'usage: menu.sh [menu|find|run-picked]\n'; exit 1 ;;
+  printf 'usage: menu.sh [menu|find|run-picked|generate]\n'; exit 1 ;;
 esac
