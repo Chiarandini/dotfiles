@@ -390,15 +390,13 @@ patch, 16 of 16 after, including a pane whose title was deliberately blanked.
 
 `crash-test.sh before` checks the patch is still present and warns if not.
 
-`tmux/plugins/` is gitignored, so the patched copy is **not** in this repo. The
-change is kept as `resurrect-empty-pane-title.patch` beside this file. On a
-fresh machine:
+The plugins are **vendored** in `tmux/plugins/`, not cloned at setup time, so
+a fresh `git clone` of the dotfiles works with no bootstrap and no patch to
+apply. Provenance, pinned commits and the update procedure are in
+`tmux/plugins/VENDORED.md`.
 
-```sh
-git clone https://github.com/tmux-plugins/tmux-resurrect  ~/.config/tmux/plugins/tmux-resurrect
-git clone https://github.com/tmux-plugins/tmux-continuum  ~/.config/tmux/plugins/tmux-continuum
-git -C ~/.config/tmux/plugins/tmux-resurrect apply ~/.config/tmux/resurrect-empty-pane-title.patch
-```
+Cloning them was the old arrangement and it is what failed silently for three
+years, so the setup step was removed from `install.sh` rather than fixed.
 
 **Why patch locally instead of upstreaming.** This is a known bug with four
 open fixes already waiting: #520 (2024-08-30), #564, #581, and #583

@@ -84,11 +84,10 @@ echo "Installing Neovim via bob..."
 bob install stable
 bob use stable
 
-# 8. Install tmux plugin manager (TPM)
-echo "Setting up tmux plugin manager..."
-if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-fi
+# 8. tmux plugins: nothing to do, they are vendored in this repo.
+# This step used to clone TPM into ~/.tmux/plugins/tpm, a path the tmux config
+# never read, so it found zero plugins and tmux-resurrect sat inert for three
+# years. See tmux/plugins/VENDORED.md.
 
 # 9. Start Background Services
 echo "Starting background services..."

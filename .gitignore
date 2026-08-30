@@ -40,8 +40,9 @@ raycast-x/
 nvim.bak/
 nvim.bak-old/
 
-# ── tmux plugins (managed by TPM, auto-cloned on first tmux start) ────────────
-tmux/plugins/
+# tmux plugins are vendored, not cloned: see tmux/plugins/VENDORED.md. The old
+# rule here assumed TPM would clone them on first start, which silently never
+# happened and left tmux-resurrect inert from 2023 to 2026.
 
 # ── Backup files ──────────────────────────────────────────────────────────────
 *.bak

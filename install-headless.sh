@@ -56,11 +56,9 @@ fi
 echo "==> Installing Brewfile.headless..."
 brew bundle --file="$DOTFILES_DIR/Brewfile.headless"
 
-# ─── 6. tmux plugin manager ───────────────────────────────────────────────────
-if [ ! -d "$HOME/.tmux/plugins/tpm" ]; then
-    echo "==> Installing tmux plugin manager..."
-    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-fi
+# ─── 6. tmux plugins ──────────────────────────────────────────────────────────
+# Nothing to install: they are vendored in this repo. This step used to clone
+# TPM into a path the tmux config never read. See tmux/plugins/VENDORED.md.
 
 # ─── 7. mise runtimes (pinned in .mise.toml) ──────────────────────────────────
 if command -v mise &> /dev/null; then
