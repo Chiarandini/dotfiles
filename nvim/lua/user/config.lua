@@ -7,4 +7,5 @@ return {
 	},
 	obsidian_vault = "~/Documents/vault/",
 	completion_style = "supertab",
+	q_close_filetypes = {"oil"},
 }
