@@ -21,11 +21,41 @@
 # compares different multibyte strings as equal, so glyph comparisons silently
 # always said "unchanged" and nothing was ever updated.
 PATH=/opt/homebrew/bin:$PATH
-. "$HOME/.config/tmux/bin/lib.sh"
 
-STREAK="$STATE_DIR/window-activity"
+STATE_DIR="$HOME/.local/state/tmux"
+STAMP="$STATE_DIR/state-last-run"
+LOCK="$STATE_DIR/state.lock"
 now=$(date +%s)
 TAB=$(printf '\t')
+
+# Every attached client draws the status bar, so with six clients this is
+# invoked six times per interval. That is not just six times the work: they all
+# read and write the streak file, so they race, and the streak counting that
+# the debounce depends on gets reset or double-counted at random. The symptom
+# is a tab that lags, flickers or changes colour for no reason.
+#
+# So: one writer, at a fixed cadence. The timestamp guard makes extra
+# invocations return immediately, and the mkdir lock is atomic, which closes
+# the window where two start at the same moment. Any client can still drive it,
+# so there is no daemon to supervise and it heals itself if a run dies.
+last=$(cat "$STAMP" 2>/dev/null || echo 0)
+case "$last" in *[!0-9]*|"") last=0 ;; esac
+[ $((now - last)) -lt 2 ] && exit 0
+
+mkdir "$LOCK" 2>/dev/null || {
+  # Stale lock from a killed run: reclaim it after 30s rather than wedging.
+  if [ -d "$LOCK" ]; then
+    age=$(( now - $(stat -f %m "$LOCK" 2>/dev/null || echo "$now") ))
+    [ "$age" -gt 30 ] && rmdir "$LOCK" 2>/dev/null
+  fi
+  exit 0
+}
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT INT TERM
+printf '%s\n' "$now" > "$STAMP"
+
+
+. "$HOME/.config/tmux/bin/lib.sh"
+STREAK="$STATE_DIR/window-activity"
 
 sessions=$(tmux list-sessions -F "SES${TAB}#{session_name}${TAB}#{@state}" 2>/dev/null)
 [ -n "$sessions" ] || exit 0

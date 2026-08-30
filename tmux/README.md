@@ -136,6 +136,14 @@ to the current epoch inside a format:
 #{?#{e|<:#{e|-:%s,#{window_activity}},3},working,ready}
 ```
 
+**One writer, fixed cadence.** Every attached client draws the status bar, so
+the `#()` callout fires once per client per interval; with six clients that is
+six concurrent runs all reading and writing the same streak file. They raced,
+and the debounce below depends on that file, so tabs lagged, flickered and
+changed colour for no reason. A timestamp guard plus an atomic `mkdir` lock
+means exactly one run does the work and the rest return in ~6 ms. Any client
+can still drive it, so there is no daemon to supervise.
+
 It is **debounced**, and that is not a detail. "Recent output" alone counts a
 single repaint as work: focusing a kitty tab makes tmux forward a focus event,
 Claude repaints in response, and the tab flashes yellow for no reason. So
