@@ -128,6 +128,43 @@ nvim() {
     return $ret
 }
 
+# ─── nvs: nvim, restoring this directory's session ────────────────────────
+# persistence.nvim keys sessions by cwd, so this reopens whatever was last
+# open here. tmux-resurrect restores nvim panes by typing `nvs` into the
+# pane's shell (process_restore_helpers.sh:38), which is why this is a
+# function and not a script in ~/.local/bin: going through the shell keeps
+# the nvim() handoff wrapper above, and a bare script would bypass it.
+nvs() {
+    if (( $# )); then
+        nvim "$@"
+    else
+        nvim -c "lua require('persistence').load()"
+    fi
+}
+
+# ─── tx: enter a tmux project ─────────────────────────────────────────────
+# The single entry point: picks a project (roots + zoxide) and attaches, or
+# creates it. Works from a bare shell and from inside tmux. With an argument,
+# attaches to a matching session directly and skips the picker.
+# Guide: ~/.config/tmux/README.md
+tx() {
+    if (( $# )); then
+        local match
+        match="$(tmux list-sessions -F '#{session_name}' 2>/dev/null \
+                 | grep -i -- "$1" | head -1)"
+        if [[ -n "$match" ]]; then
+            if [[ -n "$TMUX" ]]; then
+                tmux switch-client -t "=$match"
+            else
+                tmux attach-session -t "=$match"
+            fi
+            return $?
+        fi
+        print -u2 "tx: no session matching '$1'; opening the picker"
+    fi
+    ~/.config/tmux/bin/sessionizer.sh
+}
+
 # ─── c / ci: cd to a named directory (dirmarks) ───────────────────────────
 # Usage:
 #     c                      fzf picker over every bookmark

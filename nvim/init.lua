@@ -117,6 +117,9 @@ require("lazy").setup({
 		-- Terminal & environment
 		{ import = "noethervim.bundles.terminal.better-term" }, -- named terminal windows
 		-- { import = "noethervim.bundles.terminal.tmux" },        -- tmux window naming
+		-- ^ deliberately left off. only-tmux.nvim renames the tmux window from
+		--   the nvim session, which fights the naming in ~/.config/tmux/tmux.conf,
+		--   and vim-tmux-navigator is inert because that setup has no tmux panes.
 		-- { import = "noethervim.bundles.terminal.remote-dev" },  -- distant.nvim SSH editing
 
 		-- UI & appearance

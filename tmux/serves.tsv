@@ -1,0 +1,17 @@
+# Declared dev servers. `cmd+k s` starts every server whose session matches
+# the one you are in. If a serve/* window exists but its program has died
+# (which is what a restored window looks like), it is restarted in place.
+# Output is piped to ~/.local/state/tmux/serve/<session>-<name>.log, so logs
+# outlive both the window and a crash.
+#
+# The port column is not decoration: many dev servers silently fall back to a
+# random port when theirs is taken, and then you are looking at a different
+# server than you think. Declare it and you get told instead.
+# Use - if the server has no fixed port.
+#
+# Servers are deliberately not restarted on boot. resurrect brings back the
+# serve/* windows so you can see what should be running; starting is one key.
+#
+# session	name	cwd	port	command
+pg/website-nate	dev	~/programming/website-nate/nate-website	4200	npm start
+pg/instagram-reels-archive	web	~/programming/instagram-reels-archive	8000	uv run reels serve

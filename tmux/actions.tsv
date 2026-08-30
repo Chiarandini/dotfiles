@@ -1,0 +1,32 @@
+# The single source of truth for the cmd+k menu.
+#
+# bin/menu.sh renders this as a tmux display-menu, and `cmd+k /` fuzzy
+# searches the same file. Defining it twice would let the menu and the search
+# drift apart, so neither is written by hand in tmux.conf.
+#
+# key	label	tmux command      ("-" alone on a line draws a separator)
+p	project        fzf roots + zoxide	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/sessionizer.sh'
+w	window         this project	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/find-window.sh --project'
+W	window         all projects	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/find-window.sh'
+/	find action    fuzzy search this menu	display-popup -E -w 70% -h 60% '~/.config/tmux/bin/menu.sh find' ; run-shell '~/.config/tmux/bin/menu.sh run-picked'
+-
+c	claude         new window	run-shell '~/.config/tmux/bin/newwin.sh claude'
+e	editor         new window	run-shell '~/.config/tmux/bin/newwin.sh nvim'
+t	terminal       new window	run-shell '~/.config/tmux/bin/newwin.sh shell'
+-
+s	servers        start declared	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/serve.sh start'
+l	logs           follow one	display-popup -E -w 90% -h 80% -T ' log: F to follow, q to quit ' '~/.config/tmux/bin/serve.sh logs'
+S	save state now	run-shell '~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh'
+L	event log      saves + restores	display-popup -E -w 90% -h 80% '~/.config/tmux/bin/log-event.sh view'
+-
+r	rename window	command-prompt -I '#W' 'rename-window -- "%%"'
+P	rename project (session)	command-prompt -I '#S' 'rename-session -- "%%"'
+<	move window    left	swap-window -d -t -1
+>	move window    right	swap-window -d -t +1
+y	park toggle	run-shell '~/.config/tmux/bin/park.sh'
+[	copy mode	copy-mode
+d	detach	detach-client
+-
+k	key probe      what bytes does a key send	display-popup -E -w 70% -h 60% '~/.config/tmux/bin/keytest.sh'
+?	guide          README	display-popup -E -w 85% -h 85% 'less ~/.config/tmux/README.md'
+R	reload config	source-file ~/.config/tmux/tmux.conf ; display-message 'tmux.conf reloaded'

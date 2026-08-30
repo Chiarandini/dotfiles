@@ -97,6 +97,15 @@ function nvims() {
 # ╚═════════════════════════════════╝
 export EDITOR=nvim
 
+# ╔══════════════════════════════════════════╗
+# ║ Keep Claude Code in truecolor under tmux ║
+# ╚══════════════════════════════════════════╝
+# Claude Code deliberately drops its colour level from 3 (truecolor) to 2
+# (256) whenever $TMUX is set, which is why its palette looks muted in a tmux
+# pane while every other program looks identical. This is its own documented
+# opt-out. Harmless outside tmux: that downgrade only fires when $TMUX is set.
+export CLAUDE_CODE_TMUX_TRUECOLOR=1
+
 # ╔═══════════════════════════════╗
 # ║ command to paste to clipboard ║
 # ╚═══════════════════════════════╝

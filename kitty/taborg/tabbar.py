@@ -26,8 +26,23 @@ C_WORK = 0xF2D44E    # yellow - claude thinking / working
 C_READY = 0xF08C3A   # orange - claude idle / ready
 C_ATTN = 0xF24E4E    # red    - claude needs you (bell)
 C_EDIT = 0x4FC04F    # green  - nvim (active work)
+C_SHELL = 0x79C0FF   # blue   - a tmux session with nothing demanding
 C_TABLED = 0x8B949E  # grey   - tabled / parked
 C_MISC = None        # shell / other -> leave kitty's default (readable) colour
+
+# A tmux tab reports its child exe as "tmux", so none of the exe/user-var
+# rules below can see inside it. Instead tmux computes the session's most
+# urgent state itself and puts a leading glyph in the title it sets
+# (set-titles-string in ~/.config/tmux/tmux.conf). This maps that vocabulary
+# straight to a colour, so the state is derived once, in tmux, and only
+# rendered here.
+TMUX_GLYPHS = {
+    '!': C_ATTN,     # some window wants you
+    '⠿': C_WORK,     # some claude is working
+    '✳': C_READY,    # some claude is ready
+    '✎': C_EDIT,     # nvim, nothing louder
+    '›': C_SHELL,    # a tmux session, nothing demanding
+}
 
 
 def _is_braille(ch):
@@ -59,7 +74,15 @@ def _glyph_and_colour(tab):
         return '▸', C_TABLED                       # parked
 
     head = title.lstrip()[:1]
-    is_claude = wkind == 'claude' or head == '✳' or _is_braille(head)
+
+    # tmux states first: the title is authoritative for a tmux tab, and a live
+    # bell still wins so a background window can shout.
+    if head in TMUX_GLYPHS:
+        if tab.needs_attention:
+            return '!', C_ATTN
+        return head, TMUX_GLYPHS[head]
+
+    is_claude = wkind == 'claude' or _is_braille(head)
     if is_claude:
         # Working wins over a (possibly stale) bell: an actively spinning tab
         # is not waiting on you. Render Claude's *live* braille frame, which
@@ -78,7 +101,7 @@ def _glyph_and_colour(tab):
 
 def _clean_title(title):
     t = (title or '').lstrip()
-    if t[:1] == '✳' or _is_braille(t[:1]):
+    if t[:1] in TMUX_GLYPHS or _is_braille(t[:1]):
         t = t[1:].lstrip()
     return t
 

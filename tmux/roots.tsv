@@ -1,0 +1,17 @@
+# Project roots. Each depth-1 directory under a root becomes a session named
+# <kind>/<basename>. The kind prefix is what keeps colliding basenames apart:
+# algebraic-geometry exists under both textbooks trees.
+#
+# Paths may contain spaces; only the ends are trimmed.
+#
+# kind	path
+pg	~/programming
+tb	~/Documents/academic/textbooks - BACKUP
+wr	~/Documents/academic/writing/textbooks
+pa	~/Documents/academic/writing/papers
+cfg	~/.config
+
+# FROZEN. $TEXTBOOKS (~/Documents/academic/textbooks) is not to be edited; the
+# BACKUP tree above is the working copy. Kept here so it is still reachable,
+# under a kind that makes the session name say so: tbf/<subject>.
+tbf	~/Documents/academic/textbooks

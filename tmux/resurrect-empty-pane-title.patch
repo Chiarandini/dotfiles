@@ -1,0 +1,21 @@
+diff --git a/scripts/save.sh b/scripts/save.sh
+index 01edcde..a5ecf9c 100755
+--- a/scripts/save.sh
++++ b/scripts/save.sh
+@@ -39,7 +39,15 @@ pane_format() {
+ 	format+="${delimiter}"
+ 	format+="#{pane_index}"
+ 	format+="${delimiter}"
+-	format+="#{pane_title}"
++	# LOCAL PATCH: never emit an empty pane_title.
++	# The readers at save.sh:192 and restore.sh:178 use `IFS=<tab> read`, and a
++	# tab is IFS whitespace, so two adjacent tabs collapse into one. An empty
++	# title therefore shifts every later field left, `dir` silently receives
++	# pane_active, and the pane's cwd is lost on restore. The other fields that
++	# can be empty already avoid this with a leading ':' (window_flags,
++	# pane_current_path); pane_title was missing that guard.
++	# The placeholder is transient: the shell retitles the pane at next prompt.
++	format+="#{?#{==:#{pane_title},},-,#{pane_title}}"
+ 	format+="${delimiter}"
+ 	format+=":#{pane_current_path}"
+ 	format+="${delimiter}"
