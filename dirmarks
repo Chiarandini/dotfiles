@@ -10,27 +10,30 @@
 #   • `c edit` (or `:C edit`) opens this file with column alignment on save.
 
 # ── config ────────────────────────────────────────────────────────────────
-nvim           ~/.config/nvim                           neovim daily driver config lua
-noethervim     ~/programming/NoetherVim                 personal nvim distro dev tree
-plugins        ~/programming/nvim-plugins               custom nvim plugin checkouts
-config         ~/.config                                dotfiles zsh kitty yabai
-claude         ~/.claude                                claude code skills agents
+nvim           ~/.config/nvim                               neovim daily driver config lua
+noethervim     ~/programming/NoetherVim                     personal nvim distro dev tree
+plugins        ~/programming/nvim-plugins                   custom nvim plugin checkouts
+config         ~/.config                                    dotfiles zsh kitty yabai
+claude         ~/.claude                                    claude code skills agents
 
 # ── academic ──────────────────────────────────────────────────────────────
-academic       $ACADEMIC                                all academic work
-textbooks      $TEXTBOOKS                               EYNTKA series source
-papers         $PAPERS                                  papers preprints
-research       $RESEARCH                                research notes drafts
-talks          $PRESENTATIONS                           presentations slides beamer
-university     $ACADEMIC/university/PhD                 PhD coursework TA semesters
-vault          $VAULT                                   obsidian notes
+academic       $ACADEMIC                                    all academic work
+textbooks      $TEXTBOOKS                                   EYNTKA series source
+papers         $PAPERS                                      papers preprints
+research       $RESEARCH                                    research notes drafts
+talks          $PRESENTATIONS                               presentations slides beamer
+university     $ACADEMIC/university/PhD                     PhD coursework TA semesters
+vault          $VAULT                                       obsidian notes
 
 # ── code ──────────────────────────────────────────────────────────────────
-programming    ~/programming                            all code projects
-website        ~/programming/website-nate/nate-website  my website
-constellation  ~/programming/constellation              agents monorepo secretary
+programming    ~/programming                                all code projects
+website        ~/programming/website-nate/nate-website      my website
+constellation  ~/programming/constellation                  agents monorepo secretary
 
+
+# ── writing ──────────────────────────────────────────────────────────────────
+story          ~/Documents/personal/writing/short-stories/
 # ── scratch ───────────────────────────────────────────────────────────────
-junk           /tmp                                     scratch throwaway
-downloads      ~/Downloads                              downloads inbox
-gdrive         ~/gdrive                                 google drive sync
+junk           /tmp                                         scratch throwaway
+downloads      ~/Downloads                                  downloads inbox
+gdrive         ~/gdrive                                     google drive sync
