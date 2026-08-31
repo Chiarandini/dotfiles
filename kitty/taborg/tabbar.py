@@ -12,7 +12,7 @@ from kitty.tab_bar import draw_tab_with_separator
 from kitty.boss import get_boss
 
 # Version sentinel: logged on every (re)import so we can confirm the live code.
-_VERSION = 'v9-tmux-tab-bg'
+_VERSION = 'v10-tmux-tab-bg-stronger'
 try:
     import os as _os
     import time as _time
@@ -30,11 +30,15 @@ C_SHELL = 0x79C0FF   # blue   - a tmux session with nothing demanding
 C_TABLED = 0x8B949E  # grey   - tabled / parked
 C_MISC = None        # shell / other -> leave kitty's default (readable) colour
 
-# A tmux tab gets a slightly lifted background so the two kinds of tab are
-# distinguishable at rest, not only by their glyph. One step off the bar's
-# #0d1117, deliberately subtle: it should read as "these belong together",
-# not as a highlight competing with the active tab.
-BG_TMUX = 0x161B22
+# A tmux tab gets a lifted background so the two kinds of tab are
+# distinguishable at rest, not only by their glyph.
+#
+# This is the same lift used for the viewed window in the tmux status bar,
+# which reads well in practice. #161B22 was tried first and was invisible: it
+# sits ~9 units off the bar background #0d1117, which is below the threshold
+# where a large flat area registers. Confirmed the field is honoured rather
+# than guessing at it: draw_tab_with_separator reads inactive_bg.
+BG_TMUX = 0x21262D
 
 # A tmux tab reports its child exe as "tmux", so none of the exe/user-var
 # rules below can see inside it. Instead tmux computes the session's most

@@ -172,10 +172,15 @@ The **window you are viewing** carries a subtle background (`#21262d`, one step
 off the bar background `#0d1117`) rather than brighter text, which was too easy
 to miss among coloured glyphs.
 
-In the **kitty** bar, tabs running tmux get a lifted background (`#161b22`) so
-the two kinds of tab are distinguishable at rest and not only by their glyph.
-Both are deliberately one step off the background: they should read as
-grouping, not as a highlight competing with the active tab.
+In the **kitty** bar, tabs running tmux get the same lifted background
+(`#21262d`) so the two kinds of tab are distinguishable at rest and not only by
+their glyph. It is set in `taborg/tabbar.py` as `BG_TMUX`.
+
+`#161b22` was tried first and was invisible: ~9 units off the bar background,
+which is below the threshold where a large flat area registers. If it ever
+needs to be louder, `#2d333b` is the next step. The state colour does not
+compete with it; they are `inactive_fg` and `inactive_bg`, and
+`draw_tab_with_separator` reads both.
 
 Project name sits at the far left. That is the context that used to live in
 your head as tab position.
