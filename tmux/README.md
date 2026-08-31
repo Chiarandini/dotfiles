@@ -168,6 +168,15 @@ while you type. That one is inherent to using output as the signal.
 If a window's colour looks wrong, `bin/watch-title.sh` samples the title and
 the glyph it produces, so you get data instead of a hunch.
 
+The **window you are viewing** carries a subtle background (`#21262d`, one step
+off the bar background `#0d1117`) rather than brighter text, which was too easy
+to miss among coloured glyphs.
+
+In the **kitty** bar, tabs running tmux get a lifted background (`#161b22`) so
+the two kinds of tab are distinguishable at rest and not only by their glyph.
+Both are deliberately one step off the background: they should read as
+grouping, not as a highlight competing with the active tab.
+
 Project name sits at the far left. That is the context that used to live in
 your head as tab position.
 

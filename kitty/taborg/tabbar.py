@@ -12,7 +12,7 @@ from kitty.tab_bar import draw_tab_with_separator
 from kitty.boss import get_boss
 
 # Version sentinel: logged on every (re)import so we can confirm the live code.
-_VERSION = 'v8-spinner-family'
+_VERSION = 'v9-tmux-tab-bg'
 try:
     import os as _os
     import time as _time
@@ -29,6 +29,12 @@ C_EDIT = 0x4FC04F    # green  - nvim (active work)
 C_SHELL = 0x79C0FF   # blue   - a tmux session with nothing demanding
 C_TABLED = 0x8B949E  # grey   - tabled / parked
 C_MISC = None        # shell / other -> leave kitty's default (readable) colour
+
+# A tmux tab gets a slightly lifted background so the two kinds of tab are
+# distinguishable at rest, not only by their glyph. One step off the bar's
+# #0d1117, deliberately subtle: it should read as "these belong together",
+# not as a highlight competing with the active tab.
+BG_TMUX = 0x161B22
 
 # A tmux tab reports its child exe as "tmux", so none of the exe/user-var
 # rules below can see inside it. Instead tmux computes the session's most
@@ -75,6 +81,11 @@ def _exe(w):
         return (w.get_exe_of_child() or '').rsplit('/', 1)[-1]
     except Exception:
         return ''
+
+
+def _is_tmux_tab(tab):
+    w = _active_window(tab)
+    return _exe(w).startswith('tmux')
 
 
 def _glyph_and_colour(tab):
@@ -133,6 +144,8 @@ def draw_tab(draw_data, screen, tab, before, max_tab_length, index, is_last, ext
             # only honours the per-tab colour on inactive tabs; the active tab
             # keeps its readable default styling.
             tab = tab._replace(inactive_fg=colour)
+        if _is_tmux_tab(tab):
+            tab = tab._replace(inactive_bg=BG_TMUX)
     except Exception:
         pass
     return draw_tab_with_separator(
