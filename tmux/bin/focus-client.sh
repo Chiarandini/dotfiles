@@ -15,16 +15,32 @@
 session="$1"
 [ -n "$session" ] || exit 1
 
-me=$(tmux display-message -p -t "${TMUX_PANE:-}" '#{client_pid}' 2>/dev/null)
+# Every client that displays this session is a candidate, including the one
+# calling. Two earlier mistakes lived here:
+#
+#   - It skipped "the current client", computed with `-t "${TMUX_PANE:-}"`.
+#     An empty target does not mean "no target": tmux resolves it to whatever
+#     it considers the current client, which is roughly the most recently
+#     active one. Run from a kitty overlay, where TMUX_PANE is unset, that
+#     frequently resolved to the very session being jumped to, so the only
+#     client showing it was skipped and the caller opened a redundant tab
+#     for a session already on screen.
+#   - Skipping self was wrong anyway. If the session is already displayed
+#     somewhere, focusing that tab is the right answer even when it is the
+#     caller's own tab; focusing it is a harmless no-op.
+# Search every kitty instance, not just the newest socket. skhd binds alt+f2
+# to `open -n -a kitty`, which starts a second instance with its own socket, so
+# picking `ls -t | head -1` can query the wrong one and conclude, wrongly, that
+# nothing is showing the session.
+socks=$(ls -t /tmp/mykitty-* 2>/dev/null)
+[ -n "${KITTY_LISTEN_ON:-}" ] && socks="${KITTY_LISTEN_ON#unix:}
+$socks"
+[ -n "$socks" ] || exit 1
 
 for pid in $(tmux list-clients -t "=$session" -F '#{client_pid}' 2>/dev/null); do
-  [ "$pid" = "$me" ] && continue
-
-  sock="${KITTY_LISTEN_ON:-}"
-  [ -n "$sock" ] || sock="unix:$(ls -t /tmp/mykitty-* 2>/dev/null | head -1)"
-  [ "$sock" = "unix:" ] && continue
-
-  win=$(kitty @ --to "$sock" ls 2>/dev/null | python3 -c "
+  for sock in $socks; do
+    [ -S "$sock" ] || continue
+    win=$(kitty @ --to "unix:$sock" ls 2>/dev/null | python3 -c "
 import json,sys
 target=int(sys.argv[1])
 try: data=json.load(sys.stdin)
@@ -37,9 +53,10 @@ for osw in data:
                     print(w.get('id')); sys.exit(0)
 " "$pid" 2>/dev/null)
 
-  if [ -n "$win" ]; then
-    kitty @ --to "$sock" focus-window --match "id:$win" >/dev/null 2>&1 && exit 0
-  fi
+    if [ -n "$win" ]; then
+      kitty @ --to "unix:$sock" focus-window --match "id:$win" >/dev/null 2>&1 && exit 0
+    fi
+  done
 done
 
 exit 1
