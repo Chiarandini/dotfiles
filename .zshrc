@@ -122,6 +122,10 @@ file-to-clipboard(){ osascript -e{'on run{a}','set the clipboard to posix file a
 
 export PATH="$HOME/.local/bin:$PATH"
 export PATH="$HOME/.local/share/bob/nvim-bin:$PATH"
+# rustup shims. Rust is not a mise tool (see ~/.mise.toml), so this is what
+# puts cargo/rustc/rust-analyzer on PATH. Prepended so it beats the stale
+# Homebrew `rust` formula at /opt/homebrew/bin.
+export PATH="$HOME/.cargo/bin:$PATH"
 
 # ╔══════════════════════════════════════════════════════════════════╗
 # ║ Movable content roots — single source of truth for paths         ║

@@ -81,7 +81,7 @@ require("lazy").setup({
 		-- Uncomment the bundles you want. Full list: lua/noethervim/bundles/
 
 		-- Languages
-		-- { import = "noethervim.bundles.languages.rust" },        -- rustaceanvim (beyond plain rust-analyzer)
+		{ import = "noethervim.bundles.languages.rust" },        -- rustaceanvim (beyond plain rust-analyzer)
 		-- { import = "noethervim.bundles.languages.go" },          -- go.nvim (test gen, struct tags, fill struct)
 		-- { import = "noethervim.bundles.languages.java" },        -- nvim-jdtls (proper Java LSP support)
 		{ import = "noethervim.bundles.languages.python" },      -- venv-selector (virtual environment switching)

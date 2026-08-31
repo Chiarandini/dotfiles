@@ -74,6 +74,17 @@ eval "$(mise activate bash)"
 echo "Installing global language versions via mise..."
 mise install
 
+# 5b. Rust toolchain via rustup (NOT mise; see ~/.mise.toml for why)
+echo "Setting up Rust toolchain..."
+if ! command -v rustup >/dev/null 2>&1; then
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+fi
+export PATH="$HOME/.cargo/bin:$PATH"
+rustup default stable
+# rust-analyzer powers the LSP in Neovim; rust-src lets it resolve std.
+# `rustup update` carries both forward automatically on later updates.
+rustup component add rust-analyzer rust-src
+
 # 6. GLOBAL PACKAGES (Moved to AFTER mise install)
 echo "Installing global Node packages..."
 # Ensure we are using the mise shim

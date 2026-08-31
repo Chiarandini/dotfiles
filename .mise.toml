@@ -8,10 +8,15 @@ python = ["3.11", "3.10"] # Installs both, 3.11 will be the primary global defau
 ruby = "latest"
 go = "latest"
 java = "latest"
-rust = "latest"
 julia = "latest"
 kotlin = "latest"
 php = "latest"
+
+# Rust is deliberately absent: rustup owns it (see install.sh).
+# mise does not install Rust, it symlinks its "install" to ~/.cargo/bin and
+# exports RUSTUP_TOOLCHAIN=<frozen version>. That env var outranks both
+# `rustup default` and any project's rust-toolchain.toml, so pinning a
+# project to a channel silently does nothing while mise manages Rust.
 
 [settings]
 # Recommended: Tells mise to strictly use its own plugins or asdf plugins
