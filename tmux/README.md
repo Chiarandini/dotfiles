@@ -371,6 +371,20 @@ cwds, and pane scrollback.
   `$EDITOR`, saw vi, and in vi mode Escape merely leaves the prompt's insert
   mode instead of cancelling. It is set to `emacs` so Escape cancels. Nothing
   else is affected; copy mode is still vi via `mode-keys`.
+- **An empty tmux target is not "no target".** `display-message -p -t ""` does
+  not fail or return blank; tmux resolves it to whatever it considers the
+  *current* client, roughly the most recently active one. `focus-client.sh`
+  used `-t "${TMUX_PANE:-}"` to identify itself and skip that client; run from
+  a kitty overlay, where `TMUX_PANE` is unset, that regularly resolved to the
+  very session being jumped to, so the one client displaying it was skipped and
+  `cmd+shift+k` opened a duplicate tab for a session already on screen. Guard
+  on `[ -n "$TMUX_PANE" ]` before using it as a target. Skipping self was wrong
+  anyway: if a session is displayed anywhere, focusing that tab is the answer.
+- **There can be more than one kitty instance.** skhd binds `alt+f2` to
+  `open -n -a kitty`, each with its own `/tmp/mykitty-<pid>` socket, so
+  `ls -t | head -1` can query the wrong one. `focus-client.sh` searches all of
+  them; the overlay-launched pickers get the right socket from
+  `KITTY_LISTEN_ON`, which kitty sets and which survives into tmux panes.
 - **The event log records bells too**, with which window rang and which
   windows are flagged. If a bell shows up somewhere surprising, `cmd+k L` has
   the answer.
