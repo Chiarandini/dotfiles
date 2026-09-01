@@ -172,11 +172,20 @@ The **window you are viewing** carries a subtle background (`#21262d`, one step
 off the bar background `#0d1117`) rather than brighter text, which was too easy
 to miss among coloured glyphs.
 
-Tabs running tmux are **not** tinted in the kitty bar. It was tried and
-abandoned: `draw_tab_with_separator` reads `inactive_bg` from `draw_data`, not
-from `tab`, and applies it to the separator only, so it tinted a sliver at the
-edge rather than the tab. Distinguishing them needs a different mechanism than
-background colour, or a custom draw that does not delegate.
+In the **kitty** bar, tabs running tmux carry a thin left rail (`▏`, U+258F)
+before their glyph, so the two kinds of tab are told apart at rest:
+
+```
+▏⠿ 2 topos              a tmux project
+▏✎ short story          a tmux project
+ ◐ Toronto apartments   a plain Claude tab
+```
+
+It is a character rather than a background tint because a tint cannot work
+here: `draw_tab_with_separator` reads `inactive_bg` from `draw_data`, not from
+`tab`, and applies it to the separator only, so it colours a sliver at the tab
+edge. The mark is drawn by us, in the tab's own state colour, and needs nothing
+from kitty's internals. It is `TMUX_MARK` in `taborg/tabbar.py`.
 
 Project name sits at the far left. That is the context that used to live in
 your head as tab position.

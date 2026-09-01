@@ -12,7 +12,7 @@ from kitty.tab_bar import draw_tab_with_separator
 from kitty.boss import get_boss
 
 # Version sentinel: logged on every (re)import so we can confirm the live code.
-_VERSION = 'v12-no-tab-bg'
+_VERSION = 'v13-tmux-mark'
 try:
     import os as _os
     import time as _time
@@ -28,6 +28,14 @@ C_ATTN = 0xF24E4E    # red    - claude needs you (bell)
 C_EDIT = 0x4FC04F    # green  - nvim (active work)
 C_SHELL = 0x79C0FF   # blue   - a tmux session with nothing demanding
 C_TABLED = 0x8B949E  # grey   - tabled / parked
+
+# Marks a tab as running tmux. A background tint was tried first and cannot
+# work here: draw_tab_with_separator reads inactive_bg from draw_data and
+# applies it to the separator only, so it tints a sliver at the tab edge. A
+# character is drawn by us, in the tab's own colour, and needs nothing from
+# kitty's internals. U+258F reads as a thin left rail rather than another
+# glyph competing with the state vocabulary.
+TMUX_MARK = '▏'
 C_MISC = None        # shell / other -> leave kitty's default (readable) colour
 
 # A tmux tab gets a lifted background so the two kinds of tab are
@@ -81,11 +89,6 @@ def _exe(w):
         return ''
 
 
-# Kept: still useful for telling the two layers apart. A background tint for
-# tmux tabs was tried and abandoned; draw_tab_with_separator reads inactive_bg
-# from draw_data and applies it to the separator only, so it tinted a sliver at
-# the edge rather than the tab. Distinguishing tmux tabs needs a different
-# mechanism than colour, or a custom draw that does not delegate.
 def _is_tmux_tab(tab):
     w = _active_window(tab)
     return _exe(w).startswith('tmux')
@@ -141,7 +144,9 @@ def draw_tab(draw_data, screen, tab, before, max_tab_length, index, is_last, ext
     try:
         glyph, colour = _glyph_and_colour(tab)
         title = _clean_title(tab.title)
-        tab = tab._replace(title=(glyph + ' ' + title) if glyph else title)
+        mark = TMUX_MARK if _is_tmux_tab(tab) else ''
+        tab = tab._replace(title=(mark + glyph + ' ' + title) if glyph
+                           else (mark + title))
         if colour is not None:
             # Raw 0xRRGGBB (NOT as_rgb -- that byte-shifts the colour). kitty
             # only honours the per-tab colour on inactive tabs; the active tab
