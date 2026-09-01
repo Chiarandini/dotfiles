@@ -64,24 +64,42 @@ out=$(
   {
     [ -f "$STREAK" ] && sed 's/^/OLD	/' "$STREAK"
     printf '%s\n' "$sessions"
-    tmux list-windows -a -F "WIN${TAB}#{window_id}${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}${TAB}#{@working}" 2>/dev/null
+    tmux list-windows -a -F "WIN${TAB}#{window_id}${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}${TAB}#{@working}${TAB}#{pane_title}" 2>/dev/null
   } | LC_ALL=C awk -F"$TAB" -v now="$now" -v streak_file="$STREAK" '
     $1 == "OLD" { prev_act[$2] = $3; prev_streak[$2] = $4; next }
     $1 == "SES" { cur_state[$2] = $3; seen[$2] = 1; next }
+    # Claude cannot be recognised by process name alone. Depending on the
+    # install, pane_current_command is claude, claude.exe, or the bare
+    # version string of a re-execed binary such as 2.1.251, so a name match
+    # misses it and the session falls through to another glyph. It always
+    # keeps a marker at the head of the pane title: U+2733 when idle, or a
+    # spinner from the braille or half-circle family. Byte comparisons,
+    # since LC_ALL=C is set on this awk.
+    function is_claude(cmd, title,   b1, b2, b3) {
+      if (cmd ~ /^claude/) return 1
+      b1 = substr(title, 1, 1); b2 = substr(title, 2, 1); b3 = substr(title, 3, 1)
+      if (b1 != "\342") return 0
+      if (b2 == "\234" && b3 == "\263") return 1
+      if (b2 >= "\240" && b2 <= "\243") return 1
+      if (b2 == "\227" && b3 >= "\220" && b3 <= "\223") return 1
+      return 0
+    }
+
     $1 == "WIN" {
       id = $2; s = $3; seen[s] = 1
       act = $6; was = $7
+      claude_win = is_claude($5, $8)
 
       # Consecutive samples that produced new output.
       st = (id in prev_act && act != prev_act[id]) ? prev_streak[id] + 1 : 0
       new_act[id] = act; new_streak[id] = st
 
-      w = ($5 ~ /^claude/ && st >= 2 && now - act < 5) ? 1 : 0
+      w = (claude_win && st >= 2 && now - act < 5) ? 1 : 0
       if (w != (was == "1" ? 1 : 0))
         printf "set-option -w -t %s @working %d ; ", id, w
 
       if ($4 == "1")      bell[s] = 1
-      if ($5 ~ /^claude/) { claude[s] = 1; nclaude[s]++; if (w) working[s] = 1 }
+      if (claude_win)     { claude[s] = 1; nclaude[s]++; if (w) working[s] = 1 }
       if ($5 ~ /^nvim/)   edit[s] = 1
     }
     END {

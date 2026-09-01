@@ -12,7 +12,7 @@ from kitty.tab_bar import draw_tab_with_separator
 from kitty.boss import get_boss
 
 # Version sentinel: logged on every (re)import so we can confirm the live code.
-_VERSION = 'v10-tmux-tab-bg-stronger'
+_VERSION = 'v12-no-tab-bg'
 try:
     import os as _os
     import time as _time
@@ -33,12 +33,6 @@ C_MISC = None        # shell / other -> leave kitty's default (readable) colour
 # A tmux tab gets a lifted background so the two kinds of tab are
 # distinguishable at rest, not only by their glyph.
 #
-# This is the same lift used for the viewed window in the tmux status bar,
-# which reads well in practice. #161B22 was tried first and was invisible: it
-# sits ~9 units off the bar background #0d1117, which is below the threshold
-# where a large flat area registers. Confirmed the field is honoured rather
-# than guessing at it: draw_tab_with_separator reads inactive_bg.
-BG_TMUX = 0x21262D
 
 # A tmux tab reports its child exe as "tmux", so none of the exe/user-var
 # rules below can see inside it. Instead tmux computes the session's most
@@ -87,6 +81,11 @@ def _exe(w):
         return ''
 
 
+# Kept: still useful for telling the two layers apart. A background tint for
+# tmux tabs was tried and abandoned; draw_tab_with_separator reads inactive_bg
+# from draw_data and applies it to the separator only, so it tinted a sliver at
+# the edge rather than the tab. Distinguishing tmux tabs needs a different
+# mechanism than colour, or a custom draw that does not delegate.
 def _is_tmux_tab(tab):
     w = _active_window(tab)
     return _exe(w).startswith('tmux')
@@ -148,8 +147,6 @@ def draw_tab(draw_data, screen, tab, before, max_tab_length, index, is_last, ext
             # only honours the per-tab colour on inactive tabs; the active tab
             # keeps its readable default styling.
             tab = tab._replace(inactive_fg=colour)
-        if _is_tmux_tab(tab):
-            tab = tab._replace(inactive_bg=BG_TMUX)
     except Exception:
         pass
     return draw_tab_with_separator(
