@@ -347,6 +347,17 @@ cwds, and pane scrollback.
   is the separate switch for "finished" as opposed to "needs you", and Claude
   only treats a task as notification-worthy past `messageIdleNotifThresholdMs`,
   which defaults to 60s. Short tasks are silent by design.
+- **Pasting images into Claude does not work inside tmux. Use a plain kitty
+  tab (`cmd+t`).** This is the accepted side of a real trade-off, not an
+  oversight. Claude requests keyboard mode `Ext 2`, in which tmux re-encodes
+  *every* modified key, so `Ctrl+V` arrives as `^[[118;5u` rather than the raw
+  `0x16` its paste handler expects. Turning `extended-keys off` restores
+  `Ctrl+V` and breaks Shift+Enter instead; there is no setting that gives both,
+  and workarounds fail because tmux applies the mode on the way out (a root
+  binding sending hex, and literal `send-keys`, were both still re-encoded).
+  Shift+Enter is used far more often, so it wins. Outside tmux both work, which
+  is why the escape hatch is simply a non-tmux tab.
+
 - **Shift+Enter needs BOTH halves, and they fail independently.**
   - *kitty to tmux*: tmux asks the terminal for extended keys using xterm's
     `modifyOtherKeys`, but kitty deliberately does not implement it ("modifyOtherKeys
