@@ -65,7 +65,10 @@ if ! tmux has-session -t "=$name" 2>/dev/null; then
   tmux new-window  -d -t "=$name:" -c "$dir" -n claude
   tmux select-window -t "=$name:nvim"
   # Launch only once a client is attached; see bin/bootstrap.sh.
-  tmux set-option -t "=$name" @bootstrap 1
+  # No `=` prefix: set-option's -t is a target-*pane*, and `=name` does not
+  # resolve as one. It fails with "no such session" and returns 1, which is
+  # silent here, and left @bootstrap unset so nothing was ever launched.
+  tmux set-option -t "$name" @bootstrap 1
 fi
 
 attach "$name"

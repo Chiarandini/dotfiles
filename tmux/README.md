@@ -45,6 +45,30 @@ it at all. They answer different questions, which is why both exist:
   others hold loose work, no tmux picker can see the whole picture; this one
   can.
 
+## Promoting a loose claude tab
+
+`cmd+shift+u`, pressed in a kitty tab running a standalone claude. It exits the
+claude there, attaches that same tab to a project, and reopens the conversation
+in the project's claude window. The prompt offers the name the directory
+implies; type another to land in an existing project instead, which then gains
+a claude window rather than being recreated.
+
+The process itself cannot move: its pty belongs to the kitty window, and macOS
+has no working `reptyr`. The conversation can, because Claude's state is the
+transcript under `~/.claude/projects/<cwd>/` and not the process. So the only
+thing promoting costs you is an in-flight response, which is why it refuses
+while claude is mid-response.
+
+It reopens on the `claude --resume` picker rather than on the conversation
+itself, because a *live* session cannot be identified from outside: its
+transcript carries no `summary` record until it ends, claude holds no open
+handle on the file between writes, and macOS will not show another process's
+environment. The session you just exited is the most recently written one, so
+it is the top row.
+
+Also a kitty binding rather than a `cmd+k` action, since `cmd+k` is the tmux
+prefix and a tab worth promoting has no tmux in it to receive one.
+
 ## The one key
 
 `cmd+k` opens a menu listing every action with its letter. Read it while you
@@ -129,6 +153,16 @@ Same vocabulary as the old kitty tab bar, so nothing needs relearning.
 The glyph follows what is *running* in the window, not what the window is
 called. A window named `shell` that you started Claude in shows orange, and
 that is correct; a window named `claude` whose Claude has exited shows blue.
+
+**How a Claude window is recognised, and why it is not the process name.**
+Depending on the install, tmux reports the pane's command as `claude`,
+`claude.exe`, or the bare version string of a re-execed binary such as
+`2.1.251`, so any name match misses a whole class of window and it falls
+through to the blue shell branch. `bin/session-state.sh` decides it instead
+from the marker Claude keeps at the head of the pane title, and publishes
+`@claude` per window; the format reads that option and nothing else. Same
+one-writer path as `@working` below, so a Claude you just started lights up on
+the next status tick rather than instantly.
 
 **How "working" is detected, and why it is not the title.** Claude keeps a
 static `✳ <topic>` in the terminal title whether it is idle or busy. Its
@@ -258,6 +292,11 @@ Declare the port. It is load-bearing twice over:
   for a server that is already dead. On failure it prints the tail of the log,
   so you get the reason rather than a mystery.
 
+If the port is held, `cmd+k s` says which case it is, because they are not the
+same problem. A holder whose cwd is the declared project is reported as
+**already serving** (nothing to do, it was started outside tmux); anything else
+is reported as **SKIPPED** with the offending process and its cwd.
+
 Use `-` if the server genuinely has no fixed port.
 
 **Renaming a project is checked, quietly.** `serves.tsv` is keyed by session
@@ -312,6 +351,7 @@ cwds, and pane scrollback.
 | `bin/find-window.sh` | window picker, `--project` scopes it |
 | `bin/serve.sh` | `start` and `logs` |
 | `bin/newwin.sh` | new window for a role |
+| `bin/promote.sh` | lift a standalone claude tab into a project |
 | `bin/park.sh` | park toggle |
 | `bin/lib.sh` | shared helpers, registry parsing, naming |
 | `plugins/` | resurrect and continuum, plain git clones |
@@ -332,6 +372,12 @@ cwds, and pane scrollback.
   bell in that session alerts both tabs. That is tmux working as designed, not
   a bug. If you want two independent views of one project, make a grouped
   session: `tmux new-session -t <name>`.
+- **`set-option -t "=name"` silently does nothing.** `set-option`'s `-t` is a
+  target-*pane*, and `=name` does not resolve as one: it prints
+  `no such session` and returns 1. Nothing checked that return, so `@bootstrap`
+  was never set and no session created by `tx` launched its programs. So
+  `sessionizer.sh`, `bootstrap.sh` and `promote.sh` all pass a bare `$name` to
+  `set-option`. `send-keys` takes a real session target and keeps its `=`.
 - **Claude reports as `claude.exe`**, because the binary is compiled and named
   that way. Any format matching on `pane_current_command` must use a prefix
   match, not equality, or every Claude window silently falls through to the

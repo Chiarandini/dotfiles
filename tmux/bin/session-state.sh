@@ -1,7 +1,12 @@
 #!/bin/sh
-# Publish two things every status tick:
-#   @working  per window   1 while a Claude is actually working
+# Publish three things every status tick:
+#   @claude   per window   1 while a Claude is running in it
+#   @working  per window   1 while that Claude is actually working
 #   @state    per session  the session's most urgent glyph, for the kitty tab
+#
+# @claude exists because the window-status format cannot answer the question
+# itself: see is_claude() below for why a process-name match is not enough. The
+# format reads this option instead, so recognition is decided once, here.
 #
 # Both used to be computed inside format strings, and both were wrong there.
 # The session aggregate used a #{W:...} loop, and strftime does not reach into
@@ -64,7 +69,7 @@ out=$(
   {
     [ -f "$STREAK" ] && sed 's/^/OLD	/' "$STREAK"
     printf '%s\n' "$sessions"
-    tmux list-windows -a -F "WIN${TAB}#{window_id}${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}${TAB}#{@working}${TAB}#{pane_title}" 2>/dev/null
+    tmux list-windows -a -F "WIN${TAB}#{window_id}${TAB}#{session_name}${TAB}#{window_bell_flag}${TAB}#{pane_current_command}${TAB}#{window_activity}${TAB}#{@working}${TAB}#{pane_title}${TAB}#{@claude}" 2>/dev/null
   } | LC_ALL=C awk -F"$TAB" -v now="$now" -v streak_file="$STREAK" '
     $1 == "OLD" { prev_act[$2] = $3; prev_streak[$2] = $4; next }
     $1 == "SES" { cur_state[$2] = $3; seen[$2] = 1; next }
@@ -97,6 +102,11 @@ out=$(
       w = (claude_win && st >= 2 && now - act < 5) ? 1 : 0
       if (w != (was == "1" ? 1 : 0))
         printf "set-option -w -t %s @working %d ; ", id, w
+
+      # Unset reads as empty, so a window that has never held a Claude emits
+      # once and then stays quiet, same as @working.
+      if (claude_win != ($9 == "1" ? 1 : 0))
+        printf "set-option -w -t %s @claude %d ; ", id, claude_win
 
       if ($4 == "1")      bell[s] = 1
       if (claude_win)     { claude[s] = 1; nclaude[s]++; if (w) working[s] = 1 }

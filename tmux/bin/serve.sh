@@ -51,10 +51,21 @@ start)
     # A taken port is the trap: most dev servers quietly bind a random one
     # instead and you end up debugging a different server than you think.
     if [ "$port" != "-" ] && [ -n "$port" ]; then
-      holder=$(lsof -nP -iTCP:"$port" -sTCP:LISTEN 2>/dev/null | awk 'NR==2{print $1" pid "$2}')
-      if [ -n "$holder" ]; then
-        printf 'SKIPPED  %s\n  port %s is already held by %s\n  kill it, or that server will bind a random port instead\n\n' \
-          "$win" "$port" "$holder"
+      hpid=$(lsof -nP -iTCP:"$port" -sTCP:LISTEN 2>/dev/null | awk 'NR==2{print $2}')
+      if [ -n "$hpid" ]; then
+        hname=$(ps -o comm= -p "$hpid" 2>/dev/null | sed 's|.*/||')
+        hcwd=$(lsof -a -p "$hpid" -d cwd -Fn 2>/dev/null | grep '^n' | cut -c2-)
+        # Distinguish "this project is already served" from "something else is
+        # squatting the port". Both leave the port alone, but only one is a
+        # problem, and calling the good case SKIPPED reads like a failure.
+        case "$hcwd" in
+          "$cwd"|"$cwd"/*)
+            printf 'already serving  %s  on port %s\n  pid %s (%s), started outside tmux\n  nothing to do; use it as is, or kill %s and rerun to manage it here\n\n' \
+              "$win" "$port" "$hpid" "${hname:-?}" "$hpid" ;;
+          *)
+            printf 'SKIPPED  %s\n  port %s is held by %s (pid %s)\n  cwd %s\n  kill it, or that server will bind a random port instead\n\n' \
+              "$win" "$port" "${hname:-?}" "$hpid" "${hcwd:-unknown}" ;;
+        esac
         continue
       fi
     fi
