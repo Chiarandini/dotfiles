@@ -13,5 +13,8 @@
 # serve/* windows so you can see what should be running; starting is one key.
 #
 # session	name	cwd	port	command
-pg/website-nate	dev	~/programming/website-nate/nate-website	4200	npm start
+# `npm start` runs a prestart gate (gen + check) that currently fails on a
+# stale PDF manifest, so it never reaches ng serve. This is the command
+# actually in use, which skips the gate.
+pg/website-nate	dev	~/programming/website-nate/nate-website	4200	npx ng serve --port 4200
 pg/instagram-reels-archive	web	~/programming/instagram-reels-archive	8000	uv run reels serve

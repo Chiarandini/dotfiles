@@ -16,6 +16,7 @@ t	terminal       new window	run-shell '~/.config/tmux/bin/newwin.sh shell'
 -
 s	servers        start declared	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/serve.sh start'
 l	logs           follow one	display-popup -E -w 90% -h 80% -T ' log: F to follow, q to quit ' '~/.config/tmux/bin/serve.sh logs'
+A	adopt servers  take over ones started outside tmux	display-popup -E -w 80% -h 70% '~/.config/tmux/bin/serve.sh adopt'
 S	save state now	run-shell '~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh'
 L	event log      saves + restores	display-popup -E -w 90% -h 80% '~/.config/tmux/bin/log-event.sh view'
 -

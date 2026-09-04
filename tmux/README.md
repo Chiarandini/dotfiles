@@ -294,8 +294,15 @@ Declare the port. It is load-bearing twice over:
 
 If the port is held, `cmd+k s` says which case it is, because they are not the
 same problem. A holder whose cwd is the declared project is reported as
-**already serving** (nothing to do, it was started outside tmux); anything else
-is reported as **SKIPPED** with the offending process and its cwd.
+**already serving** (it works, but is not logged here and will not survive a
+reboot); anything else is **SKIPPED**, naming the process and its cwd.
+
+**`cmd+k A` adopts** a server started outside tmux: it kills the holder and
+restarts it in a `serve/*` window so it is managed, logged and restorable.
+Declare the command you actually run, not the one that looks canonical: for
+website-nate that is `npx ng serve --port 4200`, because `npm start` runs a
+prestart gate that currently fails on a stale PDF manifest and so never reaches
+`ng serve`.
 
 Use `-` if the server genuinely has no fixed port.
 

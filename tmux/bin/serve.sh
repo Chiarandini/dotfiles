@@ -7,6 +7,9 @@
 . "$HOME/.config/tmux/bin/lib.sh"
 
 action=${1:-start}
+# `adopt` takes over a server already running outside tmux: kill the holder,
+# then start it in a serve/* window so it is managed, logged and restorable.
+[ "$action" = adopt ] && { adopt=1; action=start; } || adopt=0
 
 # Run from a display-popup, so resolve the session through this pane rather
 # than through "the current client", which a popup does not have.
@@ -60,13 +63,23 @@ start)
         # problem, and calling the good case SKIPPED reads like a failure.
         case "$hcwd" in
           "$cwd"|"$cwd"/*)
-            printf 'already serving  %s  on port %s\n  pid %s (%s), started outside tmux\n  nothing to do; use it as is, or kill %s and rerun to manage it here\n\n' \
-              "$win" "$port" "$hpid" "${hname:-?}" "$hpid" ;;
+            if [ "$adopt" = 1 ]; then
+              printf 'adopting  %s  (killing pid %s, restarting under tmux)\n' "$win" "$hpid"
+              kill "$hpid" 2>/dev/null
+              i=0; while [ "$i" -lt 20 ] && kill -0 "$hpid" 2>/dev/null; do sleep 0.5; i=$((i+1)); done
+            else
+              printf 'already serving  %s  on port %s\n  pid %s (%s), started outside tmux\n  it works, but is not logged here and will not survive a reboot\n  to manage it here: cmd+k A (adopt), which restarts it in a window\n\n' \
+                "$win" "$port" "$hpid" "${hname:-?}"
+              continue
+            fi ;;
           *)
             printf 'SKIPPED  %s\n  port %s is held by %s (pid %s)\n  cwd %s\n  kill it, or that server will bind a random port instead\n\n' \
-              "$win" "$port" "${hname:-?}" "$hpid" "${hcwd:-unknown}" ;;
+              "$win" "$port" "${hname:-?}" "$hpid" "${hcwd:-unknown}"
+            continue ;;
         esac
-        continue
+        # No blanket `continue` here: the adopt path has just freed the port and
+        # must fall through to the start below. Every branch that should stop
+        # continues for itself.
       fi
     fi
 
@@ -123,5 +136,5 @@ logs)
   [ -n "$f" ] && less +F "$f" ;;
 
 *)
-  printf 'usage: serve.sh [start|logs|check]\n'; exit 1 ;;
+  printf 'usage: serve.sh [start|adopt|logs|check]\n'; exit 1 ;;
 esac

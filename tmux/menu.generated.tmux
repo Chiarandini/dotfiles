@@ -12,6 +12,7 @@ bind -T root 'C-\' display-menu -T "#[align=centre fg=#F08C3A,bold] cmd+k " -x C
   "" \
   "servers        start declared" "s" "display-popup -E -w 80% -h 70% '~/.config/tmux/bin/serve.sh start'" \
   "logs           follow one" "l" "display-popup -E -w 90% -h 80% -T ' log: F to follow, q to quit ' '~/.config/tmux/bin/serve.sh logs'" \
+  "adopt servers  take over ones started outside tmux" "A" "display-popup -E -w 80% -h 70% '~/.config/tmux/bin/serve.sh adopt'" \
   "save state now" "S" "run-shell '~/.config/tmux/plugins/tmux-resurrect/scripts/save.sh'" \
   "event log      saves + restores" "L" "display-popup -E -w 90% -h 80% '~/.config/tmux/bin/log-event.sh view'" \
   "" \
