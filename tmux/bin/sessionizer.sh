@@ -9,6 +9,13 @@
 # Heir to kitty/scripts/claude-here.sh, which used the same roots+zoxide list.
 . "$HOME/.config/tmux/bin/lib.sh"
 
+# --tab: land in a NEW kitty tab whose process is tmux itself, rather than
+# switching the current client. That matters beyond placement: a tab running
+# `tmux attach` exits when you detach, so kitty closes it. A tab where you ran
+# `tx` in a shell leaves you at that shell needing `exit`.
+TAB_MODE=0
+[ "$1" = "--tab" ] && { TAB_MODE=1; shift; }
+
 TAB=$(printf '\t')
 
 live=$(tmux list-sessions -F "session${TAB}●${TAB}#{session_name}#{?session_attached, (attached),}" 2>/dev/null)
@@ -48,6 +55,14 @@ attach() {
   # If another kitty tab is already showing this session, go there instead of
   # attaching a second client, which would make the two tabs mirror each other.
   "$HOME/.config/tmux/bin/focus-client.sh" "$1" && return 0
+
+  if [ "$TAB_MODE" = 1 ]; then
+    sock="${KITTY_LISTEN_ON:-}"
+    [ -n "$sock" ] || sock="unix:$(ls -t /tmp/mykitty-* 2>/dev/null | head -1)"
+    kitty @ --to "$sock" launch --type=tab --tab-title "$1" \
+      tmux attach-session -t "=$1" >/dev/null 2>&1 && return 0
+  fi
+
   if [ -n "$TMUX" ]; then tmux switch-client -t "=$1"; else tmux attach-session -t "=$1"; fi
 }
 

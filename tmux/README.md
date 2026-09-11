@@ -33,8 +33,15 @@ tx constellation   # skip the picker when you know the name
 `tx` works from a bare shell and from inside tmux. That is the only command
 you need to remember; everything else is on `cmd+k`.
 
-Two pickers work from anywhere in kitty, including from a tab with no tmux in
-it at all. They answer different questions, which is why both exist:
+**`cmd+shift+n`** starts a project in its own kitty tab: same picker as
+`cmd+k p`, but the tab runs `tmux attach` as its process rather than a shell.
+That is the difference that matters on the way *out*: detaching exits the
+process, so kitty closes the tab. A tab where you ran `tx` in a shell drops you
+back at that shell and needs an `exit`. Use `cmd+shift+n` for anything you
+expect to detach from.
+
+Three pickers work from anywhere in kitty, including from a tab with no tmux in
+it at all. They answer different questions, which is why they all exist:
 
 - **`cmd+shift+k`** finds a tmux **window** across every session. It selects
   the window first, then focuses the kitty tab already showing that session,
@@ -44,6 +51,10 @@ it at all. They answer different questions, which is why both exist:
   alike, tagged by what is running in them. Once some tabs hold projects and
   others hold loose work, no tmux picker can see the whole picture; this one
   can.
+
+Inside tmux, `cmd+k` `w` searches this project's windows and `cmd+k` `W`
+searches every project's. So: `w`/`W` for tmux windows, `cmd+shift+p` for kitty
+tabs, `cmd+shift+k` for a window anywhere.
 
 ## Promoting a loose claude tab
 
