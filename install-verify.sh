@@ -26,7 +26,7 @@ section() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
 # ── binaries ────────────────────────────────────────────────────────────────
 section "Binaries"
-for b in tmux fzf zoxide git; do
+for b in tmux fzf zoxide git atuin direnv; do
   if command -v "$b" >/dev/null 2>&1; then ok "$b ($(command -v "$b"))"
   else bad "$b missing" "brew bundle --file=$DOTFILES_DIR/Brewfile"; fi
 done
@@ -134,6 +134,15 @@ if [ -f "$cs" ]; then
   else bad "preferredNotifChannel is '${chan:-unset}'" \
         "the red 'Claude wants you' state will never fire; see tmux/README.md"; fi
 fi
+
+# ── scripts on PATH ─────────────────────────────────────────────────────────
+section "Scripts"
+for s in "$DOTFILES_DIR"/scripts/*; do
+  [ -f "$s" ] && [ -x "$s" ] || continue
+  name=$(basename "$s")
+  if [ "$(readlink "$HOME/.local/bin/$name")" = "$s" ]; then ok "$name linked into ~/.local/bin"
+  else bad "$name not linked into ~/.local/bin" "ln -sf $s ~/.local/bin/$name"; fi
+done
 
 # ── window management ───────────────────────────────────────────────────────
 # These are launchd services whose absence nothing else reports. A missing skhd

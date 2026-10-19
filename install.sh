@@ -47,10 +47,12 @@ mkdir -p ~/.claude
 # without it the "Claude wants you" state is silently dead.
 ln -sf "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
 mkdir -p ~/.local/bin
-ln -sf "$DOTFILES_DIR/scripts/fix-yabai-sa" ~/.local/bin/fix-yabai-sa
-ln -sf "$DOTFILES_DIR/scripts/fix-yabai" ~/.local/bin/fix-yabai
-ln -sf "$DOTFILES_DIR/scripts/yabai-watchdog" ~/.local/bin/yabai-watchdog
-ln -sf "$DOTFILES_DIR/scripts/airdrop" ~/.local/bin/airdrop
+# Every executable in scripts/ goes on PATH. This used to list them one by one,
+# and tb, pdf, lib and dirmarks were only ever linked by hand.
+for s in "$DOTFILES_DIR"/scripts/*; do
+    [ -f "$s" ] && [ -x "$s" ] || continue
+    ln -sf "$s" ~/.local/bin/"$(basename "$s")"
+done
 
 # 4. Install core packages from main Brewfile
 echo "Installing core dependencies from Brewfile..."

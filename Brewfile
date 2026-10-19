@@ -28,6 +28,9 @@ brew "ranger"
 # Development & Shell
 brew "mise"  # <--- ADDED THIS HERE
 brew "bob" # Neovim version manager
+brew "atuin"  # shell history; .zshrc runs `atuin init zsh` on every shell
+brew "direnv" # per-dir env vars; .zshrc hooks it after mise
+brew "uv"     # Python project venvs (pipx is for global CLIs)
 brew "fswatch"
 brew "gitleaks"
 brew "gnupg"
