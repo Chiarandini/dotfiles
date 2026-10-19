@@ -2,3 +2,8 @@
 .DS_Store
 
 **/.claude/settings.local.json
+
+# Compiled spell dictionaries. `zg` -> "this file only" / "this folder only"
+# drops a .utf-8.add next to the document and vim compiles it to a .spl; the
+# .add is text worth committing, the .spl is a rebuildable binary.
+*.utf-8.add.spl

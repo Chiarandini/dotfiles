@@ -1,4 +1,9 @@
 
+
+-- ── I never use C, but replace words often, trying it out ──────────────────
+-- might put this in the writing profile.
+vim.keymap.set('n', '<localleader>c', 'ciw', {desc = "change the word"} )
+
 vim.keymap.set("n", "<space>fz", "<cmd>SnacksZotero<cr>", { desc = "Zotero citation picker" })
 
 -- Scroll-step J/K: move by visual line and scroll the window in lockstep.
@@ -14,6 +19,8 @@ vim.keymap.set("v", "c",  "y:let @0=escape(@0, '\\/.*$^~[]')<cr>:%s/<c-r>0/",
 	{ desc = "replace selection globally" })
 vim.keymap.set("v", "gv", ":s/\\%V",                      { desc = "replace in visual area" })
 vim.keymap.set("v", "D",  ":s/\\%V//g<left><left><left>", { desc = "delete in visual area" })
+
+vim.keymap.set("v", "P",  '"*p', { desc = "delete in visual area" })
 
 -- ── L: fold-peek with LSP hover fallback (personal) ───────────────────────
 -- Core NoetherVim falls through to default L (last-visible-line) when the

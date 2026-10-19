@@ -33,6 +33,14 @@ tx constellation   # skip the picker when you know the name
 `tx` works from a bare shell and from inside tmux. That is the only command
 you need to remember; everything else is on `cmd+k`.
 
+**There is no separate "new session" key, and that is the design.** `cmd+k` `p`
+and `cmd+shift+n` both open the *same* picker, and that picker does both jobs:
+a row marked `●` is a live session and is jumped to, while a directory row
+creates the session and then attaches. Which one you press decides *where you
+land*, never whether something is created. A session with a name no directory
+implies is made the same way — create from any directory, then `cmd+k` `P` to
+rename; nothing ever looks the directory up again.
+
 **`cmd+shift+n`** starts a project in its own kitty tab: same picker as
 `cmd+k p`, but the tab runs `tmux attach` as its process rather than a shell.
 That is the difference that matters on the way *out*: detaching exits the
@@ -84,7 +92,7 @@ prefix and a tab worth promoting has no tmux in it to receive one.
 
 `cmd+k` opens a menu listing every action with its letter. Read it while you
 are learning; type straight through it once your fingers know. Nothing here
-has to be memorised, and there is no separate cheat sheet to keep in sync.
+has to be memorised.
 
 `cmd+k` `/` fuzzy searches the same actions, for when you know what you want
 but not which letter it is. `actions.tsv` is the only place actions are
@@ -123,6 +131,7 @@ and `actions.tsv` disagree, so the two cannot drift.
 | `cmd+k` `[` | copy mode; `q` or Escape leaves it |
 | `cmd+k` `d` | detach |
 | `cmd+k` `?` | this guide |
+| `cmd+shift+/` | one-screen cheat sheet, from any tab (see below) |
 | `cmd+k` `R` | reload tmux.conf |
 
 Motions, no prefix. **Unshifted acts on the inner layer (tmux windows),
@@ -138,6 +147,37 @@ shifted acts on the outer layer (kitty tabs):**
 
 So the pairing is exact: brackets navigate, comma and period move, and adding
 shift lifts the same action from the tmux window to the kitty tab.
+
+## Forgetting all of it: `cmd+shift+/`
+
+Everything above on one screen, `q` to close. It is a **kitty** binding, for
+the same reason `cmd+shift+u` is: `cmd+k` is the tmux prefix, so a tab with no
+tmux in it cannot receive one — and that tab is exactly where you are least
+able to look a key up. `cmd+k` `?` stays as the long form (this file).
+
+It is **generated**, from the two files that already define the keys:
+
+| Layer | Source |
+|---|---|
+| `cmd+k` actions | `actions.tsv`, the same file the menu is built from |
+| kitty keys | the `#= group|label` lines in `kitty.conf`, read from the binding itself |
+
+The key on the sheet is parsed out of the `map` line, never written beside it,
+so a label can rot but a key cannot. Groups are `tab` (any kitty tab),
+`motion`, and `wire` for things that are protocol fixes rather than actions
+(Shift+Enter) and so are deliberately not shown.
+
+This replaces `kitty/taborg/keys.sh`, deleted 2026-09-19, and that file is the
+argument for generating it: it was hand-kept, and a month after tmux took over
+tab management it still told you `cmd+shift+p` opened taborg's switcher and
+that `cmd+shift+i` renamed a tab. A cheat sheet that lies is worse than none,
+because you trust it. `install-verify.sh` now fails if any `map` below the
+`ANNOTATED REGION` marker in `kitty.conf` has no label, so adding a binding
+and forgetting the sheet is caught rather than silently invisible.
+
+The glyph legend is the one hand-written block. Its source (`TMUX_GLYPHS` in
+`taborg/tabbar.py`) is code rather than a registry, and six stable lines are
+not worth a Python parser to read.
 
 The wire format for the tmux motions is still `M-h` / `M-l` / `M-j`, because
 those are already bound and already intercepted; changing which kitty chord
@@ -370,6 +410,7 @@ cwds, and pane scrollback.
 | `bin/serve.sh` | `start` and `logs` |
 | `bin/newwin.sh` | new window for a role |
 | `bin/promote.sh` | lift a standalone claude tab into a project |
+| `bin/keys.sh` | the `cmd+shift+/` cheat sheet, generated from both layers |
 | `bin/park.sh` | park toggle |
 | `bin/lib.sh` | shared helpers, registry parsing, naming |
 | `plugins/` | resurrect and continuum, plain git clones |
@@ -454,6 +495,32 @@ cwds, and pane scrollback.
   Beware that `tmux send-keys S-Enter` does **not** test this: it injects into
   tmux's key layer and skips kitty entirely, so it passes even when the real
   path is broken.
+- **`cmd+k` is 0x1c, which is the terminal's QUIT character.** Inside tmux
+  that never matters: tmux reads the byte itself and matches `bind -T root
+  'C-\'`, so it never reaches the line discipline. In a plain kitty window
+  there is no tmux to intercept it, the tty raises **SIGQUIT**, and it goes to
+  the whole foreground process *group* — so a program that handles the signal
+  still dies if its parent shell does not. That killed the `cmd+shift+/` sheet
+  on 2026-09-19: `less` handles SIGQUIT, the `sh` running the pipeline did
+  not, and the overlay vanished on the one key you are most likely to press
+  while reading a list of keys. Fixed with `trap '' QUIT` at the top of
+  `bin/keys.sh`; an ignored disposition survives exec, so it covers the shell
+  and `less` together.
+
+  The exposure is narrower than it first looks, and the dividing line is
+  whether the foreground program clears `ISIG`. Measured by sending `0x1c` to
+  each on a bare pty:
+
+  | Overlay | Survives `cmd+k` | Why |
+  |---|---|---|
+  | the four `fzf` pickers | yes | fzf takes the tty fully raw, `ISIG` off |
+  | interactive zsh | yes | ZLE clears `ISIG` |
+  | `less` | **no**, before the trap | keeps `ISIG` on so it can catch Ctrl+C |
+
+  So the rule is not "every overlay needs the trap" — it is that an overlay
+  running a pager, or anything else that leaves `ISIG` on, does. `cmd+k ?` and
+  `cmd+k l` also run `less`, but in **tmux** popups, where tmux eats the byte
+  first; they were never at risk.
 - **Never append to `terminal-features` or `terminal-overrides`.** `set -ga` /
   `set -as` append on *every* reload, so sourcing the config nine times left
   nine copies of the same RGB entry. Both are set as whole arrays here, tmux's
@@ -579,5 +646,9 @@ the result is a comparison rather than an impression.
 taborg's **keys** are retired, commented out in `kitty.conf`, because tmux owns
 tab management. Its **tab bar** is kept: it is the project-level view described
 above, and it is now a thin renderer rather than a second brain.
+
+One exception: `cmd+shift+/` was revived on 2026-09-19, now pointing at
+`tmux/bin/keys.sh` rather than the deleted `taborg/keys.sh`. The key was worth
+keeping; its hand-written contents were not.
 
 The old 2023 resurrect saves are in `resurrect/_stale-2023/`.

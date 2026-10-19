@@ -1,6 +1,7 @@
 
 --enable new experiemntalt ui
 require('vim._core.ui2').enable()
+require("user.configs.diagnostic_leak")
 -- Personal option overrides moved from NoetherVim core.
 vim.o.autochdir     = true   -- default: false
 vim.o.sidescrolloff = 36     -- default: 8

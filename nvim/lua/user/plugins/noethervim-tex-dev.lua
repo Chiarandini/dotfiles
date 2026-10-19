@@ -6,7 +6,7 @@
 
 return {
 	{
-		"Chiarandini/NoetherVim-Tex",
+		"Chiarandini/NoetherVim-tex",
 		dev = vim.g.noethervim_dev ~= nil,
 		opts = {
 			-- Both default off in the plugin, because they only make sense
@@ -23,6 +23,16 @@ return {
 			-- Note `iP`/`aP` is vimtex's section object, so it is not the
 			-- place to put the displaced paragraph.
 			paragraph = { override_paragraph = true },
+			-- The abbreviations that shorten an auto-generated label:
+			-- "Cohomology" to "Cohom", and seventy more. The plugin ships
+			-- none, because that is a writing style rather than anything
+			-- LaTeX requires, so the vocabulary lives here.
+			ref_tag = require("user.configs.tex_ref_tag"),
+			-- Acronyms title-casing would otherwise render "Dvr", "Pid",
+			-- "Ufd". Only DVR was handled before, and only in the title;
+			-- PID and UFD were repaired in the generated label but not in
+			-- the name the reader sees.
+			titlecase = { acronyms = { "DVR", "PID", "UFD" } },
 		},
 	},
 }

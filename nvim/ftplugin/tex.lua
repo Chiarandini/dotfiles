@@ -40,20 +40,23 @@ end)
 -- zg (choose which dictionary a new word lands in) used to live here, tex-only.
 -- It now covers every writing filetype: lua/user/configs/spell_dict.lua.
 
--- Route :PDF through VimTeX's viewer instead of a raw `open`.
+-- Make :PDF sync as well as open.
 --
--- NoetherVim's latex bundle defines a buffer-local :PDF that shells out to
--- `open <basename>.pdf`, which never touches VimTeX -- so it doesn't establish
--- the forward/inverse SyncTeX link, and its `%:t:r` basename is wrong for
--- \subfile buffers or a non-empty out_dir. Going through :VimtexView instead
--- lets VimTeX resolve the correct output PDF and wire the same sync link that
--- <localleader>lv uses.
+-- NoetherVim's :PDF hands the compiled PDF to the system viewer and stops
+-- there, deliberately: it is the artifact command, alongside yP and Oil's gP,
+-- and <localleader>lv is the one that syncs. This version wants both, so it
+-- runs :VimtexView first to establish the SyncTeX link and land the viewer on
+-- the cursor.
 --
--- We then ALSO raise the viewer with a plain OS `open`, to restore the
--- foreground-focus the old `open`-based :PDF gave. :VimtexView only raises Skim
--- via g:vimtex_view_skim_activate -> a background `osascript app.activate()`,
--- which macOS honours far less reliably than LaunchServices `open` (worse
--- across Spaces). `open` on an already-open PDF just fronts it -- no reload.
+-- It then ALSO raises the viewer with a plain OS `open`. :VimtexView only
+-- fronts Skim via g:vimtex_view_skim_activate, a background
+-- `osascript app.activate()`, which macOS honours far less reliably than
+-- LaunchServices `open` (worse across Spaces). `open` on an already-open PDF
+-- just fronts it, with no reload.
+--
+-- Path resolution is no longer a reason for this override: the distro asks
+-- vimtex for the output path, so subfiles and a non-empty out_dir are handled
+-- there. Only the sync and the focus are personal.
 --
 -- The distro creates its :PDF in a FileType autocmd registered *after* this
 -- ftplugin, so we defer with vim.schedule() to guarantee our version is the one

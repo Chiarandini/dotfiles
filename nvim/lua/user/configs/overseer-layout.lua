@@ -10,21 +10,8 @@
 
 local M = {}
 
-local runners = {
-	python     = "python3",
-	lua        = "lua",
-	javascript = "node",
-	typescript = "tsx",
-	go         = "go run",
-	sh         = "sh",
-	bash       = "bash",
-	zsh        = "zsh",
-	ruby       = "ruby",
-	julia      = "julia",
-	perl       = "perl",
-	r          = "Rscript",
-	php        = "php",
-}
+-- The per-language run table lives in noethervim.util.run; run_current_file
+-- reads it there so this config, <leader>rp and :RunCode cannot disagree.
 
 local general_managers = { "mise", "asdf" }
 local lang_managers = {
@@ -215,22 +202,33 @@ function M.toggle()
 	end
 end
 
-function M.run_current_file()
-	local ft  = vim.bo.filetype
-	local cmd = runners[ft]
-	if not cmd then
-		vim.notify("No runner for filetype: " .. ft, vim.log.levels.WARN)
+--- Run the current file, or the project around it, in the archived layout.
+---
+--- What each language runs comes from `noethervim.util.run`, so this stays in
+--- step with <leader>rp and :RunCode instead of keeping a fourth copy of the
+--- table. Only the interpreter forms get the version-manager pass; a build
+--- tool invoked through its own project resolves itself.
+---@param kind? "file"|"project"
+function M.run_current_file(kind)
+	kind = kind or "file"
+	local run = require("noethervim.util.run")
+	local cmd, dir = run.command(kind, 0)
+	if not cmd or not dir then
+		vim.notify(("No %s runner for filetype: %s"):format(kind, vim.bo.filetype), vim.log.levels.WARN)
 		return
 	end
 
-	local file = vim.fn.shellescape(vim.fn.expand("%:p"))
-	local dir  = vim.fn.expand("%:p:h")
-	local name = vim.fn.expand("%:t")
-	cmd = resolve_runner(cmd, dir)
+	local spec = run.languages[vim.bo.filetype] or {}
+	if type(spec[kind]) == "string" then
+		local bin = cmd:match("^(%S+)")
+		cmd = resolve_runner(bin, dir) .. cmd:sub(#bin + 1)
+	end
+
+	local name = vim.fn.fnamemodify(kind == "project" and dir or vim.fn.expand("%:p"), ":t")
 
 	local task = require("overseer").new_task({
-		name = "Run " .. name,
-		cmd  = cmd .. " " .. file,
+		name = (kind == "project" and "Run project: " or "Run ") .. name,
+		cmd  = cmd,
 		cwd  = dir,
 		components = {
 			"default",

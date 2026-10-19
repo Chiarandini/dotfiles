@@ -8,4 +8,7 @@ return {
 	obsidian_vault = "~/Documents/vault/",
 	completion_style = "supertab",
 	q_close_filetypes = {"oil"},
+	-- snippets_disabled = {
+	-- 	  { ft = "tex", trigger = "-2>", owner = "NoetherVim-tex", file = "LuaSnip/tex/math.lua" },
+	-- }
 }

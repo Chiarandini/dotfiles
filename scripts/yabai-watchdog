@@ -35,7 +35,11 @@ ERRLOG_CAP_BYTES=1048576   # 1 MiB
 HANG_KEEP=10
 LOG=/tmp/yabai-watchdog.log
 CAUSE_LOG=/tmp/yabai-watchdog-causes.log
-ERRLOG=/tmp/yabai_root.err.log
+# yabai's own --start-service plist writes /tmp/yabai_$USER.{out,err}.log. This
+# read yabai_root back when the daemon ran as root; it has not for a long time,
+# so both the size cap and the hang report were pointed at a file that is never
+# created.
+ERRLOG="/tmp/yabai_$(whoami).err.log"
 HANG_DIR=/tmp/yabai-hangs
 FIX="$HOME/.local/bin/fix-yabai"
 

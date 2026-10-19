@@ -27,7 +27,29 @@ set -uo pipefail
 USER_NAME="$(whoami)"
 SOCKET="/tmp/yabai_${USER_NAME}.socket"
 LOCK="/tmp/yabai_${USER_NAME}.lock"
-LABEL="gui/$UID/com.koekeishiya.yabai"
+YABAI_BIN=/opt/homebrew/bin/yabai
+
+# The service label is not stable across upstreams: yabai v7 moved from
+# koekeishiya to asmvik and renamed the label with it. A hardcoded label turns
+# every launchctl call below into a silent no-op — disable/enable/kickstart all
+# "succeed" against a job that does not exist, so the daemon gets killed and
+# never restarted. Read the label off whichever installed LaunchAgent actually
+# launches the yabai binary.
+LABEL_NAME=""
+for plist in "$HOME"/Library/LaunchAgents/*.plist; do
+    [[ -f "$plist" ]] || continue
+    if grep -qF "<string>${YABAI_BIN}</string>" "$plist"; then
+        LABEL_NAME="$(basename "$plist" .plist)"
+        break
+    fi
+done
+if [[ -z "$LABEL_NAME" ]]; then
+    echo "ERROR: no LaunchAgent in ~/Library/LaunchAgents launches $YABAI_BIN."
+    echo "Run 'yabai --start-service' to install one, then re-run this script."
+    exit 1
+fi
+LABEL="gui/$UID/$LABEL_NAME"
+echo "==> Managing launchd job: $LABEL_NAME"
 
 echo "==> Disabling launchd job (prevents respawn during cleanup)..."
 launchctl disable "$LABEL" 2>&1 || true

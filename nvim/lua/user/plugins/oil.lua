@@ -148,4 +148,7 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
 })
 
-return {}
+return {
+  "stevearc/oil.nvim",
+  opts = { skip_confirm_for_simple_edits = true },
+}

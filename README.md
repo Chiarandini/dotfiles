@@ -50,7 +50,6 @@ Follow these steps in exact order when setting up a new machine (e.g., migrating
 > checks and the rule for keeping it honest as this repo changes.
 
 ### Phase 1: The Secure Transfer (SSH Keys)
-Before we can download this repository, the new Mac needs your developer identity to authenticate with GitHub. Do not use Google Drive for this.
 
 **On the OLD Mac:**
 1. Open Finder -> Go to Home (`Cmd + Shift + H`).

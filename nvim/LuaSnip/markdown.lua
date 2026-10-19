@@ -60,4 +60,14 @@ return {
 			i(0)
 		})
 	),
+},
+{
+	s(
+		'RZ',
+		{t('Riemann-Zeta Function')},
+		{
+			autotrig = true,
+		}
+	),
+
 }

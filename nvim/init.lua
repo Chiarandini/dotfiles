@@ -180,7 +180,7 @@ require("lazy").setup({
 			paths = { vim.fn.stdpath("config") },
 			disabled_plugins = {
 				"gzip", "matchit", "matchparen", "netrwPlugin",
-				"tarPlugin", "tohtml", "tutor", "zipPlugin",
+				"tarPlugin", "tohtml", "zipPlugin",
 			},
 		},
 	},

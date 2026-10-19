@@ -11,6 +11,18 @@ nvim/preamble/personal-info.tex
 # ntfy topic names are bearer secrets: knowing one is enough to read and post
 # to that channel, so the constellation agents' topics stay machine-local.
 **/ntfy-topic
+# Constellation's plaintext secret fallback reads ~/.config/<agent>/<name>
+# (agent_base/SECRETS.md), so these directories hold live tokens. Ignored
+# whole, like raycast/ below: naming the files one at a time is how
+# home-server/apple-reminders-bridge-token got pushed here on 2026-10-19.
+/agent-base/
+/accountant/
+/conference-pilot/
+/home-server/
+/instagram/
+/scout/
+/secretary/
+/system-doctor/
 **/secrets.lua
 **/secrets.zsh
 gh/hosts.yml

@@ -88,6 +88,27 @@ else
   bad "menu.generated.tmux missing" "cmd+k will not be bound"
 fi
 
+# The cmd+shift+/ cheat sheet is built by reading kitty.conf's own map lines,
+# so a binding added without a `#= group|label` is simply invisible on it.
+# That is exactly how the retired hand-kept sheet went stale, so it is an
+# assertion rather than a convention.
+kc="$DOTFILES_DIR/kitty/kitty.conf"
+if [ -f "$DOTFILES_DIR/tmux/bin/keys.sh" ] && [ -x "$DOTFILES_DIR/tmux/bin/keys.sh" ]; then
+  unlabelled=$(awk '
+    /ANNOTATED REGION/ { inreg = 1; next }
+    !inreg { next }
+    /^#= / { lbl = 1; next }
+    /^map / { if (!lbl) print FNR": "$2; lbl = 0; next }
+    /^[[:space:]]*$/ { next }
+    { lbl = 0 }
+  ' "$kc")
+  if [ -z "$unlabelled" ]; then ok "every kitty map carries a cheat-sheet label"
+  else bad "kitty map(s) missing a '#= group|label' line" \
+        "invisible on cmd+shift+/: $(printf '%s' "$unlabelled" | tr '\n' ' ')"; fi
+else
+  bad "tmux/bin/keys.sh missing or not executable" "cmd+shift+/ will do nothing"
+fi
+
 # ── shell integration ───────────────────────────────────────────────────────
 section "Shell"
 for fn in tx nvs; do
@@ -113,6 +134,39 @@ if [ -f "$cs" ]; then
   else bad "preferredNotifChannel is '${chan:-unset}'" \
         "the red 'Claude wants you' state will never fire; see tmux/README.md"; fi
 fi
+
+# ── window management ───────────────────────────────────────────────────────
+# These are launchd services whose absence nothing else reports. A missing skhd
+# looks exactly like "yabai is broken", because every keybinding lives in
+# skhdrc and not in yabai — a reboot with no skhd plist on disk cost an evening
+# already. The watchdog is worse: yabai keeps tiling without it, right up until
+# the IPC wedges and nothing recovers it.
+section "Window management"
+
+# Service labels are written by the binaries themselves and do change across
+# upstreams (yabai v7 moved koekeishiya -> asmvik and renamed its label), so
+# find the agent by the program it launches rather than asserting a name.
+agent_for() {
+  local p
+  for p in "$HOME"/Library/LaunchAgents/*.plist; do
+    [ -f "$p" ] || continue
+    grep -qF "<string>$1</string>" "$p" && { basename "$p" .plist; return 0; }
+  done
+  return 1
+}
+loaded() { launchctl list | awk -v l="$1" '$3 == l { f = 1 } END { exit !f }'; }
+
+for bin in /opt/homebrew/bin/yabai /opt/homebrew/bin/skhd "$HOME/.local/bin/yabai-watchdog"; do
+  name=$(basename "$bin")
+  if label=$(agent_for "$bin"); then
+    if loaded "$label"; then ok "$name service loaded ($label)"
+    else bad "$name agent on disk but not loaded" "launchctl bootstrap gui/\$UID ~/Library/LaunchAgents/$label.plist"; fi
+  elif [ "$name" = "yabai-watchdog" ]; then
+    bad "yabai-watchdog agent not installed" "install.sh step 11 materializes it from $DOTFILES_DIR/launchd/"
+  else
+    bad "no $name LaunchAgent installed" "$name --start-service"
+  fi
+done
 
 # ── state directories ───────────────────────────────────────────────────────
 section "State"
