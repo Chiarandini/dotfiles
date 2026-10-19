@@ -1,279 +1,150 @@
-# 💻 macOS Dotfiles & Automated Setup
+# dotfiles
 
-This repository contains my personal macOS configuration, dotfiles, and an automated bootstrap script designed to turn a fresh, out-of-the-box Mac into a fully configured developer environment in minutes.
+My machine, reproducible from scratch. This is everything in `~/.config`: shell, kitty, tmux, Neovim, yabai, LaTeX templates, and the scripts that put a new Mac back together. It's macOS-only; yabai and the Brewfiles wouldn't survive a move to Linux.
 
-> **Platform:** macOS (Apple Silicon preferred). The Homebrew bundle, yabai/skhd window management, and `sudo yabai --load-sa` flow are all macOS-specific; adapting this setup for Linux would require substantial rework.
+If you came here from [NoetherVim](https://github.com/Chiarandini/NoetherVim), `nvim/` is my personal config on top of the distro.
 
-## The Philosophy
-The goal of this setup is to be **100% reproducible and declarative**.
-*   **System Apps & Tools:** Managed by Homebrew (`Brewfile`).
-*   **Language Runtimes:** Managed by `mise` (Node, Python, Ruby, etc.). No languages are installed via brew.
-*   **Global Packages:** Strictly limited. Python CLI tools use `pipx`, and Python libraries are strictly isolated to project virtual environments using `uv`.
-*   **Window Management:** Tiling environment managed by Yabai and skhd.
+## What's in here
 
----
+- `.zshrc`, `zsh/`: zsh with the starship prompt, atuin for history, zoxide standing in for `cd`, and direnv.
+- `kitty/`: my terminal. The tab bar shows at a glance which tabs are nvim and which are a Claude that's thinking or waiting on me ([kitty/taborg](kitty/taborg/README.md)).
+- `tmux/`: one session per project, and it survives a crash. The plugins are vendored, not fetched. The whole system is written up in [tmux/README.md](tmux/README.md).
+- `nvim/`: my Neovim config. `noethervim/` is a thin wrapper (`nvdn`) that loads the distro from my local checkout instead of GitHub, so I can test changes before pushing them. `nvdemo/` is the config I record NoetherVim's demo GIFs with.
+- `yabai/`, `skhd/`: tiling and global hotkeys, including [the lights](#lights-from-the-keyboard).
+- `scripts/`: small commands that live in `~/.local/bin`. `tb` finds a definition or theorem in my textbooks, `lib` opens a book from the library, `pdf` opens a PDF in the current directory, `airdrop` opens the AirDrop picker with files already loaded, and the yabai ones are [below](#yabai).
+- `dirmarks`: named directories, shared by `c` in the shell and `:C` in nvim.
+- `paths.env`: where the movable folders live (`$TEXTBOOKS`, `$PAPERS`, …), so moving one is a one-line edit.
+- `launchd/`: LaunchAgents. Right now that's just the yabai watchdog.
+- `claude/`: Claude Code settings, symlinked into `~/.claude`.
+- `Brewfile*`, `.mise.toml`: everything that gets installed ([below](#keeping-it-current)).
 
-## What's Configured
+Plus smaller configs for ranger, yazi, zellij, btop, htop, zathura, mpv, git, gh, and Inkscape figures.
 
-- **Shell:** Zsh with a modular setup (`.zshrc`, `zsh/aliases.zsh`) and the Starship prompt.
-- **Terminal emulators:** Kitty (primary) and iTerm2.
-- **Editor:** Neovim — personal distribution lives at `nvim/` (also exposed as `noethervim/` via `NVIM_APPNAME` for local testing of the [NoetherVim](https://github.com/Chiarandini/NoetherVim) distro).
-- **Terminal multiplexer:** tmux (plugins managed by TPM on first launch; not committed).
-- **Window management:** yabai + skhd tiling WM.
-- **Runtimes:** mise for Node / Python / Ruby; `pipx` + `uv` for Python tooling.
-- **File manager:** ranger.
-- **Git:** `.gitconfig`, plus a custom `gh` CLI setup.
-- **LaTeX:** preamble templates + LuaSnip snippets for books, articles, homework, blog posts, and Beamer slides (see "Customizing author name" below).
-- **Productivity:** Raycast, atuin shell history, direnv, zoxide, thefuck.
-- **Other niceties:** btop, neofetch, htop, mc, zathura, skhd, Inkscape figures / shortcut manager.
+## Setting up a new Mac
 
-## Customizing Author Name (LaTeX)
+### Before wiping the old one
 
-The LaTeX preambles under `nvim/preamble/` and the LuaSnip snippets in `nvim/LuaSnip/tex/` use `\documentauthor` instead of a hardcoded name. To set your own name, put this line at the top of any document that `\input`s the preambles:
+Some things aren't in this repo or on Google Drive, so they get moved by hand:
 
-```latex
-\renewcommand{\documentauthor}{Your Name}
-```
+- `~/.ssh`. This one comes first, since cloning needs it (step 1 below).
+- GPG keys:
+  ```bash
+  # old Mac
+  gpg --export-secret-keys --armor > ~/gpg-secret-keys.asc
+  gpg --export-ownertrust > ~/gpg-ownertrust.txt
+  # new Mac, after AirDropping both
+  gpg --import ~/gpg-secret-keys.asc
+  gpg --import-ownertrust ~/gpg-ownertrust.txt
+  ```
+- `~/.netrc`. It has credentials in it, so never commit it.
+- `~/.claude.json` and `~/.claude/`. `settings.json` comes from this repo, but the login, memory and history don't.
+- Anki: sync to AnkiWeb on the old Mac, then log in and sync on the new one.
+- Zotero: sync the library, and copy any PDF attachments that aren't in Zotero's cloud to Google Drive first.
+- Brave: signing in brings back bookmarks, passwords and extensions.
+- The Obsidian vault (`~/Documents/vault`): make sure it's fully synced.
 
-If you prefer a central override, create `nvim/preamble/personal-info.tex` (already gitignored) containing the `\renewcommand` and `\input` it from your documents.
+### Steps
 
----
-
-## Installation Guide (Fresh Mac Setup)
-
-Follow these steps in exact order when setting up a new machine (e.g., migrating to the M5).
-
-> **After installing, run `~/.config/install-verify.sh`.** It asserts the setup
-> actually worked rather than assuming the installer's commands did what they
-> looked like they did, and exits with the number of failures. Both installers
-> call it automatically at the end. See [BOOTSTRAP.md](BOOTSTRAP.md) for what it
-> checks and the rule for keeping it honest as this repo changes.
-
-### Phase 1: The Secure Transfer (SSH Keys)
-
-**On the OLD Mac:**
-1. Open Finder -> Go to Home (`Cmd + Shift + H`).
-2. Press `Cmd + Shift + .` to show hidden files.
-3. Right-click the `.ssh` folder and select **Compress ".ssh"**.
-4. AirDrop the resulting `Archive.zip` to the NEW Mac.
-
-**On the NEW Mac:**
-1. Double-click the `Archive.zip` in your Downloads folder to extract `.ssh`.
-2. Drag the `.ssh` folder into your Home directory (`~`).
-3. Open Terminal and lock down the permissions (crucial, or Git will reject them):
+1. Copy the SSH keys. On the old Mac, show hidden files in Finder (`Cmd+Shift+.`), compress `.ssh` and AirDrop the zip over. On the new one, unzip it into `~` and tighten the permissions, or ssh refuses to use the keys:
    ```bash
    chmod 700 ~/.ssh
    chmod 600 ~/.ssh/id_*
-   ssh-add --apple-use-keychain ~/.ssh/id_ed25519  # Or id_rsa
+   ssh-add --apple-use-keychain ~/.ssh/id_ed25519
    ```
-
-### Phase 2: The Initial Pull
-Now we can install Git and pull down this repository.
-
-1. Trigger the installation of Apple's Xcode Command Line Tools (this provides `git`):
+2. Install the Xcode command line tools (that's where `git` comes from), then clone:
    ```bash
    xcode-select --install
-   ```
-2. Wait for the native Apple GUI installation to finish.
-3. Clone this repository to your local machine:
-   ```bash
    git clone git@github.com:Chiarandini/dotfiles.git ~/.config
    ```
-
-### Phase 3: The Automated Bootstrap
-Now we hand the process over to the script.
-
-1. Navigate into the cloned directory:
+3. Run the installer:
    ```bash
-   cd ~/.config
+   ~/.config/install.sh            # desktop
+   ~/.config/install.sh --full     # desktop, plus Brewfile.games
+   ~/.config/install-headless.sh   # headless box (air): no GUI apps, no yabai
    ```
-2. Make the installation script executable:
-   ```bash
-   chmod +x install.sh
-   ```
-3. Run the script. You have two choices:
+   It asks for the admin password up front. Then it links the home-dir dotfiles, installs the Brewfile, languages through mise, Rust through rustup, Neovim through bob, and the LaunchAgents, and starts yabai and skhd. At the end it runs `install-verify.sh`, which checks that all of that actually worked.
 
-   **Standard Developer Install (Lean)**
-   ```bash
-   ./install.sh
-   ```
+   Two things to know. `Brewfile.personal` (alt-tab, Neovide, sioyek, …) isn't part of either installer, so run `brew bundle --file ~/.config/Brewfile.personal` separately. And `install.sh` runs `brew bundle --cleanup`, which uninstalls anything that isn't in `Brewfile`. That's right on a fresh Mac, but not on one that's already set up.
+4. Give yabai and skhd Accessibility access: System Settings → Privacy & Security → Accessibility.
+5. Space switching (`cmd+1`, `cmd+2`, …) goes through yabai's scripting addition, which only loads with SIP partly disabled. The steps (Recovery Mode, `csrutil`, and an `nvram` boot-arg on Apple Silicon) are in [yabai's wiki](https://github.com/koekeishiya/yabai/wiki/Disabling-System-Integrity-Protection).
+6. Log into Google Drive, set up the "Computers" sync, and restart.
 
-   **Full Install (Includes Games from Brewfile.games)**
-   ```bash
-   ./install.sh --full
-   ```
-   *The script will ask for your administrator password upfront.  Downloading the apps will take some time.*
+## Keeping it current
 
-### Phase 3.5: Manual Data Migration (Before Running the Script)
-Before or after running the script, manually transfer these items that are **not** backed up by Google Drive or this repo:
+### A new app or CLI tool
 
-1. **SSH Keys** — See Phase 1 above (AirDrop `.ssh`).
-2. **GPG Keys** — If you use GPG for signing or encryption:
-   ```bash
-   # On OLD Mac:
-   gpg --export-secret-keys --armor > ~/gpg-secret-keys.asc
-   gpg --export-ownertrust > ~/gpg-ownertrust.txt
-   # AirDrop both files to new Mac, then on NEW Mac:
-   gpg --import ~/gpg-secret-keys.asc
-   gpg --import-ownertrust ~/gpg-ownertrust.txt
-   ```
-3. **`~/.netrc`** — Contains credentials (e.g., Heroku tokens). AirDrop or copy securely. Never commit this file.
-4. **Claude Code settings** — AirDrop `~/.claude.json` and the `~/.claude/` directory to restore your API key and preferences.
-5. **Obsidian vaults** — If your vault is stored locally (not in iCloud/Google Drive), copy it over manually.
-6. **Anki** — Open Anki and sync to AnkiWeb before switching. Log in on the new machine and sync again.
-7. **Zotero** — Sync your library via your Zotero account. If you have local PDF attachments not synced to Zotero's cloud, back them up to Google Drive.
-8. **Brave Browser** — Sign into your Brave account to sync bookmarks, passwords, and extensions automatically.
+Add a line to the right Brewfile by hand: `Brewfile` for the core, `Brewfile.personal` for GUI extras, `Brewfile.games`, and `Brewfile.headless` too if air needs it. Don't use `brew bundle dump --force`, which would dump everything installed into `Brewfile`, flattening the split and losing the comments.
 
-### Phase 4: Post-Installation & Syncing
-Once the terminal script says "Bootstrap complete!", perform these final manual steps:
+### A language or version
 
-1. **Accessibility Permissions:** Yabai and skhd require deep system access. Go to `System Settings` -> `Privacy & Security` -> `Accessibility` and toggle the switches ON for **yabai** and **skhd**.
-2. **Google Drive Sync:** Open the newly installed Google Drive app, log in, and configure "Computers" sync to pull down your heavy media (Documents, Music, etc.).
-3. **Restart:** Restart your Mac to ensure all background services, path variables, and kernel extensions load correctly.
+Edit `.mise.toml` and run `mise install`. Rust is the exception: rustup owns it, and `.mise.toml` says why.
 
----
+### Python
 
-## Maintenance
+Nothing is installed globally. Each project gets its own environment, and command-line tools go through pipx:
 
-**Adding new apps:**
-If you install a new app or CLI tool via Homebrew and want to save it to this repository permanently, run:
 ```bash
-cd ~/.config && brew bundle dump --force
+uv venv && uv pip install numpy matplotlib   # inside a project
+pipx install yt-dlp                          # a tool I want everywhere
 ```
 
-**Adding new languages:**
-If you need a new programming language or want to update a global version, simply edit the `.mise.toml` file and run:
-```bash
-mise install
-```
+### Anything a machine needs to have
 
-**Adding anything a machine needs to have:**
-Add an assertion to `install-verify.sh`, not just a step to `install.sh`. Every
-expensive failure in this setup has been silent: TPM read a path it could not
-see and left tmux-resurrect inert for three years; Claude's notification
-channel defaulted to one that never rang. An installer that only runs commands
-cannot catch either. See [BOOTSTRAP.md](BOOTSTRAP.md).
+Add a check to `install-verify.sh`, not just a step to `install.sh`. Every failure here that cost real time was silent. TPM was reading a path it couldn't see, so tmux-resurrect did nothing for three years, and Claude's notification channel defaulted to one that never rang. An installer that only runs commands can't catch either of those. [BOOTSTRAP.md](BOOTSTRAP.md) has the rule and what it checks.
 
----
+## yabai
 
-## Python Development Cheat Sheet
+`.yabairc` runs `sudo yabai --load-sa`, which needs a sudoers entry pinned to the hash of the yabai binary. `fix-yabai-sa` writes that entry, loads the scripting addition and restarts yabai. `install.sh` runs it once, and the `brew` wrapper in `.zshrc` runs it again whenever yabai is upgraded or reinstalled, since that changes the hash. If it breaks anyway, run `fix-yabai-sa` by hand.
 
-> **Note:** To keep the system fast and stable, Python libraries are **not** installed globally on this machine. Below are the common stacks I use, along with the commands to install them inside project-specific virtual environments.
+When yabai stops responding (space switches do nothing, `yabai -m` hangs), it's usually because launchd started a second daemon before the first one exited, and the two wedge the socket. `fix-yabai` kills both and brings back exactly one. The `yabai-watchdog` LaunchAgent checks every 15 seconds and runs `fix-yabai` on its own.
 
-### The Workflow (Starting a new project)
-Whenever starting a new Python script or project, initialize an isolated bubble using `uv`:
-```bash
-mkdir my-new-project
-cd my-new-project
-uv venv             # Creates the virtual environment
-```
+For anything milder:
 
-### Common Library Stacks (Copy & Paste to install)
-
-**Web Scraping & Automation**
-If building a bot, scraper, or making API calls:
-```bash
-uv pip install selenium requests python-dotenv
-```
-*(Note: Installing selenium automatically pulls in webdriver-manager, urllib3, trio, etc.)*
-
-**Data Science & Plotting**
-If doing math, handling arrays, or drawing graphs:
-```bash
-uv pip install numpy matplotlib
-```
-*(Note: Installing matplotlib automatically pulls in pillow, contourpy, kiwisolver, etc.)*
-
-**Global CLI Tools**
-If you need a standalone Python tool available everywhere in the terminal, use `pipx` (do not use pip):
-```bash
-pipx install yt-dlp
-```
-
-## 🪟 Yabai & skhd Setup (Manual Post-Install)
-
-Because Yabai deeply modifies macOS window management, there are a few manual security configurations required on a fresh installation.
-
-### 1. Grant Accessibility Permissions
-Before starting the services, macOS must trust the applications.
-1. Open `System Settings` -> `Privacy & Security` -> `Accessibility`.
-2. Turn on the toggles for both **yabai** and **skhd**.
-
-### 2. Configure the Scripting Addition (sudoers hash)
-Your `.yabairc` contains the command `sudo yabai --load-sa`. For this to run without a password prompt, a sudoers entry with the SHA-256 hash of the yabai binary is needed. This is handled automatically:
-
-- **`install.sh`** runs `fix-yabai-sa` during bootstrap to set it up on a fresh machine.
-- **The `brew` wrapper in `.zshrc`** detects `brew upgrade`/`brew reinstall` of yabai and re-runs `fix-yabai-sa` to update the hash.
-- **If it ever breaks manually**, just run:
-  ```bash
-  fix-yabai-sa
-  ```
-  The script (located at `scripts/fix-yabai-sa` in this repo, symlinked to `~/.local/bin/`) computes the current binary hash, updates `/private/etc/sudoers.d/yabai`, loads the SA, and restarts yabai.
-
-### 3. Apple Silicon (M-Series) Note
-If you want to use Yabai's most advanced features (like instantly focusing spaces or animating windows), macOS requires you to partially disable System Integrity Protection (SIP).
-1. Turn off your Mac.
-2. Hold the power button until you see "Loading startup options" to enter Recovery Mode.
-3. Open Terminal from the Utilities menu.
-4. Run `csrutil disable` (or `csrutil enable --without nvram --without fs --without debug --without dtrace`).
-5. Reboot.
-
-### 4. Restart Services
-If your window management ever freezes or stops responding, you can manually restart the background services using Homebrew:
 ```bash
 yabai --restart-service
 skhd --restart-service
 ```
 
-## HomeKit Keyboard Control
+## Lights from the keyboard
 
-Physical lights (HomeKit bulbs registered in Home.app) are controllable from the keyboard via three stacked layers:
+The HomeKit bulbs are on global hotkeys, through three layers:
 
 ```
 skhd chord  →  Apple Shortcut  →  Home accessory / Home scene
 ```
 
-Each layer owns one concern:
-- **Home.app scenes** — source of truth for any *multi-device* state (e.g., "all off", "reading"). Edit visually in Home.
-- **Shortcuts.app** — thin named wrappers. For single-light toggles, one action. For scenes, one action that runs the Home scene.
-- **skhd** — binds a keyboard chord to `shortcuts run "<Shortcut name>"`.
+- Home.app scenes hold anything involving more than one light ("all off", "reading"). They get edited in Home.
+- Shortcuts.app has a thin named wrapper for each: a single toggle for a light, or "run scene" for a scene.
+- skhd binds a chord to `shortcuts run "<name>"`.
 
-### Keymap (bound globally in `skhd/skhdrc`)
+| Chord | Action                                       |
+|-------|----------------------------------------------|
+| `⌘⌃C` | Toggle ceiling lights                        |
+| `⌘⌃B` | Toggle bed lamp                              |
+| `⌘⌃D` | Toggle desk lamp                             |
+| `⌘⌃A` | All on                                       |
+| `⌘⌃O` | All off                                      |
+| `⌘⌃S` | Beatsaber scene (max bright white, for VR)   |
+| `⌘⌃R` | Reading scene (bed lamp only, warm and low)  |
 
-| Chord     | Action                          |
-|-----------|---------------------------------|
-| `⌘⌃H`     | Toggle ceiling lights           |
-| `⌘⌃B`     | Toggle bed lamp                 |
-| `⌘⌃D`     | Toggle desk lamp                |
-| `⌘⌃A`     | All on                          |
-| `⌘⌃O`     | All off                         |
-| `⌘⌃S`     | Scene: Beatsaber (max bright white, for VR) |
-| `⌘⌃R`     | Scene: Reading (bed lamp only, warm low) |
+The Shortcut names (`Toggle Ceiling Lights`, `Scene Reading`, …) have to match the strings in `skhd/skhdrc` exactly, spaces and capitals included. The first time each one runs, macOS asks for Automation access to Home; after that it's silent.
 
-### Component inventory
+To add a light, make a Shortcut with one "Control Home" action set to **Toggle** that light, name it `Toggle <Thing>`, and add a line to `skhd/skhdrc`:
 
-**Home.app scenes** — `All On`, `All Off`, `Beatsaber`, `Reading`.
-
-**Shortcuts.app** — `Toggle Ceiling Lights`, `Toggle Bed Lamp`, `Toggle Desk Lamp`, `Scene All On`, `Scene All Off`, `Scene Beatsaber`, `Scene Reading`. Names must match the strings in `skhdrc` exactly (spaces and capitalization).
-
-### Adding a new light or scene
-
-1. **New single-light toggle:**
-   - Shortcuts.app → new shortcut with one "Control Home" action set to **Toggle** that light → name it `Toggle <Thing>`.
-   - Add to `skhd/skhdrc`: `cmd + ctrl - <letter> : shortcuts run "Toggle <Thing>"`
-   - Reload skhd: `pkill -USR1 skhd`
-
-2. **New compound scene** (multiple lights at specific states):
-   - Home.app → `+` → Add Scene → configure per-accessory state → name it e.g. `<Mood>`.
-   - Shortcuts.app → new shortcut with one "Control Home" action set to **Run Scene: `<Mood>`** → name it `Scene <Mood>`.
-   - Add to `skhd/skhdrc`: `cmd + ctrl - <letter> : shortcuts run "Scene <Mood>"`
-   - Reload skhd: `pkill -USR1 skhd`
-
-### Why direct binds, not an skhd mode
-
-An earlier attempt used a `homekit` mode (prefix chord + single letter). **Don't go back to this.** skhd v0.3.9 (what Homebrew ships here) doesn't reliably execute the `; default` mode transition after a shell command, so the mode stays sticky and every bound letter silently hijacks typing (e.g., "not working" became "n wking" because `o`, `t`, `r` were swallowed). The `⌘⌃ + letter` namespace is mostly free in this skhdrc, so direct binds are both simpler and safe.
-
-### First-run permissions
-
-The first time each Shortcut runs, macOS prompts for Automation access to Home. Approve once; silent after that.
 ```
+cmd + ctrl - <letter> : shortcuts run "Toggle <Thing>"
+```
+
+A new scene works the same way, except the scene gets built in Home.app first (`+` → Add Scene), the Shortcut's action is **Run Scene**, and its name is `Scene <Mood>`. Either way, reload skhd with `pkill -USR1 skhd`.
+
+Why not an skhd mode? The first version used a `homekit` mode (a prefix chord, then one letter). Don't go back to it. The skhd that Homebrew ships here (v0.3.9) doesn't reliably run the `; default` transition after a shell command, so the mode got stuck and every bound letter quietly ate my typing ("not working" came out as "n wking"). `⌘⌃` + letter is mostly free in this skhdrc, so direct binds are simpler and safe.
+
+## The LaTeX preambles
+
+The preambles in `nvim/preamble/` and the snippets in `nvim/LuaSnip/tex/` use `\documentauthor` rather than my name. If you borrow them, set yours at the top of the document:
+
+```latex
+\renewcommand{\documentauthor}{Your Name}
+```
+
+Or put that line in `nvim/preamble/personal-info.tex` (it's gitignored) and `\input` it.
