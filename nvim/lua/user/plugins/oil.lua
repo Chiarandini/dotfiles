@@ -1,6 +1,7 @@
 -- User Zero personal Oil extensions
--- AirDrop, dual-pane browser, and Move command. Multi-file Finder
--- clipboard (visual Y) is upstream in the distro.
+-- AirDrop, dual-pane browser, Move command, and select mode on
+-- <Space><Space>. Select mode itself and the multi-file Finder clipboard
+-- (Y) are upstream in the distro.
 
 -- ── Dual-pane oil browser ─────────────────────────────────────────────────
 -- Opens a snacks directory picker twice, then opens the two chosen dirs
@@ -60,27 +61,26 @@ vim.api.nvim_create_user_command("Move", open_dual_oil, { desc = "Dual Oil brows
 	vim.keymap.set("n", "<space>m", open_dual_oil, { desc = "Dual Oil browsers" })
 
 -- ── AirDrop file(s) from Oil ──────────────────────────────────────────────
-local function airdrop_range(bufnr, start_line, end_line)
-  local oil = require("oil")
-  local dir = oil.get_current_dir(bufnr)
+-- Acts on what the distro's multi-file keys (Y, gz, gZ) act on, via
+-- noethervim.util.oil_select.targets(): the select-mode selection, else the
+-- visual range, else the entry under the cursor.
+local function airdrop()
+  local dir, targets = require("noethervim.util.oil_select").targets()
   if not dir then
     vim.notify("AirDrop: could not resolve Oil directory", vim.log.levels.WARN)
     return
   end
   local paths = {}
   local skipped = 0
-  for lnum = start_line, end_line do
-    local entry = oil.get_entry_on_line(bufnr, lnum)
-    if entry then
-      if entry.type == "directory" then
-        skipped = skipped + 1
-      else
-        table.insert(paths, dir .. entry.name)
-      end
+  for _, t in ipairs(targets) do
+    if t.type == "directory" then
+      skipped = skipped + 1
+    else
+      table.insert(paths, t.path)
     end
   end
   if #paths == 0 then
-    vim.notify("AirDrop: no files in range", vim.log.levels.WARN)
+    vim.notify("AirDrop: no files to send", vim.log.levels.WARN)
     return
   end
   local cmd = { vim.env.HOME .. "/.local/bin/airdrop" }
@@ -91,12 +91,6 @@ local function airdrop_range(bufnr, start_line, end_line)
     msg = msg .. string.format(" (skipped %d dir(s))", skipped)
   end
   vim.notify(msg)
-end
-
-local function airdrop_under_cursor()
-  local bufnr = vim.api.nvim_get_current_buf()
-  local lnum = vim.api.nvim_win_get_cursor(0)[1]
-  airdrop_range(bufnr, lnum, lnum)
 end
 
 -- ── Fuzzy "/" over the current Oil listing (non-recursive) ────────────────
@@ -127,28 +121,31 @@ end
 vim.api.nvim_create_autocmd("FileType", {
   pattern = "oil",
   callback = function(args)
-    vim.keymap.set("n", "ga", airdrop_under_cursor, {
+    vim.keymap.set({ "n", "x" }, "ga", airdrop, {
       buffer = args.buf,
-      desc = "AirDrop file under cursor",
+      desc = "AirDrop file(s): entry, visual range, or selection",
     })
     vim.keymap.set("n", "/", fuzzy_pick_in_oil, {
       buffer = args.buf,
       desc = "Fuzzy-find entries in this dir",
     })
-    -- Visual-mode keymap goes through a buffer-local :range command so that
-    -- `:` in visual mode auto-prefixes `'<,'>` and gives us line1/line2.
-    vim.api.nvim_buf_create_user_command(args.buf, "AirDropRange", function(opts)
-      airdrop_range(args.buf, opts.line1, opts.line2)
-    end, { range = true })
-    vim.keymap.set("x", "ga", ":AirDropRange<CR>", {
-      buffer = args.buf,
-      silent = true,
-      desc = "AirDrop selected files",
-    })
   end,
 })
 
+-- ── Select mode on <Space><Space> ────────────────────────────────────────
+-- The distro binds select mode to `gm` (SearchLeader is side-effect free by
+-- its own rules); this puts it on the key Finder-style file managers use.
+-- Shadows the global <Space><Space> file browser only inside Oil.
 return {
   "stevearc/oil.nvim",
-  opts = { skip_confirm_for_simple_edits = true },
+  opts = {
+    skip_confirm_for_simple_edits = true,
+    keymaps = {
+      ["<Space><Space>"] = {
+        desc = "select mode: toggle entry",
+        mode = "n",
+        callback = function() require("noethervim.util.oil_select").enter() end,
+      },
+    },
+  },
 }
