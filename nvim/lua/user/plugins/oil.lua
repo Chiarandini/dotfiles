@@ -62,10 +62,10 @@ vim.api.nvim_create_user_command("Move", open_dual_oil, { desc = "Dual Oil brows
 
 -- ── AirDrop file(s) from Oil ──────────────────────────────────────────────
 -- Acts on what the distro's multi-file keys (Y, gz, gZ) act on, via
--- noethervim.util.oil_select.targets(): the select-mode selection, else the
--- visual range, else the entry under the cursor.
+-- oil-extras' select.targets(): the select-mode selection, else the visual
+-- range, else the entry under the cursor.
 local function airdrop()
-  local dir, targets = require("noethervim.util.oil_select").targets()
+  local dir, targets = require("oil_extras.select").targets()
   if not dir then
     vim.notify("AirDrop: could not resolve Oil directory", vim.log.levels.WARN)
     return
@@ -103,7 +103,7 @@ end
 --   <CR>    open — like pressing <CR> on the entry in Oil (enter dir / open file)
 --   <S-CR>  jump — land the Oil cursor on the entry WITHOUT opening it
 --
--- The picker itself lives in the distro (noethervim.util.oil_pick) so that
+-- The picker itself lives in oil-extras (oil_extras.pick) so that
 -- filtered variants can share it — the LaTeX bundle's `gt` is this same
 -- picker narrowed to .tex, with the same two keys. Here it runs unfiltered.
 --
@@ -115,7 +115,7 @@ local FUZZY_KEYS = {
 }
 
 local function fuzzy_pick_in_oil()
-  require("noethervim.util.oil_pick").pick({ keys = FUZZY_KEYS })
+  require("oil_extras.pick").pick({ keys = FUZZY_KEYS })
 end
 
 vim.api.nvim_create_autocmd("FileType", {
@@ -144,7 +144,7 @@ return {
       ["<Space><Space>"] = {
         desc = "select mode: toggle entry",
         mode = "n",
-        callback = function() require("noethervim.util.oil_select").enter() end,
+        callback = function() require("oil_extras.select").enter() end,
       },
     },
   },
