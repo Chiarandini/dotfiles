@@ -10,16 +10,16 @@ websiteTools.setup({
 	-- :UpdateBlogPage / :UpdateBooksPage opened the wrong buffer to paste into.
 	blog_webpage_url = "~/programming/website-nate/nate-website/src/app/components/blog/blog-posts.ts",
 	blog_public_post_url = "~/programming/website-nate/nate-website/src/assets/pdfs/blogs",
-	blog_latex_template = config_dir .. "/preamble/blog_preamble.tex",
+	blog_latex_template = config_dir .. "/preamble/templates/blog.tex",
 
 	books_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/books",
 	books_webpage_url = "~/programming/website-nate/nate-website/src/app/components/books/book-descriptions.ts",
-	books_latex_template = config_dir .. "/preamble/books_preamble.tex",
+	books_latex_template = config_dir .. "/preamble/templates/eyntka.tex",
 
 	notes_source_code_url = "~/Documents/academic/notes",
 	notes_pdf_url = "~/programming/website-nate/nate-website/src/assets/pdfs/notes",
 	notes_webpage_url = "~/programming/website-nate/nate-website/src/app/components/notes/notes.component.ts",
-	notes_latex_template = config_dir .. "/preamble/notes_preamble.tex",
+	notes_latex_template = config_dir .. "/preamble/templates/book.tex",
 
 	website_dir = "~/programming/website-nate/nate-website",
 	textbooks_dir = (os.getenv("TEXTBOOKS") or vim.fn.expand("~/Documents/academic/textbooks")),

@@ -33,6 +33,9 @@ return {
 			-- PID and UFD were repaired in the generated label but not in
 			-- the name the reader sees.
 			titlecase = { acronyms = { "DVR", "PID", "UFD" } },
+			-- Fills `<<author>>` in the preamble templates, for :NoetherTexNew
+			-- and WebsiteTools alike.
+			preamble = { vars = { author = "Nathanael Chwojko-Srawley" } },
 		},
 	},
 }

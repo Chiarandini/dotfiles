@@ -1,0 +1,26 @@
+% Lecture-notes headers, footers and chapter titles
+% requires: packages
+% class: book
+
+\pagestyle{fancy}
+\setlength\headheight{20pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyfoot[C,CO]{\textcolor{gray}{\documentauthor}}
+\fancyfoot[R,RO]{\thepage}{}
+
+\titleformat
+{\chapter} % command
+[display] % shape
+{\bfseries\Huge\itshape} % format
+{\thechapter} % label
+{0.5ex} % sep
+{
+    \rule{\textwidth}{1pt}
+    \vspace{1ex}
+    \centering
+}
+[
+\vspace{-0.5ex}
+\rule{\textwidth}{0.3pt}
+]

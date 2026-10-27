@@ -1,0 +1,33 @@
+% Lecture notes as a book: contents, index, bibliography, chapter headers
+\providecommand{\documentauthor}{<<author>>}
+\documentclass{book}
+\title{
+	\begin{huge}
+		\bf{<<title>>}
+	\end{huge}
+	}
+\author{\documentauthor}
+
+\input{packages-core}
+\input{packages}
+\input{figures}
+\input{bibliography}
+\input{colours}
+\input{notes-format}
+\input{spacing}
+\input{shortcuts}
+\input{commands}
+\input{environments}
+\input{dynkin}
+\input{links}
+\input{misc}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+<<cursor>>
+
+\newpage
+\printbibliography
+\end{document}

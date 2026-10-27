@@ -1,0 +1,108 @@
+% Book title page (\titleUL), headers and chapter titles
+% requires: packages
+% class: book
+
+%% check if using xelatex rather than pdflatex
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\ifpdf
+\usepackage{pdfcolmk}
+\fi
+\ifxetex
+\usepackage{fontspec}
+\fi
+\usepackage{pifont}
+
+\providecommand{\HUGE}{\Huge}% if not using memoir
+\newlength{\drop}% for my convenience
+%% select a (FontSite) font by its font family ID
+\newcommand*{\FSfont}[1]{\fontencoding{T1}\fontfamily{#1}\selectfont}
+%% if you don’t have the FontSite fonts either \renewcommand*{\FSfont}[1]{}
+%% or use your own choice of family.
+%% select a (TeX Font) font by its font family ID
+\newcommand*{\TXfont}[1]{\fontencoding{T1}\fontfamily{#1}\selectfont}
+%% Generic publisher’s logo
+\newcommand*{\plogo}{\fbox{$\mathcal{PL}$}}
+
+%% Some shades
+\definecolor{Dark}{gray}{0.2}
+\definecolor{MedDark}{gray}{0.4}
+\definecolor{Medium}{gray}{0.6}
+\definecolor{Light}{gray}{0.8}
+%%%% Additional font series macros
+\makeatletter
+%%%% light series
+%% e.g., kernel doc, section s: line 12 or thereabouts
+\DeclareRobustCommand\ltseries
+{\not@math@alphabet\ltseries\relax
+\fontseries\ltdefault\selectfont}
+%% e.g., kernel doc, section t: line 32 or thereabouts
+\newcommand{\ltdefault}{l}
+%% e.g., kernel doc, section v: line 19 or thereabouts
+\DeclareTextFontCommand{\textlt}{\ltseries}
+% heavy(bold) series
+\DeclareRobustCommand\hbseries
+{\not@math@alphabet\hbseries\relax
+\fontseries\hbdefault\selectfont}
+\newcommand{\hbdefault}{hb}
+\DeclareTextFontCommand{\texthb}{\hbseries}
+\makeatother
+
+
+\newcommand{\titleUL}{\begingroup% University of Liege
+\drop=0.1\textheight
+\vspace*{\drop}
+\begin{center}
+% {\LARGE\textsc{University of Toronto}}\\[\drop]
+% University logo
+% {\LARGE \plogo}\\[\drop]
+{\LARGE {\quad}}\\[\drop]
+
+\rule{\textwidth}{1pt}\par
+\vspace{0.5\baselineskip}
+{\huge\bfseries \title\\[0.2\baselineskip]
+\large --- \emph{EYNTKA} Series ---}\\[0.5\baselineskip]
+\rule{\textwidth}{1pt}\par
+\vfill
+{\Large\textsc{\author}}
+\vfill
+\vfill
+{\large \today}
+\end{center}
+\endgroup}
+
+%header information
+\pagestyle{fancy}
+\setlength\headheight{20pt}
+\renewcommand{\sectionmark}[1]{\markright{\thesection.\ #1}}
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\fancyfoot[C,CO]{\textcolor{gray}{\documentauthor}}
+\fancyfoot[R,RO]{\thepage}{}
+
+\titleformat
+{\chapter} % command
+[display] % shape
+{\bfseries\Huge\itshape} % format
+{\thechapter} % label
+{0.5ex} % sep
+{
+    \rule{\textwidth}{1pt}
+    \vspace{2ex}
+    \centering
+} % before-code
+[
+\vspace{-0.5ex}%
+\rule{\textwidth}{1pt}
+] % after-code
+
+% Create a new page style for the first page
+\fancypagestyle{firstpage}{
+  \fancyhf{} % Clear header and footer
+  \renewcommand{\headrulewidth}{0pt} % This removes the header line
+  \fancyfoot[C]{\thepage}
+}
+
+% Apply the first page style conditionally
+\AtBeginDocument{\thispagestyle{firstpage}}
+
+\renewcommand{\maketitle}{\titleUL}

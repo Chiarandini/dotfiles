@@ -1,0 +1,28 @@
+% Blog post (article class)
+\providecommand{\documentauthor}{<<author>>}
+\documentclass{article}
+\input{blog-title}
+\title{<<title>>}
+\author{\documentauthor}
+\date{\today}
+
+\input{packages-core}
+\input{packages}
+\input{figures}
+\input{bibliography}
+\input{colours}
+\input{blog-format}
+\input{spacing}
+\input{shortcuts}
+\input{commands}
+\input{environments}
+\input{dynkin}
+\input{links}
+\input{misc}
+
+\begin{document}
+\maketitle
+<<cursor>>
+% \newpage
+% \printbibliography
+\end{document}
