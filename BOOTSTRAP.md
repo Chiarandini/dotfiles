@@ -23,9 +23,15 @@ was silent:
 - Claude's `preferredNotifChannel` defaulted to `auto`, which can resolve to
   "no method available", so the bell never rang and the red "wants you" state
   never fired. Nothing errored.
+- `KeyRepeat` and `InitialKeyRepeat` were set by hand in System Settings on
+  each machine and owned by no file, so every rebuild quietly reverted to a
+  backspace that crawls. `mru-spaces` is worse: it defaults to true, which
+  reorders spaces by most-recent-use and silently points every positional
+  `cmd+<n>` binding in `skhdrc` at whichever space now sits at that index.
+  Nothing errored.
 
 An installer that only runs commands cannot catch any of these. One that
-asserts outcomes catches all three, which is why `install-verify.sh` exists
+asserts outcomes catches all four, which is why `install-verify.sh` exists
 and why it is worth keeping honest. Break something deliberately once in a
 while and confirm it still fails; a verifier that only ever prints `ok` is
 decoration.
@@ -47,6 +53,17 @@ decoration.
   the notification settings travel with the repo.
   `~/.claude/settings.local.json` stays untracked: it holds machine-specific
   permission grants.
+
+## macOS defaults
+
+`macos-defaults.sh` owns the `defaults` values this setup needs that live in
+no dotfile: key repeat, hold-to-repeat, and `mru-spaces`. Both installers call
+it and `install-verify.sh` asserts all four, because none of them fail loudly
+-- an unset key-repeat value just makes the machine feel wrong.
+
+Applications read the key-repeat values **at launch**, so changing them reaches
+a running app only when it restarts. Log out and back in to apply them
+everywhere.
 
 ## Not covered by bootstrap
 

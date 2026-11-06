@@ -138,6 +138,12 @@ if [ -d "$DOTFILES_DIR/launchd" ]; then
     done
 fi
 
+# 12. macOS defaults (key repeat, space ordering)
+# No dotfile owns these and nothing errors when they are unset. mru-spaces in
+# particular must be false or every positional cmd+<n> binding in skhdrc
+# targets the wrong space. See macos-defaults.sh.
+"$DOTFILES_DIR/macos-defaults.sh"
+
 echo "Bootstrap complete!"
 
 # ─── Verify ───────────────────────────────────────────────────────────────────

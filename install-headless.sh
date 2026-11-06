@@ -79,6 +79,12 @@ EOF
     chmod +x ~/.local/bin/m
 fi
 
+# ─── 9. macOS defaults ───────────────────────────────────────────────────────
+# Key repeat and space ordering. No dotfile owns these and nothing errors when
+# they are unset, so they were re-applied by hand on every rebuild until this
+# step existed. See macos-defaults.sh.
+"$DOTFILES_DIR/macos-defaults.sh"
+
 echo
 echo "==> Headless bootstrap complete."
 echo

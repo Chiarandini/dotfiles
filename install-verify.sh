@@ -177,6 +177,24 @@ for bin in /opt/homebrew/bin/yabai /opt/homebrew/bin/skhd "$HOME/.local/bin/yaba
   fi
 done
 
+# ── macOS defaults ──────────────────────────────────────────────────────────
+# Nothing errors when these are unset; the machine just feels wrong. Backspace
+# crawls, and macOS reorders spaces so every positional cmd+<n> in skhdrc hits
+# whichever space happens to sit at that index. Both were re-applied from
+# memory on each rebuild until macos-defaults.sh took ownership of them.
+section "macOS defaults"
+
+want_default() {   # domain  key  expected  label
+  got=$(defaults read "$1" "$2" 2>/dev/null)
+  if [ "$got" = "$3" ]; then ok "$4 ($2=$3)"
+  else bad "$4: $2 is '${got:-unset}', expected '$3'" "run $DOTFILES_DIR/macos-defaults.sh"; fi
+}
+
+want_default NSGlobalDomain KeyRepeat                 1 "fast key repeat"
+want_default NSGlobalDomain InitialKeyRepeat         12 "short repeat delay"
+want_default NSGlobalDomain ApplePressAndHoldEnabled  0 "hold-to-repeat, not accent picker"
+want_default com.apple.dock mru-spaces                0 "spaces do not auto-rearrange"
+
 # ── state directories ───────────────────────────────────────────────────────
 section "State"
 for d in "$HOME/.local/state/tmux" "$HOME/.local/share/tmux/resurrect"; do
