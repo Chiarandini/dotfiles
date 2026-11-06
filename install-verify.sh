@@ -111,14 +111,25 @@ fi
 
 # ── shell integration ───────────────────────────────────────────────────────
 section "Shell"
+# Every `zsh -ic` probe below closes stdin. Without it an interactive startup
+# can block on stdin and never return, and because `grep -q` exits early only
+# on a match, the failing path hung forever while the passing path looked fine.
+# An assertion that only terminates when it passes is not an assertion; this
+# one wedged install-verify.sh here for the whole of 2026-11-05.
 for fn in tx nvs; do
-  if zsh -ic "whence -w $fn" 2>/dev/null | grep -q function; then ok "$fn resolves"
+  if zsh -ic "whence -w $fn" </dev/null 2>/dev/null | grep -q function; then ok "$fn resolves"
   else bad "$fn not defined" "check zsh/functions.zsh is sourced from .zshrc"; fi
 done
-if zsh -ic 'echo $CLAUDE_CODE_TMUX_TRUECOLOR' 2>/dev/null | grep -q 1; then
+
+# Sentinel-delimited and compared exactly. zsh's session-restore line lands on
+# stdout ("Restored session: ... 13:22:30 ..."), so a bare `grep -q 1` can match
+# a stray digit in the timestamp and pass for the wrong reason.
+tc=$(gtimeout 8 zsh -ic 'echo "TC=[$CLAUDE_CODE_TMUX_TRUECOLOR]"' </dev/null 2>/dev/null \
+       | sed -n 's/.*TC=\[\(.*\)\]/\1/p' | tail -1)
+if [ "$tc" = "1" ]; then
   ok "CLAUDE_CODE_TMUX_TRUECOLOR set"
 else
-  warn "CLAUDE_CODE_TMUX_TRUECOLOR unset" "Claude's colours will be muted inside tmux"
+  warn "CLAUDE_CODE_TMUX_TRUECOLOR is '${tc:-unset}'" "Claude's colours will be muted inside tmux"
 fi
 
 # ── Claude Code ─────────────────────────────────────────────────────────────
