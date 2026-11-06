@@ -44,6 +44,23 @@ ln -sf "$DOTFILES_DIR/.gitignore_global" ~/.gitignore_global
 ln -sf "$DOTFILES_DIR/.zshrc"            ~/.zshrc
 ln -sf "$DOTFILES_DIR/.zprofile"         ~/.zprofile
 
+# Claude Code settings, identical to install.sh step 3. Omitting this is what
+# left preferredNotifChannel unset on this box -- the third silent failure in
+# BOOTSTRAP.md, reintroduced by the installer meant to avoid it.
+mkdir -p ~/.claude
+ln -sf "$DOTFILES_DIR/claude/settings.json" ~/.claude/settings.json
+
+# Every executable in scripts/ goes on PATH -- verbatim from install.sh. This
+# step was absent here, so tb, pdf, lib, dirmarks and airdrop were missing on
+# any headless box: exactly the by-hand linking install.sh's comment warns
+# about. Divergence between the two installers is what produced both bugs, so
+# this is a copy, not a variant.
+mkdir -p ~/.local/bin
+for s in "$DOTFILES_DIR"/scripts/*; do
+    [ -f "$s" ] && [ -x "$s" ] || continue
+    ln -sf "$s" ~/.local/bin/"$(basename "$s")"
+done
+
 # ─── 4. ~/.zshenv: PATH for ~/.local/bin in EVERY shell context ──────────────
 # Tailscale SSH and some non-interactive shells don't reliably source .zprofile.
 # .zshenv runs for every shell invocation (login, non-login, interactive, not).
