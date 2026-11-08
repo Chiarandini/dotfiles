@@ -57,8 +57,9 @@ decoration.
 ## macOS defaults
 
 `macos-defaults.sh` owns the `defaults` values this setup needs that live in
-no dotfile: key repeat, hold-to-repeat, and `mru-spaces`. Both installers call
-it and `install-verify.sh` asserts all four, because none of them fail loudly
+no dotfile: key repeat, hold-to-repeat, `mru-spaces`, and Brave's ctrl-based
+tab shortcuts (ctrl+t / ctrl+w / ctrl+shift+d). Both installers call it and
+`install-verify.sh` asserts every value, because none of them fail loudly
 -- an unset key-repeat value just makes the machine feel wrong.
 
 Applications read the key-repeat values **at launch**, so changing them reaches

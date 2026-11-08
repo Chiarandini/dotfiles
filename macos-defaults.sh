@@ -42,7 +42,20 @@ if [ "$(defaults read com.apple.dock mru-spaces 2>/dev/null)" != "0" ]; then
     echo "    mru-spaces disabled (Dock restarted)"
 fi
 
+# ─── Brave: ctrl-based tab shortcuts ─────────────────────────────────────────
+# ctrl+t / ctrl+w / ctrl+shift+d -> new / close / duplicate tab. These are
+# macOS App Shortcuts (System Settings > Keyboard > Keyboard Shortcuts > App
+# Shortcuts): each key is a menu-item title and must match Brave's menu text
+# exactly, so a Brave update that renames an item silently drops its binding.
+# An App Shortcut replaces the item's own shortcut instead of adding a second
+# one, so cmd+t / cmd+w no longer reach these items.
+# -dict-add merges, so App Shortcuts added by hand in System Settings survive.
+defaults write com.brave.Browser NSUserKeyEquivalents -dict-add \
+    "New Tab"       '^t' \
+    "Close Tab"     '^w' \
+    "Duplicate Tab" '^$d'
+
 echo "==> macOS defaults applied."
-echo "    Note: applications read the key-repeat values at launch, so they"
-echo "    reach a running app only when it restarts. Log out and back in to"
-echo "    apply them everywhere."
+echo "    Note: applications read the key-repeat values and App Shortcuts at"
+echo "    launch, so they reach a running app only when it restarts (Brave"
+echo "    needs a full cmd+q). Log out and back in to apply them everywhere."

@@ -206,6 +206,19 @@ want_default NSGlobalDomain InitialKeyRepeat         12 "short repeat delay"
 want_default NSGlobalDomain ApplePressAndHoldEnabled  0 "hold-to-repeat, not accent picker"
 want_default com.apple.dock mru-spaces                0 "spaces do not auto-rearrange"
 
+# App Shortcuts live in a dict, so `defaults read` can't address one entry.
+# On a missing key plutil prints its error to stdout, hence the `|| got=""`.
+want_key_equiv() {   # domain  menu-title  expected  label
+  got=$(defaults export "$1" - 2>/dev/null \
+        | plutil -extract "NSUserKeyEquivalents.$2" raw -o - - 2>/dev/null) || got=""
+  if [ "$got" = "$3" ]; then ok "$4 ($2=$3)"
+  else bad "$4: '$2' shortcut is '${got:-unset}', expected '$3'" "run $DOTFILES_DIR/macos-defaults.sh, then cmd+q the app"; fi
+}
+
+want_key_equiv com.brave.Browser "New Tab"       '^t'  "Brave ctrl+t new tab"
+want_key_equiv com.brave.Browser "Close Tab"     '^w'  "Brave ctrl+w close tab"
+want_key_equiv com.brave.Browser "Duplicate Tab" '^$d' "Brave ctrl+shift+d duplicate tab"
+
 # ── state directories ───────────────────────────────────────────────────────
 section "State"
 for d in "$HOME/.local/state/tmux" "$HOME/.local/share/tmux/resurrect"; do
